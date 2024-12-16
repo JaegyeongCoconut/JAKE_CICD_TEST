@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code. # 레포지토리 체크아웃
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Cache node modules # node modules 캐싱
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: node_modules # 프로젝트의 node_modules가 있는 경로로 설정
           key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
@@ -31,7 +31,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
+          set -x # 디버깅 모드 활성화
+          aws s3 ls s3://jake-test-cicd --region ap-southeast-1 # S3 접근 확인
           aws s3 cp \
-            --recursive \
-            --region ap-southeast-1 \
-            build s3://jake-test-cicd
+           --recursive \
+           --region ap-southeast-1 \
+           build s3://jake-test-cicd
