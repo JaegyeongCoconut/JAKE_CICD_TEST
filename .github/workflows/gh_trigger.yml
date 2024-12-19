@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
 
     env:
-      AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut, test" # main branch 배포 권한이 있는 사용자 정의
-      AUTHORIZED_USERS_IN_DEVELOP: "test" # develop branch 배포 권한이 있는 사용자 정의
+      AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
+      AUTHORIZED_USERS_IN_DEVELOP: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
 
     steps:
       # main 또는 develop이 아닌 브랜치일 때 실패 처리
