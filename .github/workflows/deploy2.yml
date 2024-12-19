@@ -1,0 +1,11 @@
+name: Manual Trigger Workflow
+
+on:
+  workflow_dispatch: # 수동 실행 이벤트
+
+jobs:
+  run-job:
+    runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
+    steps:
+      - name: Print message
+        run: echo "Workflow triggered by ${{ github.actor }}"
