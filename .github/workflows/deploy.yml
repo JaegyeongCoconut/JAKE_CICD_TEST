@@ -19,24 +19,19 @@ jobs:
           echo "::error:: main 또는 develop 브랜치에서만 실행 가능합니다."
           exit 1
 
-      # develop 브랜치에서 실행
-      - name: Develop branch authorization check
-        if: ${{ github.ref == 'refs/heads/develop' }}
+      # 브랜치에 따른 권한 확인 및 실행
+      - name: Authorization check
         run: |
-          echo "Authorized users for develop branch: $AUTHORIZED_USERS_IN_DEVELOP"
-          if [[ ! ",$AUTHORIZED_USERS_IN_DEVELOP," =~ ",${GITHUB_ACTOR}," ]]; then
-            echo "::error:: You are not authorized to deploy to the develop branch."
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
+            BRANCH_NAME="develop"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
+            BRANCH_NAME="main"
+          fi
+          echo "Authorized users for $BRANCH_NAME branch: $AUTHORIZED_USERS"
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${GITHUB_ACTOR}," ]]; then
+            echo "::error:: You are not authorized to deploy to the $BRANCH_NAME branch."
             exit 1
           fi
-          echo "Develop branch workflow triggered by ${{ github.actor }}"
-
-        # main 브랜치에서 권한 확인 및 실행
-      - name: Main branch authorization check
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          echo "Authorized users for main branch: $AUTHORIZED_USERS_IN_MAIN"
-          if [[ ! ",$AUTHORIZED_USERS_IN_MAIN," =~ ",${GITHUB_ACTOR}," ]]; then
-            echo "::error:: You are not authorized to deploy to the main branch."
-            exit 1
-          fi
-          echo "Main branch workflow triggered by ${{ github.actor }}"
+          echo "$BRANCH_NAME branch workflow triggered by ${{ github.actor }}"
