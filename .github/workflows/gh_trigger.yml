@@ -6,18 +6,37 @@ on:
 jobs:
   run-job:
     runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
+
+    env:
+      AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut, test" # main branch 배포 권한이 있는 사용자 정의
+      AUTHORIZED_USERS_IN_DEVELOP: "test" # develop branch 배포 권한이 있는 사용자 정의
+
     steps:
-      # master 또는 develop이 아닌 브랜치일 때 실패 처리
+      # main 또는 develop이 아닌 브랜치일 때 실패 처리
       - name: Check branch condition
-        if: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop' }}
+        if: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
         run: |
-          echo "::error:: master 또는 develop 브랜치에서만 실행 가능합니다."
+          echo "::error:: main 또는 develop 브랜치에서만 실행 가능합니다."
           exit 1
 
-      - name: Develop branch trigger
-        if: ${{ github.ref == 'refs/heads/develop' }} # 브랜치가 develop일 때 실행
-        run: echo "Develop branch workflow triggered by ${{ github.actor }}"
+      # develop 브랜치에서 실행
+      - name: Develop branch authorization check
+        if: ${{ github.ref == 'refs/heads/develop' }}
+        run: |
+          echo "Authorized users for develop branch: $AUTHORIZED_USERS_IN_DEVELOP"
+          if [[ ! ",$AUTHORIZED_USERS_IN_DEVELOP," =~ ",${GITHUB_ACTOR}," ]]; then
+            echo "::error:: You are not authorized to deploy to the develop branch."
+            exit 1
+          fi
+          echo "Develop branch workflow triggered by ${{ github.actor }}"
 
-      - name: Master branch trigger
-        if: ${{ github.ref == 'refs/heads/master' }} # 브랜치가 master 때 실행
-        run: echo "Master branch workflow triggered by ${{ github.actor }}"
+        # main 브랜치에서 권한 확인 및 실행
+      - name: Main branch authorization check
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          echo "Authorized users for main branch: $AUTHORIZED_USERS_IN_MAIN"
+          if [[ ! ",$AUTHORIZED_USERS_IN_MAIN," =~ ",${GITHUB_ACTOR}," ]]; then
+            echo "::error:: You are not authorized to deploy to the main branch."
+            exit 1
+          fi
+          echo "Main branch workflow triggered by ${{ github.actor }}"
