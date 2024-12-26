@@ -23,7 +23,7 @@ jobs:
           TARGET_BRANCH=""
 
           if [[ -z "$ENVIRONMENT" ]]; then
-            echo "🚀 ::error:: The 'environment' input is required but not provided."
+            echo "::error:: The 'environment' input is required but not provided."
             exit 1
           fi
 
@@ -32,12 +32,12 @@ jobs:
           elif [[ "$ENVIRONMENT" == "prod" ]]; then
             TARGET_BRANCH="main"
           else
-            echo "🚀 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
+            echo "::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
             exit 1
           fi
 
-          echo "🚀 TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
-          echo "🚀 Environment: $ENVIRONMENT, Branch: $TARGET_BRANCH"
+          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
+          echo "Environment: $ENVIRONMENT, Branch: $TARGET_BRANCH"
 
       # 브랜치 조건 검증
       - name: Check branch condition
@@ -45,10 +45,10 @@ jobs:
           CURRENT_BRANCH=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
 
           if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
-            echo "🚀 ::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
+            echo "::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
             exit 1
           fi
-          echo "🚀 Branch validation passed: $CURRENT_BRANCH matches $TARGET_BRANCH."
+          echo "Branch validation passed: $CURRENT_BRANCH matches $TARGET_BRANCH."
 
       # 배포 권한 확인
       - name: Authorization check
@@ -60,8 +60,8 @@ jobs:
           CURRENT_USER="${{ github.actor }}"
           TARGET_BRANCH=""
 
-          echo "🚀 Environment: $ENVIRONMENT"
-          echo "🚀 Current user: $CURRENT_USER"
+          echo "Environment: $ENVIRONMENT"
+          echo "Current user: $CURRENT_USER"
 
           # 환경에 따른 대상 브랜치 및 권한 설정
           if [[ "$ENVIRONMENT" == "dev" ]]; then
@@ -71,20 +71,20 @@ jobs:
             TARGET_BRANCH="main"
             AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
           else
-            echo "🚀 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
+            echo "::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
             exit 1
           fi
 
-          echo "🚀 Target branch: $TARGET_BRANCH"
-          echo "🚀 Authorized users: $AUTHORIZED_USERS"
+          echo "Target branch: $TARGET_BRANCH"
+          echo "Authorized users: $AUTHORIZED_USERS"
 
           # 사용자 인증
           if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
-            echo "🚀 ::error:: User '$CURRENT_USER' is not authorized to deploy to the $TARGET_BRANCH branch."
+            echo "::error:: User '$CURRENT_USER' is not authorized to deploy to the $TARGET_BRANCH branch."
             exit 1
           fi
 
-          echo "🚀 User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
+          echo "User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
 
       # S3에서 환경 변수 파일 다운로드
       - name: Download .env file from S3
@@ -94,7 +94,7 @@ jobs:
         run: |
           ENVIRONMENT=${{ github.event.inputs.env }}
           FILE_PATH=""
-          echo "🚀 Selected environment: $ENVIRONMENT"
+          echo "Selected environment: $ENVIRONMENT"
 
           # S3에서 파일 다운로드
           if [[ "$ENVIRONMENT" == "dev" ]]; then
@@ -103,10 +103,10 @@ jobs:
             FILE_PATH=".env.production"
           fi
 
-          echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
+          echo "Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
-          echo "🚀 .env file downloaded and saved as '.env'."
+          echo ".env file downloaded and saved as '.env'."
 
       # 레포지토리 체크아웃
       - name: Checkout source code
