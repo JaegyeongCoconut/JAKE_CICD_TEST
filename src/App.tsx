@@ -19,6 +19,7 @@ function App() {
       <h1>Vite + React</h1>
       <h2>Hello world</h2>
       <h2>{import.meta.env.VITE_BUILD_ENV}</h2>
+      <h3>운영 버전에서는 보입니다.</h3>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
