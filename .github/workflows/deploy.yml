@@ -2,10 +2,6 @@ name: Manual Trigger Workflow
 
 on:
   workflow_dispatch: # 수동 실행 이벤트
-    inputs:
-      env:
-        description: "Specify the environment (dev or prod)"
-        required: true
 
 jobs:
   run-job:
@@ -15,78 +11,51 @@ jobs:
       S3_ENV_BUCKET: jakecicd-env # 단일 S3 버킷 이름
       GITHUB_PROD_BRANCH: main # 메인 브랜치 이름
       GITHUB_DEV_BRANCH: develop # 개발 브랜치 이름
+      AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의
+      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의
 
     steps:
-      # environment 입력값 확인 및 브랜치 설정
-      - name: Validate environment and set branch
-        id: validate_env
+      # 현재 브랜치 확인 및 .env 파일 결정
+      - name: Determine .env file and branch
+        id: determine_env
         run: |
-          ENVIRONMENT=${{ github.event.inputs.env }}
-          TARGET_BRANCH=""
+          CURRENT_BRANCH=$(echo "${{ github.ref_name }}")
+          FILE_PATH=""
+          AUTHORIZED_USERS=""
 
-          if [[ -z "$ENVIRONMENT" ]]; then
-            echo "🚨 ::error:: The 'environment' input is required but not provided."
-            exit 1
-          fi
+          echo "🚀 Current branch: $CURRENT_BRANCH"
 
-          if [[ "$ENVIRONMENT" == "dev" ]]; then
-            TARGET_BRANCH="$GITHUB_DEV_BRANCH"
-          elif [[ "$ENVIRONMENT" == "prod" ]]; then
-            TARGET_BRANCH="$GITHUB_PROD_BRANCH"
+          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
+            FILE_PATH=".env.development"
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEV
+          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
+            FILE_PATH=".env.production"
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_PROD
           else
-            echo "🚨 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
+            echo "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH"
             exit 1
           fi
 
-          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
-          echo "🚀 Environment: $ENVIRONMENT, Branch: $TARGET_BRANCH"
-
-      # 브랜치 조건 검증
-      - name: Check branch condition
-        run: |
-          CURRENT_BRANCH=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
-
-          if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
-            echo "🚨 ::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
-            exit 1
-          fi
-          echo "🚀 Branch validation passed: $CURRENT_BRANCH matches $TARGET_BRANCH."
+          echo "FILE_PATH=$FILE_PATH" >> $GITHUB_ENV
+          echo "AUTHORIZED_USERS=$AUTHORIZED_USERS" >> $GITHUB_ENV
+          echo "✅ Selected .env file: $FILE_PATH"
+          echo "✅ Authorized users: $AUTHORIZED_USERS"
 
       # 배포 권한 확인
       - name: Authorization check
-        env:
-          AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
-          AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
         run: |
-          ENVIRONMENT=${{ github.event.inputs.env }}
           CURRENT_USER="${{ github.actor }}"
-          TARGET_BRANCH=""
+          AUTHORIZED_USERS="${AUTHORIZED_USERS}"
 
-          echo "🚀 Environment: $ENVIRONMENT"
           echo "🚀 Current user: $CURRENT_USER"
-
-          # 환경에 따른 대상 브랜치 및 권한 설정
-          if [[ "$ENVIRONMENT" == "dev" ]]; then
-            TARGET_BRANCH="$GITHUB_DEV_BRANCH"
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEV
-          elif [[ "$ENVIRONMENT" == "prod" ]]; then
-            TARGET_BRANCH="$GITHUB_PROD_BRANCH"
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_PROD
-          else
-            echo "🚨 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
-            exit 1
-          fi
-
-          echo "🚀 Target branch: $TARGET_BRANCH"
           echo "🚀 Authorized users: $AUTHORIZED_USERS"
 
-          # 사용자 인증
           if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
-            echo "🚀 ::error:: User '$CURRENT_USER' is not authorized to deploy to the $TARGET_BRANCH branch."
+            echo "🚨 ::error:: User '$CURRENT_USER' is not authorized to deploy to the $CURRENT_BRANCH branch."
             exit 1
           fi
 
-          echo "🚀 User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
+          echo "✅ User '$CURRENT_USER' is authorized to deploy to the $CURRENT_BRANCH branch."
 
       # 레포지토리 체크아웃
       - name: Checkout source code
@@ -98,17 +67,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          ENVIRONMENT=${{ github.event.inputs.env }}
-          FILE_PATH=""
-          echo "🚀 Selected environment: $ENVIRONMENT"
-
-          # S3에서 파일 다운로드
-          if [[ "$ENVIRONMENT" == "dev" ]]; then
-            FILE_PATH=".env.development"
-          elif [[ "$ENVIRONMENT" == "prod" ]]; then
-            FILE_PATH=".env.production"
-          fi
-
           echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
