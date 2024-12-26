@@ -86,7 +86,7 @@ jobs:
 
           echo "🚀 User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
 
-      # S3에서 환경 변수 파일 다운로드 (SSM 대신 S3 사용)
+      # S3에서 환경 변수 파일 다운로드
       - name: Download .env file from S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -99,17 +99,14 @@ jobs:
           # S3에서 파일 다운로드
           if [[ "$ENVIRONMENT" == "dev" ]]; then
             FILE_PATH=".env.development"
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
           elif [[ "$ENVIRONMENT" == "prod" ]]; then
             FILE_PATH=".env.production"
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
           fi
 
           echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
 
-          aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH \
-            --region $S3_REGION
-          echo "🚀 .env file downloaded for environment: $ENVIRONMENT"
+          aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
+          echo "🚀 .env file downloaded and saved as '.env'."
 
       # 레포지토리 체크아웃
       - name: Checkout source code
