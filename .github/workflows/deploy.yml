@@ -12,42 +12,41 @@ jobs:
     runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
 
     steps:
-      # main 또는 develop이 아닌 브랜치일 때 실패 처리
-      - name: Check branch condition
-        if: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
-        run: |
-          echo "::error:: main 또는 develop 브랜치에서만 실행 가능합니다."
-          exit 1
-
-      # 환경 입력값 검증 및 적절한 브랜치 설정
+      # environment 입력값 확인 및 브랜치 설정
       - name: Validate environment and set branch
         id: validate_env
         run: |
-          if [[ -z "${{ github.event.inputs.environment }}" ]]; then
+          ENVIRONMENT=${{ github.event.inputs.environment }}
+          TARGET_BRANCH=""
+
+          if [[ -z "$ENVIRONMENT" ]]; then
             echo "::error:: The 'environment' input is required but not provided."
             exit 1
           fi
 
-      # 브랜치에 따른 권한 확인 및 실행
-      - name: Authorization check
-        env:
-          AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
-          AUTHORIZED_USERS_IN_DEVELOP: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
-            BRANCH_NAME="develop"
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
-            BRANCH_NAME="main"
-          fi
-          echo "Authorized users for $BRANCH_NAME branch: $AUTHORIZED_USERS"
-
-          if [[ ! ",$AUTHORIZED_USERS," =~ ",${GITHUB_ACTOR}," ]]; then
-            echo "::error:: You are not authorized to deploy to the $BRANCH_NAME branch."
+          if [[ "$ENVIRONMENT" == "dev" ]]; then
+            TARGET_BRANCH="develop"
+          elif [[ "$ENVIRONMENT" == "prod" ]]; then
+            TARGET_BRANCH="main"
+          else
+            echo "::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
             exit 1
           fi
-          echo "$BRANCH_NAME branch workflow triggered by ${{ github.actor }}"
+
+          echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
+          echo "Environment: $ENVIRONMENT, Branch: $TARGET_BRANCH"
+
+      # Validate branch condition
+      - name: Check branch condition
+        run: |
+          CURRENT_BRANCH=${{ github.ref_name }}
+
+          if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
+            echo "::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
+            exit 1
+          fi
+          echo "Branch validation passed: $CURRENT_BRANCH matches $TARGET_BRANCH."
+
       # 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -61,12 +60,12 @@ jobs:
           ENVIRONMENT=${{ github.event.inputs.environment }}
           echo "Selected environment: $ENVIRONMENT"
 
-          # SSM에서 변수 로드
+          # SSM에서 변수 로드  
           aws ssm get-parameters-by-path \
-            --path "/cicd/$ENVIRONMENT" \
-            --with-decryption \
-            --query "Parameters[*].[Name,Value]" \
-            --output text > params.txt
+          --path "/cicd/$ENVIRONMENT" \
+          --with-decryption \
+          --query "Parameters[*].[Name,Value]" \
+          --output text > params.txt
 
           # .env 파일 생성
           while read -r NAME VALUE; do
