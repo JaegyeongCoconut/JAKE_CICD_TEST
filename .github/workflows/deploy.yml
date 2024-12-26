@@ -86,10 +86,6 @@ jobs:
 
           echo "User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
 
-      # 레포지토리 체크아웃
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
       # S3에서 환경 변수 파일 다운로드 (SSM 대신 S3 사용)
       - name: Download .env file from S3
         env:
@@ -113,6 +109,10 @@ jobs:
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
           echo ".env file downloaded for environment: $ENVIRONMENT"
+
+      # 레포지토리 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v3
 
       # 의존 파일 설치
       - name: Install Dependencies
