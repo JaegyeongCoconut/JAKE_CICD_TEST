@@ -10,6 +10,8 @@ on:
 jobs:
   run-job:
     runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
+    env:
+      S3_REGION: ap-southeast-1 # S3 Bucket 리전
 
     steps:
       # environment 입력값 확인 및 브랜치 설정
@@ -36,10 +38,10 @@ jobs:
           echo "TARGET_BRANCH=$TARGET_BRANCH" >> $GITHUB_ENV
           echo "Environment: $ENVIRONMENT, Branch: $TARGET_BRANCH"
 
-      # Validate branch condition
+      # 브랜치 조건 검증
       - name: Check branch condition
         run: |
-          CURRENT_BRANCH=${{ github.ref_name }}
+          CURRENT_BRANCH=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
 
           if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
             echo "::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
@@ -74,6 +76,7 @@ jobs:
           echo "Target branch: $TARGET_BRANCH"
           echo "Authorized users: $AUTHORIZED_USERS"
 
+          # 사용자 인증
           if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
             echo "::error:: User '$CURRENT_USER' is not authorized to deploy to the $TARGET_BRANCH branch."
             exit 1
@@ -96,10 +99,11 @@ jobs:
 
           # SSM에서 변수 로드  
           aws ssm get-parameters-by-path \
-          --path "/cicd/$ENVIRONMENT" \
-          --with-decryption \
-          --query "Parameters[*].[Name,Value]" \
-          --output text > params.txt
+            --region $S3_REGION \
+            --path "/cicd/$ENVIRONMENT" \
+            --with-decryption \
+            --query "Parameters[*].[Name,Value]" \
+            --output text > params.txt
 
           # .env 파일 생성
           while read -r NAME VALUE; do
@@ -126,7 +130,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # IAM Access Key
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # IAM Secret Access Key
           S3_BUCKET: s3://jakecicd # S3 Bucket 이름
-          S3_REGION: ap-southeast-1 # S3 Bucket 리전
           BUILD_DIR: dist # 빌드 파일 이름
         run: |
           set -x # 디버깅 모드 활성화
