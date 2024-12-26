@@ -42,7 +42,7 @@ jobs:
       # 브랜치 조건 검증
       - name: Check branch condition
         run: |
-          CURRENT_BRANCH=$(echo "🚀 ${{ github.ref }}" | sed 's|refs/heads/||')
+          CURRENT_BRANCH=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
 
           if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
             echo "🚀 ::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
