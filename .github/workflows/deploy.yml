@@ -23,7 +23,7 @@ jobs:
           TARGET_BRANCH=""
 
           if [[ -z "$ENVIRONMENT" ]]; then
-            echo "🚀 ::error:: The 'environment' input is required but not provided."
+            echo "🚨 ::error:: The 'environment' input is required but not provided."
             exit 1
           fi
 
@@ -32,7 +32,7 @@ jobs:
           elif [[ "$ENVIRONMENT" == "prod" ]]; then
             TARGET_BRANCH="main"
           else
-            echo "🚀 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
+            echo "🚨 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
             exit 1
           fi
 
@@ -45,7 +45,7 @@ jobs:
           CURRENT_BRANCH=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
 
           if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
-            echo "🚀 ::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
+            echo "🚨 ::error:: This workflow can only run on the '$TARGET_BRANCH' branch for the '$ENVIRONMENT' environment."
             exit 1
           fi
           echo "🚀 Branch validation passed: $CURRENT_BRANCH matches $TARGET_BRANCH."
@@ -71,7 +71,7 @@ jobs:
             TARGET_BRANCH="main"
             AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
           else
-            echo "🚀 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
+            echo "🚨 ::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
             exit 1
           fi
 
@@ -108,16 +108,6 @@ jobs:
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
           echo "🚀 $FILE_PATH file downloaded and saved as '.env'."
 
-      # .env 파일 확인
-      - name: Verify .env file
-        run: |
-          if [[ ! -f ".env" ]]; then
-            echo "🚨 .env file is missing!"
-            exit 1
-          fi
-          echo "✅ .env file exists:"
-          cat .env
-
       # 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -130,7 +120,7 @@ jobs:
       - name: Build
         run: |
           if [[ ! -f ".env" ]]; then
-            echo "🚨 .env file is missing! Cannot proceed with the build."
+            echo "🚨 ::error:: .env file is missing! Cannot proceed with the build."
             exit 1
           fi
           set -a # 모든 export된 변수 자동 적용
