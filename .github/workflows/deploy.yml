@@ -106,11 +106,20 @@ jobs:
           echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
-          echo "🚀 $FILE_PATH file downloaded and saved as '.env'."
+          echo "✅ $FILE_PATH file downloaded and saved as '.env'."
+
+          # .env 파일을 임시 디렉터리에 저장
+          cp .env $GITHUB_WORKSPACE/.env
 
       # 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v3
+
+      # .env 파일 복원
+      - name: Restore .env file
+        run: |
+          mv $GITHUB_WORKSPACE/.env .env
+          echo "✅ .env file restored."
 
       # 의존 파일 설치
       - name: Install Dependencies
