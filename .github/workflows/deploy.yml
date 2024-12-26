@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
     env:
       S3_REGION: ap-southeast-1 # S3 Bucket 리전
+      S3_ENV_BUCKET: jakecicd-env # 단일 S3 버킷 이름
 
     steps:
       # environment 입력값 확인 및 브랜치 설정
@@ -57,6 +58,7 @@ jobs:
         run: |
           ENVIRONMENT=${{ github.event.inputs.env }}
           CURRENT_USER="${{ github.actor }}"
+          TARGET_BRANCH=""
 
           echo "Environment: $ENVIRONMENT"
           echo "Current user: $CURRENT_USER"
@@ -88,30 +90,29 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      # AWS SSM에서 환경 변수 로드
-      - name: Load environment variables from SSM
+      # S3에서 환경 변수 파일 다운로드 (SSM 대신 S3 사용)
+      - name: Download .env file from S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           ENVIRONMENT=${{ github.event.inputs.env }}
+          TARGET_BRANCH=""
           echo "Selected environment: $ENVIRONMENT"
 
-          # SSM에서 변수 로드  
-          aws ssm get-parameters-by-path \
-            --region $S3_REGION \
-            --path "/cicd/$ENVIRONMENT" \
-            --with-decryption \
-            --query "Parameters[*].[Name,Value]" \
-            --output text > params.txt
+          # S3에서 파일 다운로드
+          if [[ "$ENVIRONMENT" == "dev" ]]; then
+            TARGET_BRANCH="develop"
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
+          elif [[ "$ENVIRONMENT" == "prod" ]]; then
+            TARGET_BRANCH="main"
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
 
-          # .env 파일 생성
-          while read -r NAME VALUE; do
-            ENV_VAR=$(basename "$NAME")
-            echo "$ENV_VAR=$VALUE" >> .env
-          done < params.txt
-          echo "Generated .env file:"
-          cat .env
+          FILE_PATH=".env.$ENVIRONMENT"
+          echo "Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
+
+          aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
+          echo ".env file downloaded for environment: $ENVIRONMENT"
 
       # 의존 파일 설치
       - name: Install Dependencies
@@ -129,12 +130,12 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # IAM Access Key
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # IAM Secret Access Key
-          S3_BUCKET: s3://jakecicd # S3 Bucket 이름
+          S3_DEPLOY_BUCKET: s3://jakecicd # 배포 S3 Bucket
           BUILD_DIR: dist # 빌드 파일 이름
         run: |
           set -x # 디버깅 모드 활성화
-          aws s3 ls $S3_BUCKET --region $S3_REGION # S3 접근 확인
+          aws s3 ls $S3_DEPLOY_BUCKET --region $S3_REGION # S3 접근 확인
           aws s3 cp \
            --recursive \
            --region $S3_REGION \
-           $BUILD_DIR $S3_BUCKET
+           $BUILD_DIR $S3_DEPLOY_BUCKET
