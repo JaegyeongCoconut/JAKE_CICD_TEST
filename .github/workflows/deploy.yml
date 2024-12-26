@@ -93,19 +93,18 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           ENVIRONMENT=${{ github.event.inputs.env }}
-          TARGET_BRANCH=""
+          FILE_PATH=""
           echo "Selected environment: $ENVIRONMENT"
 
           # S3에서 파일 다운로드
           if [[ "$ENVIRONMENT" == "dev" ]]; then
-            TARGET_BRANCH="develop"
+            FILE_PATH=".env.development"
             AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
           elif [[ "$ENVIRONMENT" == "prod" ]]; then
-            TARGET_BRANCH="main"
+            FILE_PATH=".env.production"
             AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
           fi
 
-          FILE_PATH=".env.$ENVIRONMENT"
           echo "Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH \
