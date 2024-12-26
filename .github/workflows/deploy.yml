@@ -4,9 +4,8 @@ on:
   workflow_dispatch: # 수동 실행 이벤트
     inputs:
       environment:
-        description: "Select environment (dev or prod)"
+        description: "Specify the environment (dev or prod)"
         required: true
-        default: "dev"
 
 jobs:
   run-job:
@@ -19,6 +18,15 @@ jobs:
         run: |
           echo "::error:: main 또는 develop 브랜치에서만 실행 가능합니다."
           exit 1
+
+      # 환경 입력값 검증 및 적절한 브랜치 설정
+      - name: Validate environment and set branch
+        id: validate_env
+        run: |
+          if [[ -z "${{ github.event.inputs.environment }}" ]]; then
+            echo "::error:: The 'environment' input is required but not provided."
+            exit 1
+          fi
 
       # 브랜치에 따른 권한 확인 및 실행
       - name: Authorization check
