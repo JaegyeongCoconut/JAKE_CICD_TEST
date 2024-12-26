@@ -103,6 +103,7 @@ jobs:
           elif [[ "$ENVIRONMENT" == "prod" ]]; then
             TARGET_BRANCH="main"
             AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
+          fi
 
           FILE_PATH=".env.$ENVIRONMENT"
           echo "Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
