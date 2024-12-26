@@ -47,6 +47,40 @@ jobs:
           fi
           echo "Branch validation passed: $CURRENT_BRANCH matches $TARGET_BRANCH."
 
+      # 배포 권한 확인
+      - name: Authorization check
+        env:
+          AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
+          AUTHORIZED_USERS_IN_DEVELOP: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
+        run: |
+          ENVIRONMENT=${{ github.event.inputs.environment }}
+          CURRENT_USER="${{ github.actor }}"
+
+          echo "Environment: $ENVIRONMENT"
+          echo "Current user: $CURRENT_USER"
+
+          # 환경에 따른 대상 브랜치 및 권한 설정
+          if [[ "$ENVIRONMENT" == "dev" ]]; then
+            TARGET_BRANCH="develop"
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
+          elif [[ "$ENVIRONMENT" == "prod" ]]; then
+            TARGET_BRANCH="main"
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_MAIN
+          else
+            echo "::error:: Invalid environment value: $ENVIRONMENT. Allowed values are 'dev' or 'prod'."
+            exit 1
+          fi
+
+          echo "Target branch: $TARGET_BRANCH"
+          echo "Authorized users: $AUTHORIZED_USERS"
+
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
+            echo "::error:: User '$CURRENT_USER' is not authorized to deploy to the $TARGET_BRANCH branch."
+            exit 1
+          fi
+
+          echo "User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
+
       # 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v3
