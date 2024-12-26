@@ -3,7 +3,7 @@ name: Manual Trigger Workflow
 on:
   workflow_dispatch: # 수동 실행 이벤트
     inputs:
-      environment:
+      env:
         description: "Specify the environment (dev or prod)"
         required: true
 
@@ -16,7 +16,7 @@ jobs:
       - name: Validate environment and set branch
         id: validate_env
         run: |
-          ENVIRONMENT=${{ github.event.inputs.environment }}
+          ENVIRONMENT=${{ github.event.inputs.env }}
           TARGET_BRANCH=""
 
           if [[ -z "$ENVIRONMENT" ]]; then
@@ -53,7 +53,7 @@ jobs:
           AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
           AUTHORIZED_USERS_IN_DEVELOP: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
         run: |
-          ENVIRONMENT=${{ github.event.inputs.environment }}
+          ENVIRONMENT=${{ github.event.inputs.env }}
           CURRENT_USER="${{ github.actor }}"
 
           echo "Environment: $ENVIRONMENT"
@@ -91,7 +91,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          ENVIRONMENT=${{ github.event.inputs.environment }}
+          ENVIRONMENT=${{ github.event.inputs.env }}
           echo "Selected environment: $ENVIRONMENT"
 
           # SSM에서 변수 로드  
