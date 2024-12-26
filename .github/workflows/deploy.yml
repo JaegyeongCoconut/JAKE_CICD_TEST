@@ -108,9 +108,6 @@ jobs:
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
           echo "✅ $FILE_PATH file downloaded and saved as '.env'."
 
-          # .env 파일을 임시 디렉터리에 저장
-          mv .env $GITHUB_WORKSPACE/.env
-
       # 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v3
