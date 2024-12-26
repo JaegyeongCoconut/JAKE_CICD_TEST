@@ -107,6 +107,7 @@ jobs:
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
           echo "✅ $FILE_PATH file downloaded and saved as '.env'."
+          pwd
 
       # 레포지토리 체크아웃
       - name: Checkout source code
@@ -115,6 +116,7 @@ jobs:
       # .env 파일 복원
       - name: Restore .env file
         run: |
+          pwd
           mv $GITHUB_WORKSPACE/.env .env
           echo "✅ .env file restored."
 
