@@ -107,6 +107,7 @@ jobs:
 
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
           echo "🚀 $FILE_PATH file downloaded and saved as '.env'."
+          ls -al
 
       # .env 파일 확인
       - name: Verify .env file
@@ -129,6 +130,7 @@ jobs:
       # React Build
       - name: Build
         run: |
+          ls -al
           set -a # 모든 export된 변수 자동 적용
           source .env # .env 파일의 내용을 환경 변수로 로드
           npm run build
