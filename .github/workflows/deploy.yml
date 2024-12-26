@@ -86,6 +86,10 @@ jobs:
 
           echo "🚀 User '$CURRENT_USER' is authorized to deploy to the $TARGET_BRANCH branch."
 
+      # 레포지토리 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
       # S3에서 환경 변수 파일 다운로드
       - name: Download .env file from S3
         env:
@@ -109,10 +113,6 @@ jobs:
           echo "✅ $FILE_PATH file downloaded and saved as '.env'."
           pwd
           ls -al
-
-      # 레포지토리 체크아웃
-      - name: Checkout source code
-        uses: actions/checkout@v3
 
       # 의존 파일 설치
       - name: Install Dependencies
