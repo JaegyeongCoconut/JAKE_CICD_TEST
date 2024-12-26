@@ -6,11 +6,6 @@ on:
 jobs:
   run-job:
     runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
-
-    env:
-      AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
-      AUTHORIZED_USERS_IN_DEVELOP: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
-
     steps:
       # main 또는 develop이 아닌 브랜치일 때 실패 처리
       - name: Check branch condition
@@ -21,6 +16,9 @@ jobs:
 
       # 브랜치에 따른 권한 확인 및 실행
       - name: Authorization check
+        env:
+          AUTHORIZED_USERS_IN_MAIN: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의. ,로 구분
+          AUTHORIZED_USERS_IN_DEVELOP: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의. ,로 구분
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEVELOP
@@ -37,10 +35,12 @@ jobs:
           fi
           echo "$BRANCH_NAME branch workflow triggered by ${{ github.actor }}"
 
-      - name: Checkout source code. # 레포지토리 체크아웃
+      # 레포지토리 체크아웃
+      - name: Checkout source code.
         uses: actions/checkout@v3
 
-      - name: Cache node modules # node modules 캐싱
+        # node modules 캐싱
+      - name: Cache node modules
         uses: actions/cache@v3
         with:
           path: node_modules # 프로젝트의 node_modules가 있는 경로로 설정
@@ -49,13 +49,16 @@ jobs:
             ${{ runner.OS }}-build-
             ${{ runner.OS }}-
 
-      - name: Install Dependencies # 의존 파일 설치
-        run: npm install # npm install을 실행할 경로로 설정
+      # 의존 파일 설치
+      - name: Install Dependencies
+        run: npm install
 
-      - name: Build # React Build
-        run: npm run build # npm run build를 실행할 경로로 설정
+      # React Build
+      - name: Build
+        run: npm run build
 
-      - name: Deploy # S3에 배포하기
+      # S3에 배포
+      - name: Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # IAM Access Key
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # IAM Secret Access Key
