@@ -107,7 +107,7 @@ jobs:
           FILE_PATH=".env.$ENVIRONMENT"
           echo "Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
 
-          aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
+          aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH --region $S3_REGION
           echo ".env file downloaded for environment: $ENVIRONMENT"
 
       # 레포지토리 체크아웃
