@@ -114,22 +114,24 @@ jobs:
           pwd
           ls -al
 
+      # .env 파일 유무 확인
+      - name: Check .env file
+        run: |
+          if [[ ! -f ".env" ]]; then
+            echo "🚨 ::error:: .env file is missing! Cannot proceed with the build."
+            exit 1
+          fi
+          echo "✅ .env file exists."
+
       # 의존 파일 설치
       - name: Install Dependencies
-        run: |
-          pwd
-          ls -al
-          npm install
+        run: npm install
 
       # React Build
       - name: Build
         run: |
           pwd
           ls -al
-          if [[ ! -f ".env" ]]; then
-            echo "🚨 ::error:: .env file is missing! Cannot proceed with the build."
-            exit 1
-          fi
           set -a # 모든 export된 변수 자동 적용
           source .env # .env 파일의 내용을 환경 변수로 로드
           npm run build
