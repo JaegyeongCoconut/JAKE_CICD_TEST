@@ -15,37 +15,31 @@ jobs:
       AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의
 
     steps:
-      # 현재 브랜치 확인 및 .env 파일 결정
-      - name: Determine .env file and branch
-        id: determine_env
+      # 현재 브랜치 확인
+      - name: Determine branch
+        id: determine_branch
         run: |
           CURRENT_BRANCH=$(echo "${{ github.ref_name }}")
-          FILE_PATH=""
-          AUTHORIZED_USERS=""
-
           echo "🚀 Current branch: $CURRENT_BRANCH"
 
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            FILE_PATH=".env.development"
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEV
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            FILE_PATH=".env.production"
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_PROD
-          else
+          if [[ "$CURRENT_BRANCH" != "$GITHUB_DEV_BRANCH" && "$CURRENT_BRANCH" != "$GITHUB_PROD_BRANCH" ]]; then
             echo "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH"
             exit 1
           fi
 
-          echo "FILE_PATH=$FILE_PATH" >> $GITHUB_ENV
-          echo "AUTHORIZED_USERS=$AUTHORIZED_USERS" >> $GITHUB_ENV
-          echo "✅ Selected .env file: $FILE_PATH"
-          echo "✅ Authorized users: $AUTHORIZED_USERS"
+          echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
 
       # 배포 권한 확인
       - name: Authorization check
         run: |
           CURRENT_USER="${{ github.actor }}"
-          AUTHORIZED_USERS="${AUTHORIZED_USERS}"
+          AUTHORIZED_USERS=""
+
+          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEV
+          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
+            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_PROD
+          fi
 
           echo "🚀 Current user: $CURRENT_USER"
           echo "🚀 Authorized users: $AUTHORIZED_USERS"
@@ -67,8 +61,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
+          FILE_PATH=""
+          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
+            FILE_PATH=".env.development"
+          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
+            FILE_PATH=".env.production"
+          fi
 
+          echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
           aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
           echo "✅ $FILE_PATH file downloaded and saved as '.env'."
 
