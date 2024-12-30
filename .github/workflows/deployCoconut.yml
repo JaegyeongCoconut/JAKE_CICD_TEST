@@ -20,8 +20,8 @@ jobs:
       S3_DEPLOY_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
       S3_ENV_BUCKET: "coconutsilo-env-dev" # NOTE: .env S3 버킷 이름
       S3_ENV_REGION: "ap-northeast-2" # NOTE: .env S3 버킷 리전
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
+      AWS_ACCESS_KEY_ID: ${{ secrets.COCONUT_AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
       # NOTE: 필수 입력 값 확인
