@@ -36,10 +36,14 @@ jobs:
       - name: Set github actions env
         run: |
           SERVICE_NAME="${{ github.event.inputs.SERVICE_NAME }}"
+          CURRENT_BRANCH=$(echo "${{ github.ref_name }}")
+
 
           echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
 
           echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
