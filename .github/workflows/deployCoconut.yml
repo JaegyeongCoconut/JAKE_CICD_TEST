@@ -41,6 +41,7 @@ jobs:
 
           echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
 
+      # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
         id: set_bucket
         run: |
@@ -50,7 +51,7 @@ jobs:
 
           echo "S3_DEPLOY_BUCKET=$S3_DEPLOY_BUCKET" >> $GITHUB_ENV
 
-      # NOTE: S3_DEPLOY_BUCKET_NAMES 내에 존재 여부 확인
+      # NOTE: CLI input SERVICE_NAME이 설정한 S3_DEPLOY_BUCKET_NAMES 내에 존재 여부 확인
       - name: Check S3 bucket existence
         id: check_bucket
         run: |
