@@ -32,7 +32,15 @@ jobs:
             exit 1
           fi
 
-      # NOTE: 접근할 배포 S3 버킷 설정
+      # NOTE: github actions env 설정
+      - name: Set github actions env
+        run: |
+          SERVICE_NAME="${{ github.event.inputs.SERVICE_NAME }}"
+
+          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_ENV
+
+          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+
       - name: Set deployment S3 bucket
         id: set_bucket
         run: |
