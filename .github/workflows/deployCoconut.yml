@@ -50,10 +50,18 @@ jobs:
           S3_DEPLOY_BUCKET_NAMES=${S3_DEPLOY_BUCKET_NAMES}
           S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_BUCKET_NAMES | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
 
+          echo "🚀 CURRENT_BRANCH: $CURRENT_BRANCH"
+          echo "🚀 GITHUB_DEV_BRANCH: $GITHUB_DEV_BRANCH"
+          echo "🚀 GITHUB_PROD_BRANCH: $GITHUB_PROD_BRANCH"
+
           if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
             S3_DEPLOY_BUCKET_SUFFIX="dev-s3"
+            echo "🚀 Current branch: $CURRENT_BRANCH"
+            echo "🚀 S3_DEPLOY_BUCKET_SUFFIX: $S3_DEPLOY_BUCKET_SUFFIX"
           elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
             S3_DEPLOY_BUCKET_SUFFIX="prd-s3"
+            echo "🚀 Current branch: $CURRENT_BRANCH"
+            echo "🚀 S3_DEPLOY_BUCKET_SUFFIX: $S3_DEPLOY_BUCKET_SUFFIX"
           fi
 
           S3_DEPLOY_BUCKET="$S3_DEPLOY_BUCKET_PREFIX-$S3_DEPLOY_BUCKET_SUFFIX"
