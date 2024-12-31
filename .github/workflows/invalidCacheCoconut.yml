@@ -30,8 +30,13 @@ jobs:
       # NOTE: github actions env 설정
       - name: Set github actions env
         run: |
-          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-          echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          if [ -n "${{ github.event.inputs.SERVICE_NAME }}" ]; then
+            echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+            echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          else
+            echo "SERVICE_NAME=${{ github.event.workflow_run.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+            echo "DEPLOY_ENV=${{ github.event.workflow_run.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          fi
 
           printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
           printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
