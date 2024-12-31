@@ -8,6 +8,9 @@ on:
       SERVICE_NAME:
         description: "Service name for deployment"
         required: true
+      DEPLOY_ENV:
+        description: "Deployment environment"
+        required: true
 
 jobs:
   run-job:
@@ -29,12 +32,14 @@ jobs:
       - name: Set github actions env
         run: |
           echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
           echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          printf "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
+          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          echo "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
+          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
 
-      # NOTE: 배포 실행 환경, 유효성 검사. main, develop 브랜치만 배포 가능
+      # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
         id: validate_branch
         run: |
@@ -43,17 +48,25 @@ jobs:
             exit 1
           fi
 
+      # NOTE: 배포 실행 환경 변수 명 검사
+      - name: Check deploy environment is valid
+        run: |
+          if [[ "$DEPLOY_ENV" != "dev" && "$DEPLOY_ENV" != "prod" ]]; then
+            printf "🚨 ::error:: Unsupported deploy environment: $DEPLOY_ENV"
+            exit 1
+          fi
+
       # NOTE: 배포 실행 환경에 대한 계정 권한 검증
       - name: Validate branch and authorization
         run: |
-          AUTHORIZED_USERS=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+          AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
 
           if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
             printf "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy."
             exit 1
           fi
 
-          printf "✅ User '$CURRENT_USER' is authorized to deploy to the $CURRENT_BRANCH branch."
+          printf "✅ User '$CURRENT_USER' is authorized to deploy to the $DEPLOY_ENV environment."
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
@@ -66,7 +79,7 @@ jobs:
             exit 1
           fi
 
-          S3_DEPLOY_BUCKET_SUFFIX=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev-s3" || echo "prd-s3")
+          S3_DEPLOY_BUCKET_SUFFIX=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev-s3" || echo "prd-s3")
           echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
           printf "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'"
 
@@ -81,7 +94,7 @@ jobs:
       # NOTE: 접근할 .env S3 버킷 및 파일 경로 설정
       - name: Set deployment .env file path
         run: |
-          ENV_FILE_NAME=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo ".env.development" || echo ".env.production")
+          ENV_FILE_NAME=$([[ "$DEPLOY_ENV" == "dev" ]] && echo ".env.development" || echo ".env.production")
           echo "ENV_S3_PATH=web/$SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
 
       # NOTE: s3 버킷 .env 파일 존재 여부 확인
@@ -114,7 +127,7 @@ jobs:
         run: |
           set -a
           # source $ENV_FILE_NAME
-          # npm run $([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "build" || echo "build-prod")
+          # npm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod")
 
           source .env
           npm run build
@@ -122,7 +135,7 @@ jobs:
       # S3에 배포
       - name: Deploy
         run: |
-          # BUILD_DIR="build-$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+          # BUILD_DIR="build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
 
           BUILD_DIR="dist"
 
