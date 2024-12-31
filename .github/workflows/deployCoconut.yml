@@ -24,19 +24,23 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
+      # NOTE: github actions env 설정
+      - name: Set github actions env
+        run: |
+          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+
+          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
+
       # NOTE: 배포 실행 환경, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
         id: validate_branch
         run: |
-          CURRENT_BRANCH=$(echo "${{ github.ref_name }}")
-          echo "🚀 Current branch: $CURRENT_BRANCH"
-
           if [[ "$CURRENT_BRANCH" != "$GITHUB_DEV_BRANCH" && "$CURRENT_BRANCH" != "$GITHUB_PROD_BRANCH" ]]; then
             echo "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH"
             exit 1
           fi
-
-          echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
 
       # NOTE: 배포 실행 환경에 대한 계정 권한 검증
       - name: Validate branch and authorization
@@ -49,15 +53,6 @@ jobs:
           fi
 
           echo "✅ User '$CURRENT_USER' is authorized to deploy to the $CURRENT_BRANCH branch."
-
-      # NOTE: github actions env 설정
-      - name: Set github actions env
-        run: |
-          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
-
-          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
