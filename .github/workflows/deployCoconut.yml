@@ -4,7 +4,7 @@ name: KOKKOK WEB Service Deploy
 on:
   workflow_dispatch: # NOTE: 수동 실행 이벤트
     inputs:
-      SERVICE_NAME:
+      CURRENT_SERVICE_NAME:
         description: "Service name for deployment"
         required: true
 
@@ -15,75 +15,50 @@ jobs:
       GITHUB_PROD_BRANCH: main # NOTE: 운영 배포 브랜치 이름
       GITHUB_DEV_BRANCH: develop # NOTE: 개발 배포 브랜치 이름
       AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut, Hyyunjin, CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분
-      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut, Hyyunjin, CoconutJiyong, HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분'
-      S3_DEPLOY_BUCKET_NAMES: '{"carAdmin": "kk-car-admin-web", "carInspection": "kk-car-inspection-web", "eCommerceAdmin": "kk-ecomm-admin-web", "logisticsAdmin": "kk-logi-carriers-web"}' # NOTE: 서비스별 S3 버킷 목록. JSON 형태로 작성
-      S3_DEPLOY_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
-      S3_ENV_BUCKET: "coconutsilo-env-dev" # NOTE: .env S3 버킷 이름
-      S3_ENV_REGION: "ap-northeast-2" # NOTE: .env S3 버킷 리전
-      AWS_ACCESS_KEY_ID: ${{ secrets.COCONUT_AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
+      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut, Hyyunjin, CoconutJiyong, HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분
+      S3_DEPLOY_SERVICES_BUCKETS: '{"carAdmin": "kk-car-admin-web", "carInspection": "kk-car-inspection-web", "eCommerceAdmin": "kk-ecomm-admin-web", "logisticsAdmin": "kk-logi-carriers-web"}' # NOTE: 서비스별 S3 버킷 목록. JSON 형태로 작성
+      S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
+      S3_ENV_BUCKET_NAME: "coconutsilo-env-dev" # NOTE: .env S3 버킷 이름
+      S3_ENV_BUCKET_REGION: "ap-northeast-2" # NOTE: .env S3 버킷 리전
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
       # NOTE: 필수 입력 값 확인
       - name: Check required inputs
         run: |
-          if [ -z "${{ github.event.inputs.SERVICE_NAME }}" ]; then
-            echo "🚨 ::error:: SERVICE_NAME input is required"
+          if [ -z "${{ github.event.inputs.CURRENT_SERVICE_NAME }}" ]; then
+            echo "🚨 ::error:: CURRENT_SERVICE_NAME input is required"
             exit 1
           fi
 
       # NOTE: github actions env 설정
       - name: Set github actions env
         run: |
-          SERVICE_NAME="${{ github.event.inputs.SERVICE_NAME }}"
-          CURRENT_BRANCH=$(echo "${{ github.ref_name }}")
+          echo "CURRENT_SERVICE_NAME=${{ github.event.inputs.CURRENT_SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-
-          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_ENV
-          echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
-
-          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          echo "✅ Set env in github actions 'CURRENT_SERVICE_NAME' is '$CURRENT_SERVICE_NAME'"
           echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
         id: set_bucket
         run: |
-          S3_DEPLOY_BUCKET=""
-          S3_DEPLOY_BUCKET_SUFFIX=""
-          S3_DEPLOY_BUCKET_NAMES=${S3_DEPLOY_BUCKET_NAMES}
-          S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_BUCKET_NAMES | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
+          S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg CURRENT_SERVICE_NAME "$CURRENT_SERVICE_NAME" '.[$CURRENT_SERVICE_NAME]')
+          S3_DEPLOY_BUCKET_SUFFIX=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev-s3" || echo "prd-s3")
+          echo "S3_DEPLOY_BUCKET=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
 
-          echo "🚀 CURRENT_BRANCH: $CURRENT_BRANCH"
-          echo "🚀 GITHUB_DEV_BRANCH: $GITHUB_DEV_BRANCH"
-          echo "🚀 GITHUB_PROD_BRANCH: $GITHUB_PROD_BRANCH"
-
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            S3_DEPLOY_BUCKET_SUFFIX="dev-s3"
-            echo "🚀 Current branch: $CURRENT_BRANCH"
-            echo "🚀 S3_DEPLOY_BUCKET_SUFFIX: $S3_DEPLOY_BUCKET_SUFFIX"
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            S3_DEPLOY_BUCKET_SUFFIX="prd-s3"
-            echo "🚀 Current branch: $CURRENT_BRANCH"
-            echo "🚀 S3_DEPLOY_BUCKET_SUFFIX: $S3_DEPLOY_BUCKET_SUFFIX"
-          fi
-
-          S3_DEPLOY_BUCKET="$S3_DEPLOY_BUCKET_PREFIX-$S3_DEPLOY_BUCKET_SUFFIX"
-          echo "🚀 S3_DEPLOY_BUCKET_PREFIX: $S3_DEPLOY_BUCKET_PREFIX"
-          echo "🚀 S3_DEPLOY_BUCKET_SUFFIX: $S3_DEPLOY_BUCKET_SUFFIX"
-          echo "🚀 S3_DEPLOY_BUCKET: $S3_DEPLOY_BUCKET"
-          echo "S3_DEPLOY_BUCKET=$S3_DEPLOY_BUCKET" >> $GITHUB_ENV
-
-      # NOTE: CLI input SERVICE_NAME이 설정한 S3_DEPLOY_BUCKET_NAMES 내에 존재 여부 확인
+      # NOTE: CLI input SERVICE_NAME이 설정한 S3_DEPLOY_SERVICES_BUCKETS 내에 존재 여부 확인
       - name: Check S3 bucket existence
         id: check_bucket
         run: |
-          if [ -z "${S3_DEPLOY_BUCKET}" ]; then
-            echo "🚨 ::error:: No S3 bucket found for service: $SERVICE_NAME in $S3_DEPLOY_BUCKET_NAMES"
+          if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
+            echo "🚨 ::error:: Invalid service name: $CURRENT_SERVICE_NAME"
             exit 1
           fi
 
-          echo "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET'"
+          echo "✅ S3 bucket for service '$CURRENT_SERVICE_NAME' is '$S3_DEPLOY_BUCKET'"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
@@ -99,23 +74,13 @@ jobs:
 
           echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
 
-      # NOTE: 워크플로 실행 계정의 배포 권한 확인
-      - name: Authorization check
+          # NOTE: 배포 실행 브랜치 및 권한 검증
+      - name: Validate branch and authorization
         run: |
-          CURRENT_USER="${{ github.actor }}"
-          AUTHORIZED_USERS=""
+          AUTHORIZED_USERS=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
 
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEV
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_PROD
-          fi
-
-          echo "🚀 Current user: $CURRENT_USER"
-          echo "🚀 Authorized users: $AUTHORIZED_USERS"
-
-          if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
-            echo "🚨 ::error:: User '$CURRENT_USER' is not authorized to deploy to the $CURRENT_BRANCH branch."
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+            echo "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy."
             exit 1
           fi
 
@@ -124,40 +89,25 @@ jobs:
       # NOTE: 배포 S3 버킷 존재 여부 확인
       - name: Check deployment S3 bucket existence
         run: |
-          set -x # 디버깅 모드 활성화
-          aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET --region $S3_DEPLOY_REGION
-          if [ $? -ne 0 ]; then
-            echo "🚨 ::error:: The S3 bucket '$S3_DEPLOY_BUCKET' does not exist or you do not have access."
+          aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET --region $S3_DEPLOY_BUCKET_REGION || {
+            echo "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET' does not exist."
             exit 1
-          fi
-          echo "✅ S3 bucket '$S3_DEPLOY_BUCKET' exists and is accessible."
+          }
 
-      # NOTE: 접근할 .env S3 버킷 및 경로 설정
-      - name: Set deployment .env S3 bucket and path
+      # NOTE: 접근할 .env S3 버킷 및 파일 경로 설정
+      - name: Set deployment .env file path
         run: |
-          SERVICE_NAME="${{ github.event.inputs.SERVICE_NAME }}"
-          ENV_FILE_NAME=""
-          ENV_S3_PATH=""
-
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            ENV_FILE_NAME=".env.development"
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            ENV_FILE_NAME=".env.production"
-          fi
-
-          ENV_S3_PATH="web/$SERVICE_NAME/$ENV_FILE_NAME"
-          echo "ENV_S3_PATH=$ENV_S3_PATH" >> $GITHUB_ENV
+          ENV_FILE_NAME=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo ".env.development" || echo ".env.production")
+          echo "ENV_S3_PATH=web/$CURRENT_SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
 
       # NOTE: .env 파일 존재 여부 확인
       - name: Check .env file existence
         run: |
-          set -x # 디버깅 모드 활성화
-          aws s3api head-object --bucket $S3_ENV_BUCKET --key $ENV_S3_PATH --region $S3_ENV_REGION
-          if [ $? -ne 0 ]; then
-            echo "🚨 ::error:: The .env file '$ENV_S3_PATH' does not exist in the S3 bucket '$S3_ENV_BUCKET'."
+          aws s3api head-object --bucket $S3_ENV_BUCKET_NAME --key $ENV_S3_PATH --region $S3_ENV_BUCKET_REGION || {
+            echo "🚨 ::error:: .env file '$ENV_S3_PATH' does not exist in bucket '$S3_ENV_BUCKET_NAME'."
             exit 1
-          fi
-          echo "✅ .env file '$ENV_S3_PATH' exists in the S3 bucket '$S3_ENV_BUCKET'."
+          }
+          echo "✅ .env file '$ENV_S3_PATH' exists in the S3 bucket '$S3_ENV_BUCKET_NAME'."
 
       # NOTE: 레포지토리 체크아웃
       - name: Checkout source code
@@ -166,12 +116,8 @@ jobs:
       # NOTE: S3에서 환경 변수 파일 다운로드
       - name: Download .env file from S3
         run: |
-          echo "🚀 Downloading .env file from S3: $ENV_S3_PATH"
-          # aws s3 cp s3://$S3_ENV_BUCKET/$ENV_S3_PATH . --region $S3_ENV_REGION
-          # echo "✅ $ENV_FILE_NAME file downloaded and saved"
-
-          aws s3 cp s3://$S3_ENV_BUCKET/$ENV_S3_PATH .env --region $S3_ENV_REGION
-          echo "✅ $ENV_FILE_NAME file downloaded and saved as '.env'."
+          aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH . --region $S3_ENV_BUCKET_REGION
+          echo "✅ $ENV_FILE_NAME file downloaded and saved"
 
       # 의존 파일 설치
       - name: Install Dependencies
@@ -180,35 +126,12 @@ jobs:
       # React Build
       - name: Build
         run: |
-          set -a # 모든 export된 변수 자동 적용
-          # source $ENV_FILE_NAME # .env 파일의 내용을 환경 변수로 로드
-          source .env
-
-          # if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-          #   npm run build
-          # elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-          #   npm run build-prod
-          # fi
-
-          npm run build
+          set -a
+          source $ENV_FILE_NAME
+          npm run $([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "build" || echo "build-prod")
 
       # S3에 배포
       - name: Deploy
         run: |
-          # BUILD_DIR="" 
-
-          # if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-          #   BUILD_DIR="build-dev-$SERVICE_NAME" 
-          # elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-          #   BUILD_DIR="build-prod-$SERVICE_NAME" 
-          # fi
-
-          BUILD_DIR="dist"
-
-          set -x # 디버깅 모드 활성화
-          aws s3 ls s3://$S3_DEPLOY_BUCKET --region $S3_DEPLOY_REGION # S3 접근 확인
-
-          aws s3 cp \
-            --recursive \
-            --region $S3_DEPLOY_REGION \
-            $BUILD_DIR s3://$S3_DEPLOY_BUCKET/
+          BUILD_DIR="build-$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev" || echo "prod")-$CURRENT_SERVICE_NAME"
+          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET
