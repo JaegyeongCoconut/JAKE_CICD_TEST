@@ -30,14 +30,14 @@ jobs:
       # NOTE: github actions env 설정
       - name: Set github actions env
         run: |
-          if [ -n "${{ github.event.inputs.SERVICE_NAME }}" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
             echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
-            echo "내부"
-          else
+            printf "내부"
+          elif [ "${{ github.event_name }}" == "workflow_run" ]; then
             echo "SERVICE_NAME=${{ github.event.workflow_run.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
             echo "DEPLOY_ENV=${{ github.event.workflow_run.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
-            echo "외부"
+            printf "외부"
           fi
 
           printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
@@ -68,6 +68,9 @@ jobs:
         run: |
           DISTRIBUTION_ID=$(echo $CLOUD_FRONT_SERVICES | jq -r --arg SERVICE_NAME "$SERVICE_NAME" --arg DEPLOY_ENV "$DEPLOY_ENV" '.[$SERVICE_NAME + "-" + $DEPLOY_ENV]')
 
+          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
+
           if [ -z "$DISTRIBUTION_ID" ]; then
             printf "🚨 ::error:: No CloudFront distribution ID found for service '$SERVICE_NAME' and environment '$DEPLOY_ENV'"
             exit 1
@@ -76,12 +79,12 @@ jobs:
           echo "DISTRIBUTION_ID=${DISTRIBUTION_ID}" >> $GITHUB_ENV
           printf "✅ CloudFront distribution '$DISTRIBUTION_ID' is valid."
 
-      # # NOTE: CloudFront 캐시 무효화 실행
-      # - name: Invalidate CloudFront Cache
-      #   run: |
-      #     echo "🚀 Invalidating cache for CloudFront distribution: $DISTRIBUTION_ID"
-      #     aws cloudfront create-invalidation \
-      #       --distribution-id $DISTRIBUTION_ID \
-      #       --paths "/*"
+      # NOTE: CloudFront 캐시 무효화 실행
+      - name: Invalidate CloudFront Cache
+        run: |
+          echo "🚀 Invalidating cache for CloudFront distribution: $DISTRIBUTION_ID"
+          aws cloudfront create-invalidation \
+            --distribution-id $DISTRIBUTION_ID \
+            --paths "/*"
 
-      #     printf "✅ Cache invalidated for distribution ID: $DISTRIBUTION_ID"
+          printf "✅ Cache invalidated for distribution ID: $DISTRIBUTION_ID"
