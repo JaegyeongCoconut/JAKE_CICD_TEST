@@ -141,3 +141,8 @@ jobs:
           set -x # 디버깅 모드 활성화
           aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
+
+      # 완료 상태 출력
+      - name: Set output
+        id: set_output
+        run: echo "::set-output name=status::completed"
