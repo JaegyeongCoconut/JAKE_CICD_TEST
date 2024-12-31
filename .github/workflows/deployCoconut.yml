@@ -46,18 +46,14 @@ jobs:
         id: set_bucket
         run: |
           S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
-          S3_DEPLOY_BUCKET_SUFFIX=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev-s3" || echo "prd-s3")
-          echo "S3_DEPLOY_BUCKET=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
 
-      # NOTE: CLI input SERVICE_NAME이 설정한 S3_DEPLOY_SERVICES_BUCKETS 내에 존재 여부 확인
-      - name: Check S3 bucket existence
-        id: check_bucket
-        run: |
           if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
             echo "🚨 ::error:: Invalid service name: $SERVICE_NAME"
             exit 1
           fi
 
+          S3_DEPLOY_BUCKET_SUFFIX=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev-s3" || echo "prd-s3")
+          echo "S3_DEPLOY_BUCKET=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
           echo "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET'"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
