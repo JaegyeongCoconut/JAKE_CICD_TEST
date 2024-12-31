@@ -36,8 +36,8 @@ jobs:
             echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
             echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            SERVICE_NAME="${{ github.event.workflow_run.inputs.SERVICE_NAME }}"
-            DEPLOY_ENV="${{ github.event.workflow_run.inputs.DEPLOY_ENV }}"
+            SERVICE_NAME="${{ github.event.workflow_run.outputs.SERVICE_NAME }}"
+            DEPLOY_ENV="${{ github.event.workflow_run.outputs.DEPLOY_ENV }}"
             echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
             echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
           fi

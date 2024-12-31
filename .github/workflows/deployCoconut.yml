@@ -15,6 +15,10 @@ on:
 jobs:
   run-job:
     runs-on: ubuntu-latest # NOTE: 워크플로를 실행할 환경 설정
+    outputs:
+      SERVICE_NAME: ${{ steps.set_output.outputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ steps.set_output.outputs.DEPLOY_ENV }}
+
     env:
       AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
       AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut,Hyyunjin,CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
@@ -146,8 +150,8 @@ jobs:
       - name: Set outputs for next workflow
         id: set_outputs
         run: |
-          echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
-          echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
+          echo "::set-output name=SERVICE_NAME::${{ github.event.inputs.SERVICE_NAME }}"
+          echo "::set-output name=DEPLOY_ENV::${{ github.event.inputs.DEPLOY_ENV }}"
           echo "status=completed" >> $GITHUB_ENV
         env:
           SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
