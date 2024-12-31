@@ -53,8 +53,8 @@ jobs:
           fi
 
           S3_DEPLOY_BUCKET_SUFFIX=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev-s3" || echo "prd-s3")
-          echo "S3_DEPLOY_BUCKET=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
-          echo "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET'"
+          echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
+          echo "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
@@ -85,8 +85,8 @@ jobs:
       # NOTE: 배포 S3 버킷 존재 여부 확인
       - name: Check deployment S3 bucket existence
         run: |
-          aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET --region $S3_DEPLOY_BUCKET_REGION || {
-            echo "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET' does not exist."
+          aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
+            echo "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET_NAME' does not exist."
             exit 1
           }
 
@@ -139,5 +139,5 @@ jobs:
           BUILD_DIR="dist"
 
           set -x # 디버깅 모드 활성화
-          aws s3 ls s3://$S3_DEPLOY_BUCKET --region $S3_DEPLOY_REGION # S3 접근 확인
-          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET
+          aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
+          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
