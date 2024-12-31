@@ -29,8 +29,8 @@ jobs:
           echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
           echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
 
-          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          echo "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
+          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
 
       # NOTE: 배포 실행 환경 변수 명 검사
       - name: Check deploy environment is valid
@@ -58,11 +58,11 @@ jobs:
           DISTRIBUTION_ID=$(echo $CLOUD_FRONT_SERVICES | jq -r --arg SERVICE_NAME "$SERVICE_NAME" --arg DEPLOY_ENV "$DEPLOY_ENV" '.[$SERVICE_NAME + "-" + $DEPLOY_ENV]')
 
           if [ -z "$DISTRIBUTION_ID" ]; then
-            echo "🚨 ::error:: No CloudFront distribution ID found for service '$SERVICE_NAME' and environment '$DEPLOY_ENV'"
+            printf "🚨 ::error:: No CloudFront distribution ID found for service '$SERVICE_NAME' and environment '$DEPLOY_ENV'"
             exit 1
           fi
 
-          echo "✅ CloudFront distribution '$DISTRIBUTION_ID' is valid."
+          printf "✅ CloudFront distribution '$DISTRIBUTION_ID' is valid."
 
       # NOTE: CloudFront 캐시 무효화 실행
       - name: Invalidate CloudFront Cache
@@ -72,4 +72,4 @@ jobs:
             --distribution-id $DISTRIBUTION_ID \
             --paths "/*"
 
-          echo "✅ Cache invalidated for distribution ID: $DISTRIBUTION_ID"
+          printf "✅ Cache invalidated for distribution ID: $DISTRIBUTION_ID"
