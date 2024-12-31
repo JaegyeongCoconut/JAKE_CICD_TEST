@@ -34,16 +34,16 @@ jobs:
           echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
           echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          echo "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
-          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
+          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'\n"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'\n"
+          printf "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'\n"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
         id: validate_branch
         run: |
           if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
-            printf "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH"
+            printf "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH\n"
             exit 1
           fi
 
@@ -51,7 +51,7 @@ jobs:
       - name: Check deploy environment is valid
         run: |
           if [[ "$DEPLOY_ENV" != "dev" && "$DEPLOY_ENV" != "prod" ]]; then
-            printf "🚨 ::error:: Unsupported deploy environment: $DEPLOY_ENV"
+            printf "🚨 ::error:: Unsupported deploy environment: $DEPLOY_ENV\n"
             exit 1
           fi
 
@@ -61,11 +61,11 @@ jobs:
           AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
 
           if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
-            printf "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy."
+            printf "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy.\n"
             exit 1
           fi
 
-          printf "✅ User '${{ github.actor }}' is authorized to deploy to the $DEPLOY_ENV environment."
+          printf "✅ User '${{ github.actor }}' is authorized to deploy to the $DEPLOY_ENV environment.\n"
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
@@ -74,19 +74,19 @@ jobs:
           S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
 
           if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
-            printf "🚨 ::error:: Invalid service name: $SERVICE_NAME"
+            printf "🚨 ::error:: Invalid service name: $SERVICE_NAME\n"
             exit 1
           fi
 
           S3_DEPLOY_BUCKET_SUFFIX=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev-s3" || echo "prd-s3")
           echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
-          printf "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'"
+          printf "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'\n"
 
       # NOTE: 배포 S3 버킷 존재 여부 확인
       - name: Check deployment S3 bucket existence
         run: |
           aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
-            printf "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET_NAME' does not exist."
+            printf "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET_NAME' does not exist.\n"
             exit 1
           }
 
@@ -100,10 +100,10 @@ jobs:
       - name: Check .env file existence
         run: |
           aws s3api head-object --bucket $S3_ENV_BUCKET_NAME --key $ENV_S3_PATH --region $S3_ENV_BUCKET_REGION || {
-            printf "🚨 ::error:: .env file '$ENV_S3_PATH' does not exist in bucket '$S3_ENV_BUCKET_NAME'."
+            printf "🚨 ::error:: .env file '$ENV_S3_PATH' does not exist in bucket '$S3_ENV_BUCKET_NAME'.\n"
             exit 1
           }
-          printf "✅ .env file '$ENV_S3_PATH' exists in the S3 bucket '$S3_ENV_BUCKET_NAME'."
+          printf "✅ .env file '$ENV_S3_PATH' exists in the S3 bucket '$S3_ENV_BUCKET_NAME'.\n"
 
       # NOTE: 레포지토리 체크아웃
       - name: Checkout source code
@@ -113,9 +113,9 @@ jobs:
       - name: Download .env file from S3
         run: |
           # aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH . --region $S3_ENV_BUCKET_REGION
-          # printf "✅ $ENV_FILE_NAME file downloaded and saved "
+          # printf "✅ $ENV_FILE_NAME file downloaded and saved \n"
           aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH .env --region $S3_ENV_BUCKET_REGION
-          printf "✅ $ENV_FILE_NAME file downloaded and saved as '.env'."
+          printf "✅ $ENV_FILE_NAME file downloaded and saved as '.env'.\n"
 
       # 의존 파일 설치
       - name: Install Dependencies
