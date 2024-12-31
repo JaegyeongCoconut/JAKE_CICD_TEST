@@ -20,8 +20,8 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
       S3_ENV_BUCKET_NAME: "coconutsilo-env-dev" # NOTE: .env S3 버킷 이름
       S3_ENV_BUCKET_REGION: "ap-northeast-2" # NOTE: .env S3 버킷 리전
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
+      AWS_ACCESS_KEY_ID: ${{ secrets.COCONUT_AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
       # NOTE: 필수 입력 값 확인
@@ -116,8 +116,10 @@ jobs:
       # NOTE: S3에서 환경 변수 파일 다운로드
       - name: Download .env file from S3
         run: |
-          aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH . --region $S3_ENV_BUCKET_REGION
-          echo "✅ $ENV_FILE_NAME file downloaded and saved"
+          # aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH . --region $S3_ENV_BUCKET_REGION
+          # echo "✅ $ENV_FILE_NAME file downloaded and saved "
+          aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH .env --region $S3_ENV_BUCKET_REGION
+          echo "✅ $ENV_FILE_NAME file downloaded and saved as '.env'."
 
       # 의존 파일 설치
       - name: Install Dependencies
@@ -127,11 +129,19 @@ jobs:
       - name: Build
         run: |
           set -a
-          source $ENV_FILE_NAME
-          npm run $([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "build" || echo "build-prod")
+          # source $ENV_FILE_NAME
+          # npm run $([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "build" || echo "build-prod")
+
+          source .env
+          npm run build
 
       # S3에 배포
       - name: Deploy
         run: |
-          BUILD_DIR="build-$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev" || echo "prod")-$CURRENT_SERVICE_NAME"
+          # BUILD_DIR="build-$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev" || echo "prod")-$CURRENT_SERVICE_NAME"
+
+          BUILD_DIR="dist"
+
+          set -x # 디버깅 모드 활성화
+          aws s3 ls s3://$S3_DEPLOY_BUCKET --region $S3_DEPLOY_REGION # S3 접근 확인
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET
