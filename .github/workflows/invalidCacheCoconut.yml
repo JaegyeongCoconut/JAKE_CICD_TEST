@@ -31,17 +31,19 @@ jobs:
       - name: Set github actions env
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-            echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
-            printf "내부"
+            SERVICE_NAME="${{ github.event.inputs.SERVICE_NAME }}"
+            DEPLOY_ENV="${{ github.event.inputs.DEPLOY_ENV }}"
+            echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
+            echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            echo "SERVICE_NAME=${{ github.event.workflow_run.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-            echo "DEPLOY_ENV=${{ github.event.workflow_run.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
-            printf "외부"
+            SERVICE_NAME="${{ github.event.workflow_run.inputs.SERVICE_NAME }}"
+            DEPLOY_ENV="${{ github.event.workflow_run.inputs.DEPLOY_ENV }}"
+            echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
+            echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
           fi
 
-          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
+          printf "✅ Set env in github actions 'SERVICE_NAME' is '${SERVICE_NAME}'"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is '${DEPLOY_ENV}'"
 
       # NOTE: 배포 실행 환경 변수 명 검사
       - name: Check deploy environment is valid
@@ -67,9 +69,6 @@ jobs:
       - name: Set CloudFront distribution ID + Check CloudFront object existence
         run: |
           DISTRIBUTION_ID=$(echo $CLOUD_FRONT_SERVICES | jq -r --arg SERVICE_NAME "$SERVICE_NAME" --arg DEPLOY_ENV "$DEPLOY_ENV" '.[$SERVICE_NAME + "-" + $DEPLOY_ENV]')
-
-          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'"
 
           if [ -z "$DISTRIBUTION_ID" ]; then
             printf "🚨 ::error:: No CloudFront distribution ID found for service '$SERVICE_NAME' and environment '$DEPLOY_ENV'"
