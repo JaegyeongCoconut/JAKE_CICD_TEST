@@ -4,7 +4,7 @@ name: KOKKOK WEB Service Deploy
 on:
   workflow_dispatch: # NOTE: 수동 실행 이벤트
     inputs:
-      CURRENT_SERVICE_NAME:
+      SERVICE_NAME:
         description: "Service name for deployment"
         required: true
 
@@ -27,25 +27,25 @@ jobs:
       # NOTE: 필수 입력 값 확인
       - name: Check required inputs
         run: |
-          if [ -z "${{ github.event.inputs.CURRENT_SERVICE_NAME }}" ]; then
-            echo "🚨 ::error:: CURRENT_SERVICE_NAME input is required"
+          if [ -z "${{ github.event.inputs.SERVICE_NAME }}" ]; then
+            echo "🚨 ::error:: SERVICE_NAME input is required"
             exit 1
           fi
 
       # NOTE: github actions env 설정
       - name: Set github actions env
         run: |
-          echo "CURRENT_SERVICE_NAME=${{ github.event.inputs.CURRENT_SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
           echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-          echo "✅ Set env in github actions 'CURRENT_SERVICE_NAME' is '$CURRENT_SERVICE_NAME'"
+          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
           echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
         id: set_bucket
         run: |
-          S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg CURRENT_SERVICE_NAME "$CURRENT_SERVICE_NAME" '.[$CURRENT_SERVICE_NAME]')
+          S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
           S3_DEPLOY_BUCKET_SUFFIX=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev-s3" || echo "prd-s3")
           echo "S3_DEPLOY_BUCKET=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
 
@@ -54,11 +54,11 @@ jobs:
         id: check_bucket
         run: |
           if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
-            echo "🚨 ::error:: Invalid service name: $CURRENT_SERVICE_NAME"
+            echo "🚨 ::error:: Invalid service name: $SERVICE_NAME"
             exit 1
           fi
 
-          echo "✅ S3 bucket for service '$CURRENT_SERVICE_NAME' is '$S3_DEPLOY_BUCKET'"
+          echo "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET'"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
@@ -98,7 +98,7 @@ jobs:
       - name: Set deployment .env file path
         run: |
           ENV_FILE_NAME=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo ".env.development" || echo ".env.production")
-          echo "ENV_S3_PATH=web/$CURRENT_SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
+          echo "ENV_S3_PATH=web/$SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
 
       # NOTE: .env 파일 존재 여부 확인
       - name: Check .env file existence
@@ -138,7 +138,7 @@ jobs:
       # S3에 배포
       - name: Deploy
         run: |
-          # BUILD_DIR="build-$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev" || echo "prod")-$CURRENT_SERVICE_NAME"
+          # BUILD_DIR="build-$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
 
           BUILD_DIR="dist"
 
