@@ -167,8 +167,11 @@ jobs:
       - name: Download .env file from S3
         run: |
           echo "🚀 Downloading .env file from S3: $ENV_S3_PATH"
-          aws s3 cp s3://$S3_ENV_BUCKET/$ENV_S3_PATH . --region $S3_ENV_REGION
-          echo "✅ $ENV_FILE_NAME file downloaded and saved"
+          # aws s3 cp s3://$S3_ENV_BUCKET/$ENV_S3_PATH . --region $S3_ENV_REGION
+          # echo "✅ $ENV_FILE_NAME file downloaded and saved"
+
+          aws s3 cp s3://$S3_ENV_BUCKET/$ENV_S3_PATH .env --region $S3_ENV_REGION
+          echo "✅ $ENV_FILE_NAME file downloaded and saved as '.env'."
 
       # 의존 파일 설치
       - name: Install Dependencies
@@ -178,24 +181,29 @@ jobs:
       - name: Build
         run: |
           set -a # 모든 export된 변수 자동 적용
-          source $ENV_FILE_NAME # .env 파일의 내용을 환경 변수로 로드
+          # source $ENV_FILE_NAME # .env 파일의 내용을 환경 변수로 로드
+          source .env
 
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            npm run build
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            npm run build-prod
-          fi
+          # if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
+          #   npm run build
+          # elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
+          #   npm run build-prod
+          # fi
+
+          npm run build
 
       # S3에 배포
       - name: Deploy
         run: |
-          BUILD_DIR="" 
+          # BUILD_DIR="" 
 
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            BUILD_DIR="build-dev-$SERVICE_NAME" 
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            BUILD_DIR="build-prod-$SERVICE_NAME" 
-          fi
+          # if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
+          #   BUILD_DIR="build-dev-$SERVICE_NAME" 
+          # elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
+          #   BUILD_DIR="build-prod-$SERVICE_NAME" 
+          # fi
+
+          BUILD_DIR="dist"
 
           set -x # 디버깅 모드 활성화
           aws s3 ls s3://$S3_DEPLOY_BUCKET --region $S3_DEPLOY_REGION # S3 접근 확인
