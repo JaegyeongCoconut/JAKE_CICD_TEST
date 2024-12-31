@@ -142,7 +142,13 @@ jobs:
           aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
 
-      # 완료 상태 출력
-      - name: Set output
-        id: set_output
-        run: echo "::set-output name=status::completed"
+      # 완료 상태와 추가 데이터 출력
+      - name: Set outputs for next workflow
+        id: set_outputs
+        run: |
+          echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
+          echo "status=completed" >> $GITHUB_ENV
+        env:
+          SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+          DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
