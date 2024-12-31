@@ -62,6 +62,7 @@ jobs:
             exit 1
           fi
 
+          echo "DISTRIBUTION_ID=${DISTRIBUTION_ID}" >> $GITHUB_ENV
           printf "✅ CloudFront distribution '$DISTRIBUTION_ID' is valid."
 
       # NOTE: CloudFront 캐시 무효화 실행
