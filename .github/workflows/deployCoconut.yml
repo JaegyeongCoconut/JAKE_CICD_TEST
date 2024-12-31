@@ -16,8 +16,7 @@ jobs:
   run-job:
     runs-on: ubuntu-latest # NOTE: 워크플로를 실행할 환경 설정
     env:
-      GITHUB_PROD_BRANCH: main # NOTE: 운영 배포 브랜치 이름
-      GITHUB_DEV_BRANCH: develop # NOTE: 개발 배포 브랜치 이름
+      AUTHORIZED_BRANCHES: "main, develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분
       AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut, Hyyunjin, CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분
       AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut, Hyyunjin, CoconutJiyong, HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분
       S3_DEPLOY_SERVICES_BUCKETS: '{"carAdmin": "kk-car-admin-web", "carInspection": "kk-car-inspection-web", "eCommerceAdmin": "kk-ecomm-admin-web", "logisticsAdmin": "kk-logi-carriers-web"}' # NOTE: 서비스별 S3 버킷 목록. JSON 형태로 작성
@@ -43,7 +42,7 @@ jobs:
       - name: Check branch is valid
         id: validate_branch
         run: |
-          if [[ "$CURRENT_BRANCH" != "$GITHUB_DEV_BRANCH" && "$CURRENT_BRANCH" != "$GITHUB_PROD_BRANCH" ]]; then
+          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
             printf "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH"
             exit 1
           fi
