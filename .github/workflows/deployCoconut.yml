@@ -65,7 +65,7 @@ jobs:
             exit 1
           fi
 
-          printf "✅ User '$CURRENT_USER' is authorized to deploy to the $DEPLOY_ENV environment."
+          printf "✅ User '${{ github.actor }}' is authorized to deploy to the $DEPLOY_ENV environment."
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
