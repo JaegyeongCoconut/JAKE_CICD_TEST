@@ -24,16 +24,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
-      # NOTE: github actions env 설정
-      - name: Set github actions env
-        run: |
-          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
-
-          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
-          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
-
-      # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
+      # NOTE: 배포 실행 환경, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
         id: validate_branch
         run: |
@@ -46,6 +37,27 @@ jobs:
           fi
 
           echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
+
+      # NOTE: 배포 실행 환경에 대한 계정 권한 검증
+      - name: Validate branch and authorization
+        run: |
+          AUTHORIZED_USERS=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+            echo "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy."
+            exit 1
+          fi
+
+          echo "✅ User '$CURRENT_USER' is authorized to deploy to the $CURRENT_BRANCH branch."
+
+      # NOTE: github actions env 설정
+      - name: Set github actions env
+        run: |
+          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+
+          echo "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'"
+          echo "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'"
 
       # NOTE: 접근할 배포 S3 버킷 설정
       - name: Set deployment S3 bucket
@@ -62,18 +74,6 @@ jobs:
           echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
           echo "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'"
 
-      # NOTE: 배포 실행 브랜치 및 권한 검증
-      - name: Validate branch and authorization
-        run: |
-          AUTHORIZED_USERS=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
-
-          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
-            echo "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy."
-            exit 1
-          fi
-
-          echo "✅ User '$CURRENT_USER' is authorized to deploy to the $CURRENT_BRANCH branch."
-
       # NOTE: 배포 S3 버킷 존재 여부 확인
       - name: Check deployment S3 bucket existence
         run: |
@@ -88,7 +88,7 @@ jobs:
           ENV_FILE_NAME=$([[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]] && echo ".env.development" || echo ".env.production")
           echo "ENV_S3_PATH=web/$SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
 
-      # NOTE: .env 파일 존재 여부 확인
+      # NOTE: s3 버킷 .env 파일 존재 여부 확인
       - name: Check .env file existence
         run: |
           aws s3api head-object --bucket $S3_ENV_BUCKET_NAME --key $ENV_S3_PATH --region $S3_ENV_BUCKET_REGION || {
