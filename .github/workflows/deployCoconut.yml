@@ -1,4 +1,5 @@
 # LINK: 배포 Flow chart 링크 https://boardmix.com/app/editor/yrBD1jJ3wyfQEpDyjjGuqw
+# LINK: S3 링크 https://ap-northeast-2.console.aws.amazon.com/s3/home?region=ap-northeast-2
 name: KOKKOK WEB Service Deploy
 
 on:
