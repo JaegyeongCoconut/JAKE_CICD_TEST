@@ -27,6 +27,12 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
+      # NOTE: 배포 완료된 워크플로우에서 전달받은 공유 변수 다운로드
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: shared-variables
+
       # NOTE: github actions env 설정
       - name: Set github actions env
         run: |
@@ -35,12 +41,13 @@ jobs:
             DEPLOY_ENV="${{ github.event.inputs.DEPLOY_ENV }}"
             printf "🚀 내부\n"
           elif [ "${{ github.event_name }}" == "workflow_run" ]; then
+            source variable.txt
             printf "🚀 외부\n"
-            printf "🚀 ${{ steps.deploy_completed.outputs.SERVICE_NAME }}\n"
-            printf "🚀 ${{ steps.deploy_completed.outputs.SERVICE_NAME }}\n"
+            printf "🚀 $SERVICE_NAME\n"
+            printf "🚀 $DEPLOY_ENV\n"
 
-            SERVICE_NAME="${{ steps.deploy_completed.outputs.SERVICE_NAME }}"
-            DEPLOY_ENV="${{ steps.deploy_completed.outputs.SERVICE_NAME }}"
+            SERVICE_NAME="$SERVICE_NAME"
+            DEPLOY_ENV="$DEPLOY_ENV"
           fi
 
           printf "🚀 Service name: $SERVICE_NAME\n"

@@ -142,10 +142,17 @@ jobs:
       #     aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
       #     aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
 
-      # NOTE:  완료 상태와 추가 데이터 출력
+      # NOTE: 완료 상태와 추가 데이터 출력
       - name: Set outputs for next workflow
         id: deploy_completed
         run: |
           echo "status=completed" >> $GITHUB_ENV
-          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_OUTPUT
-          echo "DEPLOY_ENV=$DEPLOY_ENV" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=$SERVICE_NAME" > variable.txt
+          echo "DEPLOY_ENV=$DEPLOY_ENV" > variable.txt
+
+      # NOTE: 공유 변수 업로드
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: shared-variables
+          path: variable.txt
