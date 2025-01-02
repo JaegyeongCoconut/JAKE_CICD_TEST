@@ -33,10 +33,18 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             SERVICE_NAME="${{ github.event.inputs.SERVICE_NAME }}"
             DEPLOY_ENV="${{ github.event.inputs.DEPLOY_ENV }}"
+            printf "🚀 내부\n"
           elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            SERVICE_NAME="${{ github.event.workflow_run.outputs.SERVICE_NAME }}"
-            DEPLOY_ENV="${{ github.event.workflow_run.outputs.DEPLOY_ENV }}"
+            printf "🚀 외부\n"
+            printf "🚀 ${{ steps.deploy_completed.outputs.SERVICE_NAME }}\n"
+            printf "🚀 ${{ steps.deploy_completed.outputs.SERVICE_NAME }}\n"
+
+            SERVICE_NAME="${{ steps.deploy_completed.outputs.SERVICE_NAME }}"
+            DEPLOY_ENV="${{ steps.deploy_completed.outputs.SERVICE_NAME }}"
           fi
+
+          printf "🚀 Service name: $SERVICE_NAME\n"
+          printf "🚀 Deployment environment: $DEPLOY_ENV\n"
 
           echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_ENV
           echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
