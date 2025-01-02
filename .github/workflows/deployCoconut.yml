@@ -16,8 +16,8 @@ jobs:
   run-job:
     runs-on: ubuntu-latest # NOTE: 워크플로를 실행할 환경 설정
     outputs:
-      SERVICE_NAME: ${{ steps.set_output.outputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ steps.set_output.outputs.DEPLOY_ENV }}
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
     env:
       AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
@@ -121,11 +121,11 @@ jobs:
           aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH .env --region $S3_ENV_BUCKET_REGION
           printf "✅ $ENV_FILE_NAME file downloaded and saved as '.env'.\n"
 
-      # 의존 파일 설치
+      # NOTE: 의존 파일 설치
       - name: Install Dependencies
         run: npm install
 
-      # React Build
+      # NOTE:  React Build
       - name: Build
         run: |
           set -a
@@ -135,7 +135,7 @@ jobs:
           source .env
           npm run build
 
-      # S3에 배포
+      # NOTE:  S3에 배포
       - name: Deploy
         run: |
           # BUILD_DIR="build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
@@ -146,12 +146,10 @@ jobs:
           aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
 
-      # 완료 상태와 추가 데이터 출력
+      # NOTE:  완료 상태와 추가 데이터 출력
       - name: Set outputs for next workflow
         id: set_outputs
         run: |
-          echo "::set-output name=SERVICE_NAME::${{ github.event.inputs.SERVICE_NAME }}"
-          echo "::set-output name=DEPLOY_ENV::${{ github.event.inputs.DEPLOY_ENV }}"
           echo "status=completed" >> $GITHUB_ENV
         env:
           SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
