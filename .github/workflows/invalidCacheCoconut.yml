@@ -29,9 +29,10 @@ jobs:
     steps:
       # NOTE: 배포 완료된 워크플로우에서 전달받은 공유 변수 다운로드
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: shared-variables
+          path: .
 
       # NOTE: github actions env 설정
       - name: Set github actions env
@@ -41,13 +42,9 @@ jobs:
             DEPLOY_ENV="${{ github.event.inputs.DEPLOY_ENV }}"
             printf "🚀 내부\n"
           elif [ "${{ github.event_name }}" == "workflow_run" ]; then
-            source variable.txt
+            SERVICE_NAME=$(jq -r '.SERVICE_NAME' variable.json)
+            DEPLOY_ENV=$(jq -r '.DEPLOY_ENV' variable.json)
             printf "🚀 외부\n"
-            printf "🚀 $SERVICE_NAME\n"
-            printf "🚀 $DEPLOY_ENV\n"
-
-            SERVICE_NAME="$SERVICE_NAME"
-            DEPLOY_ENV="$DEPLOY_ENV"
           fi
 
           printf "🚀 Service name: $SERVICE_NAME\n"

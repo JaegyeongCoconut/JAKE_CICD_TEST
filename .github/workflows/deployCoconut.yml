@@ -147,12 +147,11 @@ jobs:
         id: deploy_completed
         run: |
           echo "status=completed" >> $GITHUB_ENV
-          echo "SERVICE_NAME=$SERVICE_NAME" > variable.txt
-          echo "DEPLOY_ENV=$DEPLOY_ENV" > variable.txt
+          echo '{"SERVICE_NAME": $SERVICE_NAME, "DEPLOY_ENV": "$DEPLOY_ENV"}' > variable.json
 
       # NOTE: 공유 변수 업로드
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: shared-variables
-          path: variable.txt
+          path: variable.json
