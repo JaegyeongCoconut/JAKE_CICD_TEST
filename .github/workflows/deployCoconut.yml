@@ -44,6 +44,10 @@ jobs:
       # S3_ENV_BUCKET_REGION: "ap-northeast-2" # NOTE: .env S3 버킷 리전
       AWS_ACCESS_KEY_ID: ${{ secrets.COCONUT_AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
+      ENV_FILE: '{
+        "CAR_ADMIN_DEV": ${{ secrets.ENV_CARADMIN_DEV }},
+        "CAR_ADMIN_PROD": ${{ secrets.ENV_CARADMIN_PROD }},
+        }'
 
     steps:
       # NOTE: github actions env 설정
@@ -136,6 +140,40 @@ jobs:
       #     # printf "✅ $ENV_FILE_NAME file downloaded and saved \n"
       #     aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH .env --region $S3_ENV_BUCKET_REGION
       #     printf "✅ .env file downloaded successfully.\n"
+
+      - name: Set environment variables from secrets
+        run: |
+          # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
+          UPPER_SERVICE_NAME=$(echo "${{ github.event.inputs.SERVICE_NAME }}" | tr '[:lower:]' '[:upper:]')
+          UPPER_DEPLOY_ENV=$(echo "${{ github.event.inputs.DEPLOY_ENV }}" | tr '[:lower:]' '[:upper:]')
+          ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
+          printf "✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
+
+          # NOTE: 가능한 Secrets 값을 모두 변수로 설정
+          ENV_CARADMIN_DEV="${{ secrets.ENV_CARADMIN_DEV }}"
+          ENV_CARADMIN_PROD="${{ secrets.ENV_CARADMIN_PROD }}"
+
+          # NOTE: 동적으로 Secrets 값 가져오기
+          ENV_CONTENT=""
+          if [[ "$ENV_SECRET_NAME" == "ENV_CARADMIN_DEV" ]]; then
+            ENV_CONTENT="$ENV_CARADMIN_DEV"
+          elif [[ "$ENV_SECRET_NAME" == "ENV_CARADMIN_PROD" ]]; then
+            ENV_CONTENT="$ENV_CARADMIN_PROD"
+          else
+            printf "🚨 ::error:: No matching secret found for $ENV_SECRET_NAME\n"
+            exit 1
+          fi
+
+          # NOTE: 환경 변수로 설정
+          echo "$ENV_CONTENT" | while read -r line; do
+            echo "$line" >> $GITHUB_ENV
+          done
+
+          # NOTE: .env 파일로 저장
+          ENV_FILE_PATH=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          echo "$ENV_CONTENT" > $ENV_FILE_PATH
+
+          printf "✅ Loaded environment variables into $ENV_FILE_PATH\n"
 
       # NOTE: 의존성 설치
       - name: Install dependencies
