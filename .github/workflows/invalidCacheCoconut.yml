@@ -11,10 +11,6 @@ on:
       DEPLOY_ENV:
         description: "Deployment environment"
         required: true
-  workflow_run:
-    workflows: ["KOKKOK WEB Service Deploy"]
-    types:
-      - completed
 
 jobs:
   invalidate-cache:
