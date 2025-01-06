@@ -40,8 +40,6 @@ jobs:
         "logisticsAdmin": "kk-logi-carriers-web"
         }'
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
-      # S3_ENV_BUCKET_NAME: "coconutsilo-env-dev" # NOTE: .env S3 버킷 이름
-      # S3_ENV_BUCKET_REGION: "ap-northeast-2" # NOTE: .env S3 버킷 리전
       AWS_ACCESS_KEY_ID: ${{ secrets.COCONUT_AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
       ENV_FILE: '{
@@ -113,33 +111,9 @@ jobs:
           }
           printf "✅ S3 bucket '$S3_DEPLOY_BUCKET_NAME' is accessible.\n"
 
-      # # NOTE: 접근할 .env S3 버킷 및 파일 경로 설정
-      # - name: Set .env S3 bucket & file path
-      #   run: |
-      #     ENV_FILE_NAME=$([[ "$DEPLOY_ENV" == "dev" ]] && echo ".env.development" || echo ".env.production")
-      #     echo "ENV_S3_PATH=web/$SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
-      #     printf "✅ .env file path configured: '$ENV_S3_PATH'.\n"
-
-      # # NOTE: 접근할 .env S3 버킷 및 파일 존재 여부 확인
-      # - name: Verify .env file existence
-      #   run: |
-      #     aws s3api head-object --bucket $S3_ENV_BUCKET_NAME --key $ENV_S3_PATH --region $S3_ENV_BUCKET_REGION || {
-      #       printf "🚨 ::error:: .env file '$ENV_S3_PATH' does not exist in bucket '$S3_ENV_BUCKET_NAME'.\n"
-      #       exit 1
-      #     }
-      #     printf "✅ .env file '$ENV_S3_PATH' exists.\n"
-
       # NOTE: 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v4
-
-      # # NOTE: S3에서 .env 파일 다운로드
-      # - name: Download .env file from S3
-      #   run: |
-      #     # aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH . --region $S3_ENV_BUCKET_REGION
-      #     # printf "✅ $ENV_FILE_NAME file downloaded and saved \n"
-      #     aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH .env --region $S3_ENV_BUCKET_REGION
-      #     printf "✅ .env file downloaded successfully.\n"
 
       - name: Set environment variables from secrets
         run: |
