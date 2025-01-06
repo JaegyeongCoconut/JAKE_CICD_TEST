@@ -170,7 +170,8 @@ jobs:
           done
 
           # NOTE: .env 파일로 저장
-          ENV_FILE_PATH=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          # ENV_FILE_PATH=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          ENV_FILE_PATH=".env"
           echo "$ENV_CONTENT" > $ENV_FILE_PATH
 
           printf "✅ Loaded environment variables into $ENV_FILE_PATH\n"
