@@ -147,7 +147,9 @@ jobs:
         id: deploy_completed
         run: |
           echo "status=completed" >> $GITHUB_ENV
-          echo '{"SERVICE_NAME": $SERVICE_NAME, "DEPLOY_ENV": "$DEPLOY_ENV"}' > variable.json
+          printf "✅ $SERVICE_NAME "$SERVICE_NAME".\n"
+          printf "✅ $DEPLOY_ENV "$DEPLOY_ENV".\n"
+          echo '{"SERVICE_NAME": "$SERVICE_NAME", "DEPLOY_ENV": "$DEPLOY_ENV"}' > variable.json
 
       # NOTE: 공유 변수 업로드
       - name: Upload artifact
