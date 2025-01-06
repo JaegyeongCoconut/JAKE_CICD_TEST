@@ -27,16 +27,16 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
-      # # NOTE: github actions env 설정
-      # - name: Set github actions env
-      #   run: |
-      #     echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-      #     echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
-      #     echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+      # NOTE: github actions env 설정
+      - name: Set github actions env
+        run: |
+          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-      #     printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'\n"
-      #     printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'\n"
-      #     printf "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'\n"
+          printf "✅ Set env in github actions 'SERVICE_NAME' is '$SERVICE_NAME'\n"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is '$DEPLOY_ENV'\n"
+          printf "✅ Set env in github actions 'CURRENT_BRANCH' is '$CURRENT_BRANCH'\n"
 
       # # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       # - name: Check branch is valid
