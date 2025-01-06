@@ -149,18 +149,29 @@ jobs:
 
           printf "✅ Loaded environment variables into $ENV_FILE_PATH\n"
 
+      # NOTE: Node.js 설치
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      # NOTE: pnpm 설치
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       # NOTE: 의존성 설치
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       # NOTE: React 빌드
       - name: Build React application
         run: |
           set -a
           # source $ENV_FILE_NAME
-          # npm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod")
+          # pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod")
           source .env
-          npm run build
+          pnpm run build
           printf "✅ React application built successfully.\n"
 
       # NOTE: S3에 파일 배포
