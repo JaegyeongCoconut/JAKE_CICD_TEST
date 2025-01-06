@@ -23,7 +23,6 @@ jobs:
       AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut,Hyyunjin,CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
       AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut,Hyyunjin,CoconutJiyong,HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
       # NOTE: 서비스별 CloudFront ID 목록. JSON 형태로 작성. 띄어쓰기 x
-      # NOTE: 서비스 추가시, 해당 서비스에 대한 CloudFront ID를 추가해야 함
       CLOUD_FRONT_SERVICES: '{
         "eCommerceAdmin-dev": "E2IMC4GOL9IKWA",
         "carAdmin-dev": "EB3W4GTAL529J",
@@ -34,7 +33,6 @@ jobs:
         "logisticsAdmin-prod": "E21EYEFNY9XHXK"
         }'
       # NOTE: 서비스별 S3 버킷 목록. JSON 형태로 작성
-      # NOTE: 서비스 추가시, 해당 서비스에 대한 S3 버킷 이름을 추가해야 함
       S3_DEPLOY_SERVICES_BUCKETS: '{
         "carAdmin": "kk-car-admin-web",
         "carInspection": "kk-car-inspection-web",
@@ -59,25 +57,26 @@ jobs:
           printf "✅ Set env in github actions 'DEPLOY_ENV' is ${{ github.event.inputs.DEPLOY_ENV }}\n"
           printf "✅ Set env in github actions 'CURRENT_BRANCH' is ${{ github.ref_name }}\n"
 
-      # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
-      - name: Check branch is valid
-        id: validate_branch
+      # NOTE: 배포 실행 브랜치, 유효성 검사
+      - name: Validate branch
         run: |
           if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
             printf "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH\n"
             exit 1
           fi
+          printf "✅ Branch '$CURRENT_BRANCH' is valid for deployment.\n"
 
-      # NOTE: 배포 실행 환경 변수 명 검사
-      - name: Check deploy environment is valid
+      # NOTE: 배포 환경 변수 유효성 검사
+      - name: Validate deploy environment
         run: |
           if [[ "$DEPLOY_ENV" != "dev" && "$DEPLOY_ENV" != "prod" ]]; then
             printf "🚨 ::error:: Unsupported deploy environment: $DEPLOY_ENV\n"
             exit 1
           fi
+          printf "✅ Deployment environment '$DEPLOY_ENV' is valid.\n"
 
-      # NOTE: 배포 실행 환경에 대한 계정 권한 검증
-      - name: Validate branch and authorization
+      # NOTE: 배포 실행 계정 권한 검증
+      - name: Validate user authorization
         run: |
           AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
 
@@ -90,10 +89,8 @@ jobs:
 
       # NOTE: 접근할 배포 S3 버킷 경로 설정
       - name: Set deployment S3 bucket
-        id: set_bucket
         run: |
           S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
-
           if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
             printf "🚨 ::error:: Invalid service name: $SERVICE_NAME\n"
             exit 1
@@ -104,64 +101,66 @@ jobs:
           printf "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'\n"
 
       # NOTE: 접근할 배포 S3 버킷 존재 여부 확인
-      - name: Check deployment S3 bucket existence
+      - name: Verify S3 bucket existence
         run: |
           aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
             printf "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET_NAME' does not exist.\n"
             exit 1
           }
+          printf "✅ S3 bucket '$S3_DEPLOY_BUCKET_NAME' is accessible.\n"
 
       # NOTE: 접근할 .env S3 버킷 및 파일 경로 설정
-      - name: Set deployment .env file path
+      - name: Set .env S3 bucket & file path
         run: |
           ENV_FILE_NAME=$([[ "$DEPLOY_ENV" == "dev" ]] && echo ".env.development" || echo ".env.production")
           echo "ENV_S3_PATH=web/$SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
+          printf "✅ .env file path configured: '$ENV_S3_PATH'.\n"
 
       # NOTE: 접근할 .env S3 버킷 및 파일 존재 여부 확인
-      - name: Check .env file existence
+      - name: Verify .env file existence
         run: |
           aws s3api head-object --bucket $S3_ENV_BUCKET_NAME --key $ENV_S3_PATH --region $S3_ENV_BUCKET_REGION || {
             printf "🚨 ::error:: .env file '$ENV_S3_PATH' does not exist in bucket '$S3_ENV_BUCKET_NAME'.\n"
             exit 1
           }
-          printf "✅ .env file '$ENV_S3_PATH' exists in the S3 bucket '$S3_ENV_BUCKET_NAME'.\n"
+          printf "✅ .env file '$ENV_S3_PATH' exists.\n"
 
       # NOTE: 레포지토리 체크아웃
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # NOTE: S3에서 환경 변수 파일 다운로드
+      # NOTE: S3에서 .env 파일 다운로드
       - name: Download .env file from S3
         run: |
           # aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH . --region $S3_ENV_BUCKET_REGION
           # printf "✅ $ENV_FILE_NAME file downloaded and saved \n"
           aws s3 cp s3://$S3_ENV_BUCKET_NAME/$ENV_S3_PATH .env --region $S3_ENV_BUCKET_REGION
-          printf "✅ $ENV_FILE_NAME file downloaded and saved as '.env'.\n"
+          printf "✅ .env file downloaded successfully.\n"
 
-      # NOTE: 의존 파일 설치
-      - name: Install Dependencies
+      # NOTE: 의존성 설치
+      - name: Install dependencies
         run: npm install
 
-      # NOTE:  React Build
-      - name: Build
+      # NOTE: React 빌드
+      - name: Build React application
         run: |
           set -a
           # source $ENV_FILE_NAME
           # npm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod")
-
           source .env
           npm run build
+          printf "✅ React application built successfully.\n"
 
-      # NOTE:  S3에 배포
-      - name: Deploy
+      # NOTE: S3에 파일 배포
+      - name: Deploy files to S3
         run: |
           # BUILD_DIR="build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
 
           BUILD_DIR="dist"
 
           set -x # 디버깅 모드 활성화
-          aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
+          printf "✅ Files deployed to S3 bucket '$S3_DEPLOY_BUCKET_NAME'.\n"
 
       # NOTE: 접근할 CloudFront 설정 + 접근할 CloudFront 객체 존재 여부 확인
       - name: Set CloudFront distribution ID + Check CloudFront object existence
@@ -179,7 +178,7 @@ jobs:
       # NOTE: CloudFront 캐시 무효화 실행
       - name: Invalidate CloudFront Cache
         run: |
-          echo "🚀 Invalidating cache for CloudFront distribution: $DISTRIBUTION_ID"
+          printf "🚀 Invalidating cache for CloudFront distribution: $DISTRIBUTION_ID\n"
           aws cloudfront create-invalidation \
             --distribution-id $DISTRIBUTION_ID \
             --paths "/*"
