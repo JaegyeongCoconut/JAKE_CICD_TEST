@@ -115,19 +115,19 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # NOTE: Node.js 설치
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
       # NOTE: pnpm 설치
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
           version: 9
           run_install: false
+
+      # NOTE: Node.js 설치
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
 
       # NOTE: 의존성 설치
       - name: Install dependencies
