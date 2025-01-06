@@ -146,10 +146,9 @@ jobs:
       - name: Set outputs for next workflow
         id: deploy_completed
         run: |
-          echo "status=completed" >> $GITHUB_ENV
-          printf "✅ $SERVICE_NAME "$SERVICE_NAME".\n"
-          printf "✅ $DEPLOY_ENV "$DEPLOY_ENV".\n"
-          echo '{"SERVICE_NAME": "$SERVICE_NAME", "DEPLOY_ENV": "$DEPLOY_ENV"}' > variable.json
+          echo '{"SERVICE_NAME": $SERVICE_NAME, "DEPLOY_ENV": $DEPLOY_ENV}' > variable.json
+          printf "✅ SERVICE_NAME "$SERVICE_NAME".\n"
+          printf "✅ DEPLOY_ENV "$DEPLOY_ENV".\n"
 
       # NOTE: 공유 변수 업로드
       - name: Upload artifact
@@ -157,3 +156,6 @@ jobs:
         with:
           name: shared-variables
           path: variable.json
+      - name: Deploy completed
+        run: |
+          echo "status=completed" >> $GITHUB_ENV
