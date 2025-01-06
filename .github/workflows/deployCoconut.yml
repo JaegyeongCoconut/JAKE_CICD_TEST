@@ -156,9 +156,15 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
-      # NOTE: pnpm 설치
+      # NOTE: pnpm 설치 및 활성화
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      # NOTE: pnpm 설치 확인
+      - name: Check pnpm version
+        run: pnpm --version
 
       # NOTE: 의존성 설치
       - name: Install dependencies
