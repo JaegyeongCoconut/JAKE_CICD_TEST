@@ -115,6 +115,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # NOTE: Secrets 값으로 환경 변수 설정
       - name: Set environment variables from secrets
         run: |
           # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
@@ -123,17 +124,15 @@ jobs:
           ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
           printf "✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
 
-          # NOTE: 가능한 Secrets 값을 모두 변수로 설정
-          ENV_CARADMIN_DEV="${{ secrets.ENV_CARADMIN_DEV }}"
-          ENV_CARADMIN_PROD="${{ secrets.ENV_CARADMIN_PROD }}"
+          # NOTE: 가능한 Secrets 키를 배열로 정의
+          declare -A SECRETS=(
+            ["ENV_CARADMIN_DEV"]="${{ secrets.ENV_CARADMIN_DEV }}"
+            ["ENV_CARADMIN_PROD"]="${{ secrets.ENV_CARADMIN_PROD }}"
+          )
 
-          # NOTE: 동적으로 Secrets 값 가져오기
-          ENV_CONTENT=""
-          if [[ "$ENV_SECRET_NAME" == "ENV_CARADMIN_DEV" ]]; then
-            ENV_CONTENT="$ENV_CARADMIN_DEV"
-          elif [[ "$ENV_SECRET_NAME" == "ENV_CARADMIN_PROD" ]]; then
-            ENV_CONTENT="$ENV_CARADMIN_PROD"
-          else
+          # NOTE: Secrets에서 값 가져오기
+          ENV_CONTENT="${SECRETS[$ENV_SECRET_NAME]}"
+          if [[ -z "$ENV_CONTENT" ]]; then
             printf "🚨 ::error:: No matching secret found for $ENV_SECRET_NAME\n"
             exit 1
           fi
