@@ -27,15 +27,10 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
 
     steps:
-      - name: List available artifacts
+      - name: Show received inputs
         run: |
-          gh run list-artifacts
-      # NOTE: 배포 완료된 워크플로우에서 전달받은 공유 변수 다운로드
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: shared-variables
-          path: .
+          echo "SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}"
+          echo "DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}"
 
       # # NOTE: github actions env 설정
       # - name: Set github actions env
