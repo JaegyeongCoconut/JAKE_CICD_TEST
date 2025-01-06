@@ -115,6 +115,24 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # NOTE: pnpm 설치
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+          run_install: false
+
+      # NOTE: Node.js 설치
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # NOTE: 의존성 설치
+      - name: Install dependencies
+        run: pnpm install
+
       # NOTE: Secrets 값으로 환경 변수 설정
       - name: Set environment variables from secrets
         run: |
@@ -148,27 +166,6 @@ jobs:
           echo "$ENV_CONTENT" > $ENV_FILE_PATH
 
           printf "✅ Loaded environment variables into $ENV_FILE_PATH\n"
-
-      # NOTE: Node.js 설치
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-
-      # NOTE: pnpm 설치 및 활성화
-      - name: Install pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-
-      # NOTE: pnpm 설치 확인
-      - name: Check pnpm version
-        run: pnpm --version
-
-      # NOTE: 의존성 설치
-      - name: Install dependencies
-        run: pnpm install
 
       # NOTE: React 빌드
       - name: Build React application
