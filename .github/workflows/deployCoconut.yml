@@ -1,5 +1,8 @@
 # LINK: 배포 Flow chart 링크 https://boardmix.com/app/editor/yrBD1jJ3wyfQEpDyjjGuqw
-# LINK: S3 링크 https://ap-northeast-2.console.aws.amazon.com/s3/home?region=ap-northeast-2
+# LINK: S3 배포 버킷 링크 https://ap-northeast-2.console.aws.amazon.com/s3/home?region=ap-northeast-2
+# LINK: CloudFront 링크 https://us-east-1.console.aws.amazon.com/cloudfront/v4/home?region=ap-southeast-1#/distributions
+# LINK: S3 env 버킷 링크 https://ap-northeast-2.console.aws.amazon.com/s3/buckets/coconutsilo-env-dev?region=ap-northeast-2&bucketType=general&tab=objects
+# LINK: Notion env 링크 https://www.notion.so/coconutsilo/1f74486ed21f47a3a4f087d0ed94c263?v=aad4eec6ae7c43918581c212864c424d
 name: KOKKOK WEB Service Deploy
 
 on:
@@ -52,9 +55,9 @@ jobs:
           echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
           echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-          printf "✅ Set env in github actions 'SERVICE_NAME' is $SERVICE_NAME\n"
-          printf "✅ Set env in github actions 'DEPLOY_ENV' is $DEPLOY_ENV\n"
-          printf "✅ Set env in github actions 'CURRENT_BRANCH' is $CURRENT_BRANCH\n"
+          printf "✅ Set env in github actions 'SERVICE_NAME' is ${{ github.event.inputs.SERVICE_NAME }}\n"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is ${{ github.event.inputs.DEPLOY_ENV }}\n"
+          printf "✅ Set env in github actions 'CURRENT_BRANCH' is ${{ github.ref_name }}\n"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
@@ -85,7 +88,7 @@ jobs:
 
           printf "✅ User '${{ github.actor }}' is authorized to deploy to the $DEPLOY_ENV environment.\n"
 
-      # NOTE: 접근할 배포 S3 버킷 설정
+      # NOTE: 접근할 배포 S3 버킷 경로 설정
       - name: Set deployment S3 bucket
         id: set_bucket
         run: |
@@ -100,7 +103,7 @@ jobs:
           echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
           printf "✅ S3 bucket for service '$SERVICE_NAME' is '$S3_DEPLOY_BUCKET_NAME'\n"
 
-      # NOTE: 배포 S3 버킷 존재 여부 확인
+      # NOTE: 접근할 배포 S3 버킷 존재 여부 확인
       - name: Check deployment S3 bucket existence
         run: |
           aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
@@ -114,7 +117,7 @@ jobs:
           ENV_FILE_NAME=$([[ "$DEPLOY_ENV" == "dev" ]] && echo ".env.development" || echo ".env.production")
           echo "ENV_S3_PATH=web/$SERVICE_NAME/$ENV_FILE_NAME" >> $GITHUB_ENV
 
-      # NOTE: s3 버킷 .env 파일 존재 여부 확인
+      # NOTE: 접근할 .env S3 버킷 및 파일 존재 여부 확인
       - name: Check .env file existence
         run: |
           aws s3api head-object --bucket $S3_ENV_BUCKET_NAME --key $ENV_S3_PATH --region $S3_ENV_BUCKET_REGION || {
