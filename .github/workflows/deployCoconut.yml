@@ -19,6 +19,7 @@ jobs:
       AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
       AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut,Hyyunjin,CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
       AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut,Hyyunjin,CoconutJiyong,HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+      CLOUD_FRONT_SERVICES: '{ "eCommerceAdmin-dev": "E2IMC4GOL9IKWA","carAdmin-dev": "EB3W4GTAL529J","carAdmin-prod": "E5QUPE30N5P6M","carInspection-dev": "E3HPI2NX3ZV9J3","carInspection-prod": "E2M7042NEL7TSQ","logisticsAdmin-dev": "E9TQP7SLHLETV","logisticsAdmin-prod": "E21EYEFNY9XHXK"}' # NOTE: 서비스별 CloudFront ID 목록. JSON 형태로 작성. 띄어쓰기 x
       S3_DEPLOY_SERVICES_BUCKETS: '{"carAdmin": "kk-car-admin-web","carInspection": "kk-car-inspection-web","eCommerceAdmin": "kk-ecomm-admin-web","logisticsAdmin": "kk-logi-carriers-web"}' # NOTE: 서비스별 S3 버킷 목록. JSON 형태로 작성
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
       S3_ENV_BUCKET_NAME: "coconutsilo-env-dev" # NOTE: .env S3 버킷 이름
@@ -34,9 +35,9 @@ jobs:
           echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
           echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-          printf "✅ Set env in github actions 'SERVICE_NAME' is #SERVICE_NAME\n"
-          printf "✅ Set env in github actions 'DEPLOY_ENV' is #DEPLOY_ENV\n"
-          printf "✅ Set env in github actions 'CURRENT_BRANCH' is #CURRENT_BRANCH\n"
+          printf "✅ Set env in github actions 'SERVICE_NAME' is $SERVICE_NAME\n"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is $DEPLOY_ENV\n"
+          printf "✅ Set env in github actions 'CURRENT_BRANCH' is $CURRENT_BRANCH\n"
 
       # NOTE: 배포 실행 브랜치, 유효성 검사. main, develop 브랜치만 배포 가능
       - name: Check branch is valid
@@ -141,3 +142,26 @@ jobs:
           set -x # 디버깅 모드 활성화
           aws s3 ls s3://$S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION # S3 접근 확인
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_DEPLOY_BUCKET_NAME
+
+      # NOTE: 접근할 CloudFront 설정 + 접근할 CloudFront 객체 존재 여부 확인
+      - name: Set CloudFront distribution ID + Check CloudFront object existence
+        run: |
+          DISTRIBUTION_ID=$(echo $CLOUD_FRONT_SERVICES | jq -r --arg SERVICE_NAME "$SERVICE_NAME" --arg DEPLOY_ENV "$DEPLOY_ENV" '.[$SERVICE_NAME + "-" + $DEPLOY_ENV]')
+
+          if [ -z "$DISTRIBUTION_ID" ]; then
+            printf "🚨 ::error:: No CloudFront distribution ID found for service '$SERVICE_NAME' and environment '$DEPLOY_ENV'\n"
+            exit 1
+          fi
+
+          echo "DISTRIBUTION_ID=${DISTRIBUTION_ID}" >> $GITHUB_ENV
+          printf "✅ CloudFront distribution '$DISTRIBUTION_ID' is valid.\n"
+
+      # NOTE: CloudFront 캐시 무효화 실행
+      - name: Invalidate CloudFront Cache
+        run: |
+          echo "🚀 Invalidating cache for CloudFront distribution: $DISTRIBUTION_ID"
+          aws cloudfront create-invalidation \
+            --distribution-id $DISTRIBUTION_ID \
+            --paths "/*"
+
+          printf "✅ Cache invalidated for distribution ID: $DISTRIBUTION_ID\n"
