@@ -1,0 +1,178 @@
+# LINK: 배포 Flow chart 링크 https://boardmix.com/app/editor/yrBD1jJ3wyfQEpDyjjGuqw
+# LINK: S3 배포 버킷 링크 https://ap-northeast-2.console.aws.amazon.com/s3/home?region=ap-northeast-2
+# LINK: CloudFront 링크 https://us-east-1.console.aws.amazon.com/cloudfront/v4/home?region=ap-southeast-1#/distributions
+# LINK: S3 env 버킷 링크 https://ap-northeast-2.console.aws.amazon.com/s3/buckets/coconutsilo-env-dev?region=ap-northeast-2&bucketType=general&tab=objects
+# LINK: Notion env 링크 https://www.notion.so/coconutsilo/1f74486ed21f47a3a4f087d0ed94c263?v=aad4eec6ae7c43918581c212864c424d
+name: KOKKOK WEB Service No Deploy
+
+on:
+  workflow_dispatch: # NOTE: 수동 실행 이벤트
+    inputs:
+      SERVICE_NAME:
+        description: "Service name for deployment"
+        required: true
+      DEPLOY_ENV:
+        description: "Deployment environment"
+        required: true
+
+jobs:
+  run-job:
+    runs-on: ubuntu-latest # NOTE: 워크플로를 실행할 환경 설정
+    env:
+      # AUTHORIZED_ENV: "dev,prod" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
+      # TODO: 운영 환경 배포 못하도록 임시 주석 처리. 추후 수정 필요
+      AUTHORIZED_ENV: "dev" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut,Hyyunjin,CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut,Hyyunjin,CoconutJiyong,HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+
+      # NOTE: 서비스별 CloudFront ID 목록. JSON 형태로 작성. 띄어쓰기 x
+      CLOUD_FRONT_SERVICES: '{
+        "eCommerceAdmin-dev": "E2IMC4GOL9IKWA",
+        "carAdmin-dev": "EB3W4GTAL529J",
+        "carAdmin-prod": "E5QUPE30N5P6M",
+        "carInspection-dev": "E3HPI2NX3ZV9J3",
+        "carInspection-prod": "E2M7042NEL7TSQ",
+        "logisticsAdmin-dev": "E9TQP7SLHLETV",
+        "logisticsAdmin-prod": "E21EYEFNY9XHXK"
+        }'
+      # NOTE: 서비스별 S3 버킷 목록. JSON 형태로 작성
+      S3_DEPLOY_SERVICES_BUCKETS: '{
+        "carAdmin": "kk-car-admin-web",
+        "carInspection": "kk-car-inspection-web",
+        "eCommerceAdmin": "kk-ecomm-admin-web",
+        "logisticsAdmin": "kk-logi-carriers-web"
+        }'
+      S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
+      AWS_ACCESS_KEY_ID: ${{ secrets.COCONUT_AWS_ACCESS_KEY_ID }} # NOTE: IAM Access Key
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.COCONUT_AWS_SECRET_ACCESS_KEY }} # NOTE: IAM Secret Access Key
+
+      ENV_CARADMIN_DEV: ${{ secrets.ENV_CARADMIN_DEV }}
+      ENV_CARADMIN_PROD: ${{ secrets.ENV_CARADMIN_PROD }}
+
+    steps:
+      # NOTE: github actions env 설정
+      - name: Set github actions env
+        run: |
+          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+
+          printf "✅ Set env in github actions 'SERVICE_NAME' is ${{ github.event.inputs.SERVICE_NAME }}\n"
+          printf "✅ Set env in github actions 'DEPLOY_ENV' is ${{ github.event.inputs.DEPLOY_ENV }}\n"
+          printf "✅ Set env in github actions 'CURRENT_BRANCH' is ${{ github.ref_name }}\n"
+
+      # NOTE: 배포 실행 브랜치, 유효성 검사
+      - name: Validate branch
+        run: |
+          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
+            printf "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH\n"
+            exit 1
+          fi
+          printf "✅ Branch '$CURRENT_BRANCH' is valid for deployment.\n"
+
+      # NOTE: 배포 환경 유효성 검사
+      - name: Validate deploy environment
+        run: |
+          if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
+            printf "🚨 ::error:: Unsupported deploy environment: $DEPLOY_ENV\n"
+            exit 1
+          fi
+          printf "✅ Deployment environment '$DEPLOY_ENV' is valid.\n"
+
+      # NOTE: 배포 실행 계정 권한 검증
+      - name: Validate user authorization
+        run: |
+          AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+            printf "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy.\n"
+            exit 1
+          fi
+
+          printf "✅ User '${{ github.actor }}' is authorized to deploy to the $DEPLOY_ENV environment.\n"
+
+      # NOTE: 접근할 배포 S3 버킷 경로 설정
+      - name: Set deployment S3 bucket
+        run: |
+          S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
+          if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
+            printf "🚨 ::error:: Invalid service name: $SERVICE_NAME\n"
+            exit 1
+          fi
+
+          S3_DEPLOY_BUCKET_SUFFIX=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev-s3" || echo "prd-s3")
+          echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
+          printf "✅ S3 bucket for service '$SERVICE_NAME' is '${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}'\n"
+
+      # NOTE: 접근할 배포 S3 버킷 존재 여부 확인
+      - name: Verify S3 bucket existence
+        run: |
+          aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
+            printf "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET_NAME' does not exist.\n"
+            exit 1
+          }
+          printf "✅ S3 bucket '$S3_DEPLOY_BUCKET_NAME' is accessible.\n"
+
+      # NOTE: 레포지토리 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # NOTE: pnpm 설치
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.4.0
+          run_install: false
+
+      # NOTE: Node.js 설치 & 의존성 cache 사용
+      # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
+      - name: Install Node.js and cache dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # NOTE: 의존성 설치
+      - name: Install dependencies
+        run: pnpm install
+
+      # NOTE: Secrets 값으로 환경 변수 설정
+      - name: Set environment variables from secrets
+        run: |
+          # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
+          UPPER_SERVICE_NAME=$(echo "${{ github.event.inputs.SERVICE_NAME }}" | tr '[:lower:]' '[:upper:]')
+          UPPER_DEPLOY_ENV=$(echo "${{ github.event.inputs.DEPLOY_ENV }}" | tr '[:lower:]' '[:upper:]')
+          ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
+          printf "✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
+
+          # NOTE: Secrets에서 값 가져오기
+          ENV_CONTENT="${!ENV_SECRET_NAME}"
+          printf "✅ ENV_CONTENT: $ENV_CONTENT\n"
+
+          # NOTE: 빈 값 확인
+          if [[ -z "$ENV_CONTENT" ]]; then
+            printf "🚨 ::error:: No matching secret found for $ENV_SECRET_NAME\n"
+            exit 1
+          fi
+
+          # NOTE: 환경 변수로 설정
+          echo "$ENV_CONTENT" | while IFS= read -r line; do
+            # NOTE: 빈 줄이나 잘못된 값 건너뛰기
+            if [[ -n "$line" ]]; then
+              echo "$line" >> $GITHUB_ENV
+            fi
+          done
+          printf "✅ ENV_CONTENT: $ENV_CONTENT\n"
+
+          # NOTE: .env.[환경] 파일로 저장
+          ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
+          printf "✅ Saved environment variables to $ENV_FILE_NAME\n"
+
+      # NOTE: React 빌드
+      - name: Build React application
+        run: |
+          set -a
+          source $ENV_FILE_NAME
+          pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME
