@@ -171,6 +171,12 @@ jobs:
           # NOTE: ENV_FILE_NAME 환경 변수를 GITHUB_ENV에 저장
           echo "ENV_FILE_NAME=$ENV_FILE_NAME" >> $GITHUB_ENV
 
+          # NOTE: .env.[환경] 파일 內 주석(#) 포함 여부 확인
+          if grep -q '^#' "$ENV_FILE_NAME"; then
+            printf "🚨 ::error:: .env file contains comments starting with '#' which may cause errors.\n"
+            exit 1
+          fi
+
       # NOTE: React 빌드
       - name: Build React application
         run: |
