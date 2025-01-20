@@ -169,6 +169,15 @@ jobs:
 
       - name: React 빌드
         run: |
+          cat $ENV_FILE_NAME
+
+          printf "Checking .env file existence:\n"
+          ls -l .env.development
+
+          printf "ENV_FILE_NAME: $ENV_FILE_NAME\n"
+
+
           set -a
-          source $ENV_FILE_NAME
-          pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME
+          source "$ENV_FILE_NAME"
+          # pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME
+          pnpm run build
