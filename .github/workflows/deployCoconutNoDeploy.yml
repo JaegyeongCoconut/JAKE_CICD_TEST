@@ -163,14 +163,17 @@ jobs:
             fi
           done
 
-          # NOTE: .env.[환경] 파일로 저장
+          # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
           ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
           echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
           printf "✅ Saved environment variables to $ENV_FILE_NAME\n"
+
+          # NOTE: ENV_FILE_NAME 환경 변수를 GITHUB_ENV에 저장
+          echo "ENV_FILE_NAME=$ENV_FILE_NAME" >> $GITHUB_ENV
 
       # NOTE: React 빌드
       - name: Build React application
         run: |
           set -a
-          source $ENV_CONTENT
+          source $ENV_FILE_NAME
           pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME
