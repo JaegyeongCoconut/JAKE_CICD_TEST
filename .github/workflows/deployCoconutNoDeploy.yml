@@ -148,7 +148,6 @@ jobs:
 
           # NOTE: Secrets에서 값 가져오기
           ENV_CONTENT="${!ENV_SECRET_NAME}"
-          printf "✅ ENV_CONTENT: $ENV_CONTENT\n"
 
           # NOTE: 빈 값 확인
           if [[ -z "$ENV_CONTENT" ]]; then
@@ -163,7 +162,6 @@ jobs:
               echo "$line" >> $GITHUB_ENV
             fi
           done
-          printf "✅ ENV_CONTENT: $ENV_CONTENT\n"
 
           # NOTE: .env.[환경] 파일로 저장
           ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
@@ -174,5 +172,5 @@ jobs:
       - name: Build React application
         run: |
           set -a
-          source $ENV_FILE_NAME
+          source $ENV_CONTENT
           pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME
