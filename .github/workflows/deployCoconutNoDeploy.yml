@@ -3,21 +3,21 @@
 # LINK: CloudFront 링크 https://us-east-1.console.aws.amazon.com/cloudfront/v4/home?region=ap-southeast-1#/distributions
 # LINK: S3 env 버킷 링크 https://ap-northeast-2.console.aws.amazon.com/s3/buckets/coconutsilo-env-dev?region=ap-northeast-2&bucketType=general&tab=objects
 # LINK: Notion env 링크 https://www.notion.so/coconutsilo/1f74486ed21f47a3a4f087d0ed94c263?v=aad4eec6ae7c43918581c212864c424d
-name: KOKKOK WEB Service No Deploy
+name: KOKKOK 웹 서비스 S3 배포
 
 on:
-  workflow_dispatch: # NOTE: 수동 실행 이벤트
+  workflow_dispatch:
     inputs:
       SERVICE_NAME:
-        description: "Service name for deployment"
+        description: "배포 서비스 이름"
         required: true
       DEPLOY_ENV:
-        description: "Deployment environment"
+        description: "배포 환경"
         required: true
 
 jobs:
   run-job:
-    runs-on: ubuntu-latest # NOTE: 워크플로를 실행할 환경 설정
+    runs-on: ubuntu-latest
     env:
       # AUTHORIZED_ENV: "dev,prod" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
       # TODO: 운영 환경 배포 못하도록 임시 주석 처리. 추후 수정 필요
@@ -51,94 +51,83 @@ jobs:
       ENV_CARADMIN_PROD: ${{ secrets.ENV_CARADMIN_PROD }}
 
     steps:
-      # NOTE: github actions env 설정
-      - name: Set github actions env
+      - name: github actions 환경 변수 설정
         run: |
           echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
           echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
           echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
-          printf "✅ Set env in github actions 'SERVICE_NAME' is ${{ github.event.inputs.SERVICE_NAME }}\n"
-          printf "✅ Set env in github actions 'DEPLOY_ENV' is ${{ github.event.inputs.DEPLOY_ENV }}\n"
-          printf "✅ Set env in github actions 'CURRENT_BRANCH' is ${{ github.ref_name }}\n"
+          printf "✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
+          printf "✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
+          printf "✅ github actions에 'CURRENT_BRANCH' 환경 변수가 설정되었습니다: ${{ github.ref_name }}\n"
 
-      # NOTE: 배포 실행 브랜치, 유효성 검사
-      - name: Validate branch
+      - name: 배포 브랜치 유효성 검사
         run: |
           if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
-            printf "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH\n"
+            printf "🚨 ::error:: 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
             exit 1
           fi
-          printf "✅ Branch '$CURRENT_BRANCH' is valid for deployment.\n"
+          printf "✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
 
-      # NOTE: 배포 환경 유효성 검사
-      - name: Validate deploy environment
+      - name: 배포 환경 유효성 검사
         run: |
           if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
-            printf "🚨 ::error:: Unsupported deploy environment: $DEPLOY_ENV\n"
+            printf "🚨 ::error:: 지원되지 않는 배포 환경입니다: $DEPLOY_ENV\n"
             exit 1
           fi
-          printf "✅ Deployment environment '$DEPLOY_ENV' is valid.\n"
+          printf "✅ 배포 환경 '$DEPLOY_ENV'는 유효합니다.\n"
 
-      # NOTE: 배포 실행 계정 권한 검증
-      - name: Validate user authorization
+      - name: 배포 실행 사용자 권한 검증
         run: |
           AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
 
           if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
-            printf "🚨 ::error:: User '${{ github.actor }}' is not authorized to deploy.\n"
+            printf "🚨 ::error:: 사용자 '${{ github.actor }}'는 배포 권한이 없습니다.\n"
             exit 1
           fi
 
-          printf "✅ User '${{ github.actor }}' is authorized to deploy to the $DEPLOY_ENV environment.\n"
+          printf "✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
 
-      # NOTE: 접근할 배포 S3 버킷 경로 설정
-      - name: Set deployment S3 bucket
+      - name: 배포 S3 버킷 설정
         run: |
           S3_DEPLOY_BUCKET_PREFIX=$(echo $S3_DEPLOY_SERVICES_BUCKETS | jq -r --arg SERVICE_NAME "$SERVICE_NAME" '.[$SERVICE_NAME]')
           if [[ -z "$S3_DEPLOY_BUCKET_PREFIX" ]]; then
-            printf "🚨 ::error:: Invalid service name: $SERVICE_NAME\n"
+            printf "🚨 ::error:: 잘못된 서비스 이름입니다: $SERVICE_NAME\n"
             exit 1
           fi
 
           S3_DEPLOY_BUCKET_SUFFIX=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev-s3" || echo "prd-s3")
           echo "S3_DEPLOY_BUCKET_NAME=${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}" >> $GITHUB_ENV
-          printf "✅ S3 bucket for service '$SERVICE_NAME' is '${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}'\n"
+          printf "✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_DEPLOY_BUCKET_PREFIX}-${S3_DEPLOY_BUCKET_SUFFIX}'입니다.\n"
 
-      # NOTE: 접근할 배포 S3 버킷 존재 여부 확인
-      - name: Verify S3 bucket existence
+      - name: S3 버킷 존재 여부 확인
         run: |
           aws s3api head-bucket --bucket $S3_DEPLOY_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
-            printf "🚨 ::error:: S3 bucket '$S3_DEPLOY_BUCKET_NAME' does not exist.\n"
+            printf "🚨 ::error:: S3 버킷 '$S3_DEPLOY_BUCKET_NAME'이 존재하지 않습니다.\n"
             exit 1
           }
-          printf "✅ S3 bucket '$S3_DEPLOY_BUCKET_NAME' is accessible.\n"
+          printf "✅ S3 버킷 '$S3_DEPLOY_BUCKET_NAME'에 접근할 수 있습니다.\n"
 
-      # NOTE: 레포지토리 체크아웃
-      - name: Checkout source code
+      - name: 소스 repo 코드 체크아웃
         uses: actions/checkout@v4
 
-      # NOTE: pnpm 설치
       - uses: pnpm/action-setup@v4
-        name: Install pnpm
+        name: pnpm 설치
         with:
           version: 9.4.0
           run_install: false
 
-      # NOTE: Node.js 설치 & 의존성 cache 사용
       # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
-      - name: Install Node.js and cache dependencies
+      - name: Node.js 설치 및 의존성 cache 사용
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
 
-      # NOTE: 의존성 설치
-      - name: Install dependencies
+      - name: 의존성 설치
         run: pnpm install
 
-      # NOTE: Secrets 값으로 환경 변수 설정
-      - name: Set environment variables from secrets
+      - name: github > Settings > Secrets 에서 환경 변수 설정
         run: |
           # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
           UPPER_SERVICE_NAME=$(echo "${{ github.event.inputs.SERVICE_NAME }}" | tr '[:lower:]' '[:upper:]')
@@ -151,7 +140,7 @@ jobs:
 
           # NOTE: 빈 값 확인
           if [[ -z "$ENV_CONTENT" ]]; then
-            printf "🚨 ::error:: No matching secret found for $ENV_SECRET_NAME\n"
+            printf "🚨 ::error:: $ENV_SECRET_NAME에 해당하는 시크릿을 찾을 수 없습니다.\n"
             exit 1
           fi
 
@@ -166,20 +155,19 @@ jobs:
           # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
           ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
           echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
-          printf "✅ Saved environment variables to $ENV_FILE_NAME\n"
+          printf "✅ 환경 변수를 $ENV_FILE_NAME 파일에 저장했습니다.\n"
 
           # NOTE: ENV_FILE_NAME 환경 변수를 GITHUB_ENV에 저장
           echo "ENV_FILE_NAME=$ENV_FILE_NAME" >> $GITHUB_ENV
 
           # NOTE: .env.[환경] 파일 內 주석(#) 포함 여부 확인
           if grep -q '^#' "$ENV_FILE_NAME"; then
-            printf "🚨 ::error:: .env file contains comments starting with '#' which may cause errors.\n"
-            printf "🚨 ::error:: Please delete all '#' in .env file in github actions.\n""
+            printf "🚨 ::error:: .env 파일에 '#'로 시작하는 주석이 포함되어 있어 오류가 발생할 수 있습니다.\n"
+            printf "🚨 ::error:: github actions에서 .env 파일의 모든 '#'을 삭제해 주세요.\n"
             exit 1
           fi
 
-      # NOTE: React 빌드
-      - name: Build React application
+      - name: React 빌드
         run: |
           set -a
           source $ENV_FILE_NAME
