@@ -179,5 +179,5 @@ jobs:
 
           set -a
           source "$ENV_FILE_NAME"
-          # pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME
-          pnpm run build
+          pnpm run $([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod")
+          # pnpm run build
