@@ -1,0 +1,50 @@
+{
+  "name": "@repo/utils",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./auth": "./auth.ts",
+    "./calendar": "./calendar.ts",
+    "./country": "./country.ts",
+    "./crypto": "./crypto.ts",
+    "./date": "./date.ts",
+    "./dayjsSetup": "./dayjsSetup.ts",
+    "./deleteConsole": "./deleteConsole.ts",
+    "./dropdown": "./dropdown.ts",
+    "./dummy": "./dummy.ts",
+    "./editor": "./editor.ts",
+    "./file": "./file.ts",
+    "./fill": "./fill.ts",
+    "./filter": "./filter.ts",
+    "./findKey": "./findKey.ts",
+    "./formatter/currency": "./formatter/currency.ts",
+    "./formatter/format": "./formatter/format.ts",
+    "./formatter/name": "./formatter/name.ts",
+    "./formatter/number": "./formatter/number.ts",
+    "./formatter/phone": "./formatter/phone.ts",
+    "./formatter/radio": "./formatter/radio.ts",
+    "./formatter/string": "./formatter/string.ts",
+    "./image": "./image.ts",
+    "./method": "./method.ts",
+    "./notice": "./notice.ts",
+    "./pagination": "./pagination.ts",
+    "./pathStorage": "./pathStorage.ts",
+    "./searchFilter": "./searchFilter.ts",
+    "./table": "./table.ts",
+    "./tokenService": "./tokenService.ts",
+    "./transform24Hr": "./transform24Hr.ts",
+    "./validation":"./validation.ts",
+    "./yup/schema": "./yup/schema.ts",
+    "./yup/yupTest": "./yup/yupTest.ts"
+  },
+  "dependencies": {
+    "@repo/assets": "workspace:*",
+    "@repo/constants": "workspace:*",
+    "@repo/types": "workspace:*",
+    "browser-image-compression": "^2.0.2"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

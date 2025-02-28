@@ -1,0 +1,16 @@
+{
+  "name": "@repo/contexts",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./GoogleMapProvider": "./GoogleMapProvider.tsx",
+    "./RoutePathProvider": "./RoutePathProvider.tsx"
+  },
+  "dependencies": {
+    "@repo/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

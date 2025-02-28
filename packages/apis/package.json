@@ -1,0 +1,19 @@
+{
+  "name": "@repo/apis",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./auth": "./auth.ts",
+    "./axiosService": "./axiosService.ts",
+    "./ors": "./ors.ts"
+  },
+  "dependencies": {
+    "@repo/constants": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

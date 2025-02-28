@@ -1,0 +1,21 @@
+{
+  "name": "@repo/stores",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./filter": "./filter.ts",
+    "./modal": "./modal.ts",
+    "./persist": "./persist.ts",
+    "./prompt": "./prompt.ts",
+    "./timer": "./timer.ts",
+    "./toast": "./toast.ts",
+    "./verifyAccount": "./verifyAccount.ts"
+  },
+  "dependencies": {
+    "@repo/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

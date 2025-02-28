@@ -1,0 +1,29 @@
+{
+  "i18n-ally.localesPaths": [
+    "packages/assets/language/files/carAdmin",
+    "packages/assets/language/files/carInspection",
+    "packages/assets/language/files/logisticsAdmin",
+    "packages/assets/language/files/moveAdmin",
+    "packages/assets/language/files/eCommerceAdmin",
+    "packages/assets/language/files/membershipAdmin"
+  ],
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.extract.autoDetect": true,
+  "i18n-ally.keystyle": "flat",
+  "i18n-ally.displayLanguage": "en",
+  "i18n-ally.pathMatcher": "{namespace}-{locale}.json",
+  // NOTE: 주석에 대한 하이라이트 설정
+  "todohighlight.keywords": [
+    {
+      "text": "NOTE:",
+      "color": "#FFFFFF",
+      "backgroundColor": "rgb(0, 102, 68)"
+    },
+    {
+      "text": "LINK:",
+      "color": "#FFFFFF",
+      "backgroundColor": "rgba(51, 137, 255)"
+    }
+  ],
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "always" } // NOTE: CMD+S로 저장 시 eslint fix가 가능한 부분은 자동으로 수정하는 코드 - import 자동 정렬을 위해서 설정
+}

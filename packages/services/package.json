@@ -1,0 +1,19 @@
+{
+  "name": "@repo/services",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./ors": "./ors.ts",
+    "./queryClient": "./queryClient.ts"
+  },
+  "dependencies": {
+    "@repo/apis": "workspace:*",
+    "@repo/constants": "workspace:*",
+    "@repo/hooks": "workspace:*",
+    "@repo/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

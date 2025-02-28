@@ -1,0 +1,44 @@
+{
+  "name": "kokkok-move-ranking",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build-scripts": "node ../../packages/scripts/build-scripts.js",
+    "env-dev": "env-cmd -f .env.development pnpm run build-scripts",
+    "env-prod": "env-cmd -f .env.production pnpm run build-scripts",
+    "dev": "pnpm run env-dev && vite --mode development",
+    "dev-i18n": "pnpm run env-dev && vite --mode development",
+    "build": "pnpm run env-dev && vite build --mode development",
+    "preview": "vite preview --mode development",
+    "dev-prod": "pnpm run env-prod && vite --mode production",
+    "build-prod": "pnpm run env-prod && vite build --mode production",
+    "preview-prod": "vite preview --mode production",
+    "test": "test",
+    "eject": "eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserify-shim": {
+    "node-uuid": "uuid"
+  },
+  "dependencies": {
+    "@repo/apis": "workspace:*",
+    "@repo/assets": "workspace:*",
+    "@repo/components": "workspace:*",
+    "@repo/constants": "workspace:*",
+    "@repo/contexts": "workspace:*",
+    "@repo/hooks": "workspace:*",
+    "@repo/services": "workspace:*",
+    "@repo/stores": "workspace:*",
+    "@repo/styles": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

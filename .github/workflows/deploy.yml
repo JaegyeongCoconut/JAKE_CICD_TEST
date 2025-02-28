@@ -1,108 +1,277 @@
-name: Manual Trigger Workflow
+# LINK: 배포 Flow chart https://boardmix.com/app/editor/yrBD1jJ3wyfQEpDyjjGuqw
+# LINK: Notion env https://www.notion.so/coconutsilo/1f74486ed21f47a3a4f087d0ed94c263?v=aad4eec6ae7c43918581c212864c424d
+# LINK: S3 배포 버킷 https://ap-southeast-1.console.aws.amazon.com/s3/home
+# LINK: CloudFront https://us-east-1.console.aws.amazon.com/cloudfront/v4/home
+# LINK: Github Secrets Actions https://github.com/coconutsilo/kk-monorepo-web/settings/secrets/actions
+
+name: KOKKOK 웹 서비스 S3 배포
 
 on:
-  workflow_dispatch: # 수동 실행 이벤트
+  workflow_dispatch:
+    inputs:
+      SERVICE_NAME:
+        description: "배포 서비스 이름"
+        required: true
+      DEPLOY_ENV:
+        description: "배포 환경"
+        required: true
+
+run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
 jobs:
   run-job:
-    runs-on: ubuntu-latest # 워크플로를 실행할 환경 설정
+    runs-on: ubuntu-latest
     env:
-      S3_REGION: ap-southeast-1 # S3 Bucket 리전
-      S3_ENV_BUCKET: jakecicd-env # 단일 S3 버킷 이름
-      GITHUB_PROD_BRANCH: main # 메인 브랜치 이름
-      GITHUB_DEV_BRANCH: develop # 개발 브랜치 이름
-      AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut" # main branch 배포 권한이 있는 사용자 정의
-      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # develop branch 배포 권한이 있는 사용자 정의
+      AUTHORIZED_ENV: "dev,prod" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut,Hyyunjin,CoconutJiyong" # NOTE: main branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut,Hyyunjin,CoconutJiyong,HojinChoicoco" # NOTE: develop branch 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+
+      # NOTE: 서비스별 S3 버킷, CloudFront ID 목록. JSON 형태로 작성. ','로 구분. 띄어쓰기 x
+      AWS_CONFIG: '{
+        "carAdmin-dev": {"s3BucketName": "kk-car-dev-web-admin-s3","cloudFrontId": ""},
+        "carAdmin-prod": {"s3BucketName": "kk-car-prd-web-admin-s3","cloudFrontId": "E390IFT65Z7ZH0"},
+        "carInspection-dev": {"s3BucketName": "kk-car-dev-web-inspection-s3","cloudFrontId": ""},
+        "carInspection-prod": {"s3BucketName": "kk-car-prd-web-inspection-s3","cloudFrontId": "E7SFKUZ6SAXPI"},
+        "eCommerceAdmin-dev": {"s3BucketName": "kk-ecomm-admin-web-dev-s3","cloudFrontId": "E2IMC4GOL9IKWA"},
+        "logisticsAdmin-dev": {"s3BucketName": "kk-logi-carriers-web-dev-s3","cloudFrontId": "E9TQP7SLHLETV"},
+        "logisticsAdmin-prod": {"s3BucketName": "kk-logi-carriers-web-prd-s3","cloudFrontId": "E21EYEFNY9XHXK"},
+        "moveAdmin-dev": {"s3BucketName": "kk-move-admin-web-dev-s3","cloudFrontId": "E3HUOCGLCJMHVX"},
+        "moveAdmin-prod": {"s3BucketName": "kk-move-admin-web-prd-s3","cloudFrontId": "E30LDFQ6MF140S"},
+        "moveRanking-dev": {"s3BucketName": "kk-move-hero-web-dev-s3","cloudFrontId": "E315T6K6JEU9LJ"},
+        "moveRanking-prod": {"s3BucketName": "kk-move-hero-web-prd-s3","cloudFrontId": "E30LDFQ6MF140S"}
+        }'
+      S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
+
+      # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      ENV_CARADMIN_DEV: ${{ secrets.ENV_CARADMIN_DEV }}
+      ENV_CARADMIN_PROD: ${{ secrets.ENV_CARADMIN_PROD }}
+      ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
+      ENV_CARINSPECTION_PROD: ${{ secrets.ENV_CARINSPECTION_PROD }}
+      ENV_ECOMMERCEADMIN_DEV: ${{ secrets.ENV_ECOMMERCEADMIN_DEV }}
+      ENV_LOGISTICSADMIN_DEV: ${{ secrets.ENV_LOGISTICSADMIN_DEV }}
+      ENV_LOGISTICSADMIN_PROD: ${{ secrets.ENV_LOGISTICSADMIN_PROD }}
+      ENV_MOVEADMIN_DEV: ${{ secrets.ENV_MOVEADMIN_DEV }}
+      ENV_MOVEADMIN_PROD: ${{ secrets.ENV_MOVEADMIN_PROD }}
+      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
+      ENV_MOVERANKING_PROD: ${{ secrets.ENV_MOVERANKING_PROD }}
 
     steps:
-      # 현재 브랜치 확인
-      - name: Determine branch
-        id: determine_branch
+      - name: "🔑 AWS IAM KEY 설정"
         run: |
-          CURRENT_BRANCH=$(echo "${{ github.ref_name }}")
-          echo "🚀 Current branch: $CURRENT_BRANCH"
+          if [[ "${{ github.event.inputs.SERVICE_NAME }}" == *"move"* ]]; then
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_MOVE }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_MOVE }}" >> $GITHUB_ENV
+            printf "::notice:: ✅ MOVE AWS IAM KEY 설정이 완료되었습니다.\n"
+          elif [[ "${{ github.event.inputs.SERVICE_NAME }}" == *"car"* ]]; then
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_CAR }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_CAR }}" >> $GITHUB_ENV
+            printf "::notice:: ✅ CAR AWS IAM KEY 설정이 완료되었습니다.\n"
+          else
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_COCONUT }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_COCONUT }}" >> $GITHUB_ENV
+            printf "::notice:: ✅ COCONUT AWS IAM KEY 설정이 완료되었습니다.\n"
+          fi
 
-          if [[ "$CURRENT_BRANCH" != "$GITHUB_DEV_BRANCH" && "$CURRENT_BRANCH" != "$GITHUB_PROD_BRANCH" ]]; then
-            echo "🚨 ::error:: Unsupported branch: $CURRENT_BRANCH"
+      - name: "⚙️ GitHub Actions 환경 변수 설정"
+        run: |
+          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+
+          printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
+          printf "::notice:: ✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
+          printf "::notice:: ✅ github actions에 'CURRENT_BRANCH' 환경 변수가 설정되었습니다: ${{ github.ref_name }}\n"
+
+      - name: "🔍 배포 브랜치 유효성 검사"
+        run: |
+          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
+            printf "::error:: 🚨 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
+
+      - name: "🛡️ 배포 환경 유효성 검사"
+        run: |
+          if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
+            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: $DEPLOY_ENV\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ 배포 환경 '$DEPLOY_ENV'는 유효합니다.\n"
+
+      - name: "👤 배포 실행 사용자 권한 검증"
+        run: |
+          AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+            printf "::error:: 🚨 사용자 '${{ github.actor }}'는 배포 권한이 없습니다.\n"
             exit 1
           fi
 
-          echo "CURRENT_BRANCH=$CURRENT_BRANCH" >> $GITHUB_ENV
+          printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
 
-      # 배포 권한 확인
-      - name: Authorization check
+      - name: "📦 AWS 배포 환경 설정"
         run: |
-          CURRENT_USER="${{ github.actor }}"
-          AUTHORIZED_USERS=""
+          SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
 
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_DEV
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            AUTHORIZED_USERS=$AUTHORIZED_USERS_IN_PROD
-          fi
+          # NOTE: JSON 환경 변수에서 S3 및 CloudFront ID 찾기
+          S3_BUCKET_NAME=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].s3BucketName')
+          CLOUDFRONT_ID=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].cloudFrontId')
 
-          echo "🚀 Current user: $CURRENT_USER"
-          echo "🚀 Authorized users: $AUTHORIZED_USERS"
-
-          if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
-            echo "🚨 ::error:: User '$CURRENT_USER' is not authorized to deploy to the $CURRENT_BRANCH branch."
+          # NOTE: S3 버킷 값 존재 여부 검증
+          if [[ -z "$S3_BUCKET_NAME" || "$S3_BUCKET_NAME" == "null" ]]; then
+            printf "::error:: 🚨 S3 버킷 정보가 존재하지 않습니다: $SERVICE_KEY\n"
             exit 1
           fi
 
-          echo "✅ User '$CURRENT_USER' is authorized to deploy to the $CURRENT_BRANCH branch."
-
-      # 레포지토리 체크아웃
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
-      # S3에서 환경 변수 파일 다운로드
-      - name: Download .env file from S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          FILE_PATH=""
-          if [[ "$CURRENT_BRANCH" == "$GITHUB_DEV_BRANCH" ]]; then
-            FILE_PATH=".env.development"
-          elif [[ "$CURRENT_BRANCH" == "$GITHUB_PROD_BRANCH" ]]; then
-            FILE_PATH=".env.production"
-          fi
-
-          echo "🚀 Downloading .env file from S3: $S3_ENV_BUCKET/$FILE_PATH"
-          aws s3 cp s3://$S3_ENV_BUCKET/$FILE_PATH .env --region $S3_REGION
-          echo "✅ $FILE_PATH file downloaded and saved as '.env'."
-
-      # .env 파일 유무 확인
-      - name: Check .env file
-        run: |
-          if [[ ! -f ".env" ]]; then
-            echo "🚨 ::error:: .env file is missing! Cannot proceed with the build."
+          # NOTE: CloudFront ID 값 존재 여부 검증
+          if [[ -z "$CLOUDFRONT_ID" || "$CLOUDFRONT_ID" == "null" ]]; then
+            printf "::error:: 🚨 CloudFront ID 정보가 존재하지 않습니다: $SERVICE_KEY\n"
             exit 1
           fi
-          echo "✅ .env file exists."
 
-      # 의존 파일 설치
-      - name: Install Dependencies
-        run: npm install
+          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+          printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
 
-      # React Build
-      - name: Build
+          # NOTE: GitHub Actions 환경 변수에 CloudFront ID 설정
+          echo "CLOUDFRONT_ID=${CLOUDFRONT_ID}" >> $GITHUB_ENV
+          printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 CloudFront ID는 '${CLOUDFRONT_ID}'입니다.\n"
+
+      - name: "🔎 S3 버킷 존재 여부 확인"
         run: |
-          set -a # 모든 export된 변수 자동 적용
-          source .env # .env 파일의 내용을 환경 변수로 로드
-          npm run build
+          aws s3api head-bucket --bucket $S3_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
+            printf "::error:: 🚨 S3 버킷 '$S3_BUCKET_NAME'이 존재하지 않습니다.\n"
+            exit 1
+          }
+          printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
 
-      # S3에 배포
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # IAM Access Key
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # IAM Secret Access Key
-          S3_DEPLOY_BUCKET: s3://jakecicd # 배포 S3 Bucket
-          BUILD_DIR: dist # 빌드 파일 이름
+      - name: "🔎 CloudFront ID 존재 여부 확인"
         run: |
-          set -x # 디버깅 모드 활성화
-          aws s3 ls $S3_DEPLOY_BUCKET --region $S3_REGION # S3 접근 확인
-          aws s3 cp \
-           --recursive \
-           --region $S3_REGION \
-           $BUILD_DIR $S3_DEPLOY_BUCKET
+          aws cloudfront get-distribution --id "$CLOUDFRONT_ID" > /dev/null 2>&1 || {
+            printf "::error:: 🚨 CloudFront ID '$CLOUDFRONT_ID'이 존재하지 않습니다.\n"
+            exit 1
+          }
+          printf "::notice:: ✅ CloudFront ID '$CLOUDFRONT_ID'에 접근할 수 있습니다.\n"
+
+      - name: "📥 소스 repo 코드 체크아웃"
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: pnpm 설치
+        with:
+          # NOTE: pnpm 버전은 package.json에 명시된 버전과 일치해야 함
+          version: 9.4.0
+          run_install: false
+
+      # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
+      - name: "🛠️ Node.js 설치 및 의존성 cache 사용"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: "📦 의존성 설치"
+        run: pnpm install
+
+      - name: "🔑 GitHub Secrets 환경 변수 설정"
+        run: |
+          # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
+          UPPER_SERVICE_NAME=$(echo "${{ github.event.inputs.SERVICE_NAME }}" | tr '[:lower:]' '[:upper:]')
+          UPPER_DEPLOY_ENV=$(echo "${{ github.event.inputs.DEPLOY_ENV }}" | tr '[:lower:]' '[:upper:]')
+          ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
+          printf "::notice:: ✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
+
+          # NOTE: Secrets에서 값 가져오기
+          ENV_CONTENT="${!ENV_SECRET_NAME}"
+
+          # NOTE: 빈 값 확인
+          if [[ -z "$ENV_CONTENT" ]]; then
+            printf "::error:: 🚨 $ENV_SECRET_NAME에 해당하는 시크릿을 찾을 수 없습니다.\n"
+            exit 1
+          fi
+
+          # NOTE: 환경 변수로 설정
+          echo "$ENV_CONTENT" | while IFS= read -r line; do
+            # NOTE: 빈 줄이나 잘못된 값 건너뛰기
+            if [[ -n "$line" ]]; then
+              echo "$line" >> $GITHUB_ENV
+            fi
+          done
+
+          # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
+          ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
+          printf "::notice:: ✅ 환경 변수를 $ENV_FILE_NAME 파일에 저장했습니다.\n"
+
+          # NOTE: ENV_FILE_NAME 환경 변수를 GITHUB_ENV에 저장
+          echo "ENV_FILE_NAME=$ENV_FILE_NAME" >> $GITHUB_ENV
+
+          # NOTE: .env.[환경] 파일 內 주석(#) 포함 여부 확인
+          if grep -q '^#' "$ENV_FILE_NAME"; then
+            printf "::warning:: 🚨 .env 파일에 '#'로 시작하는 주석이 포함되어 있어 오류가 발생할 수 있습니다.\n"
+            printf "::warning:: 🚨 github actions에서 .env 파일의 모든 '#'을 삭제해 주세요.\n"
+            exit 1
+          fi
+
+      - name: "📂 프로젝트 디렉토리 설정 및 .env.[환경] 파일 위치 수정"
+        run: |
+          APP_DIR="apps/$SERVICE_NAME"
+
+          mv $ENV_FILE_NAME $APP_DIR || {
+            printf "::error:: 🚨 .env 파일을 $APP_DIR로 이동하지 못했습니다.\n"
+            exit 1
+          }
+
+          printf "::notice:: ✅ .env 파일을 $APP_DIR 디렉토리로 이동했습니다.\n"
+          cat $APP_DIR/$ENV_FILE_NAME
+
+          # NOTE: .env 파일 존재 여부 확인
+          if [ ! -f "$APP_DIR/$ENV_FILE_NAME" ]; then
+            printf "::error:: 🚨 환경 변수 파일을 찾을 수 없습니다: $APP_DIR/$ENV_FILE_NAME\n"
+            exit 1
+          fi
+
+      - name: "⚡ React 빌드"
+        run: |
+          APP_DIR="apps/$SERVICE_NAME"
+          BUILD_COMMAND="$([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME"
+
+          printf "::notice:: 🔍 빌드 경로 확인: $APP_DIR\n"
+          printf "::notice:: 🔍 .env 파일 내용:\n"
+          cat "$APP_DIR/$ENV_FILE_NAME"
+
+          printf "::notice:: ✅ 빌드 명령어: $BUILD_COMMAND\n"
+
+          set -a
+          pnpm run $BUILD_COMMAND
+
+      - name: "☁️ 파일을 S3에 업로드"
+        run: |
+          APP_DIR="apps/$SERVICE_NAME"
+          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+
+          # NOTE: BUILD_DIR 존재 여부 확인
+          if [ ! -d "$BUILD_DIR" ]; then
+            printf "::error:: 🚨 빌드 결과 디렉토리를 찾을 수 없습니다: $BUILD_DIR\n"
+            exit 1
+          fi
+
+          printf "::notice:: ✅ S3 업로드 경로 확인: $BUILD_DIR\n"
+
+          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME || {
+            printf "::error:: 🚨 S3에 파일 업로드 실패!\n"
+            exit 1
+          }
+          printf "::notice:: ✅ 파일이 S3 버킷에 성공적으로 업로드되었습니다: $S3_BUCKET_NAME\n"
+
+      - name: "🧹 CloudFront 캐시 무효화"
+        run: |
+          printf "::notice:: 🚀 CloudFront 배포의 캐시를 무효화합니다: $CLOUDFRONT_ID\n"
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_ID \
+            --paths "/*" || {
+            printf "::error:: 🚨 CloudFront 캐시 무효화 실패!\n"
+            exit 1
+          }
+          printf "::notice:: ✅ 배포 ID: $DISTRIBUTION_ID에 대한 캐시가 무효화되었습니다.\n"

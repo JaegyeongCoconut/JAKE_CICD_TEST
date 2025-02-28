@@ -1,0 +1,16 @@
+{
+  "name": "@repo/types",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@repo/assets": "workspace:*",
+    "@repo/styles": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

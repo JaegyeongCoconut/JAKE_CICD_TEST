@@ -1,0 +1,22 @@
+{
+  "name": "@repo/constants",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./baseLabel": "./baseLabel.ts",
+    "./currency": "./currency.ts",
+    "./error/alert": "./error/alert.ts",
+    "./error/code": "./error/code.ts",
+    "./error/message": "./error/message.ts",
+    "./map": "./map.ts",
+    "./pagination": "./pagination.ts",
+    "./toast": "./toast.ts"
+  },
+  "dependencies": {
+    "@repo/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "outputs": ["build-dev-*"],
+      "inputs": ["$TURBO_DEFAULT$", ".env.development"],
+      "dependsOn": ["^build"]
+    },
+    "build-prod": {
+      "outputs": ["build-prod-*"],
+      "inputs": ["$TURBO_DEFAULT$", ".env.production"],
+      "dependsOn": ["^build"]
+    },
+    "check-types": { "dependsOn": ["^check-types"] },
+    "dev": {
+      "persistent": true,
+      "cache": false,
+      "dependsOn": ["^check-types"]
+    },
+    "dev-i18n": {
+      "persistent": true,
+      "cache": false,
+      "dependsOn": ["^check-types"]
+    },
+    "dev-prod": {
+      "persistent": true,
+      "cache": false,
+      "dependsOn": ["^check-types"]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@repo/styles",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./globalStyles":"./globalStyles.ts",
+    "./themes":"./themes/index.ts"
+  },
+  "dependencies": {
+    "@repo/assets": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}
