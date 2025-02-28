@@ -67,7 +67,6 @@
     "dev-prod:membershipAdmin": "node ./packages/scripts/package-scripts.js",
     "build-prod:membershipAdmin": "node ./packages/scripts/package-scripts.js",
     "preview-prod:membershipAdmin": "node ./packages/scripts/package-scripts.js",
-    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production'){process.exit(1)} \" || (husky install && chmod ug+x .husky/*)",
     "pnpm-clean-install": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && pnpm install",
     "clean-languages": "node clean-unused-baseLabels.cjs && node clean-unused-translations.cjs"
   },
@@ -139,7 +138,6 @@
     "eslint-plugin-react": "^7.37.2",
     "glob": "^11.0.0",
     "globals": "^15.13.0",
-    "husky": "^8.0.3",
     "lint-staged": "^13.2.1",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.2",
