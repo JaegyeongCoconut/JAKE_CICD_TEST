@@ -42,13 +42,27 @@ BRANCH_CHOICES=(
 WORK_FLOW_NAME=$(printf "%s\n" "${WORK_FLOW_CHOICES[@]}" | cut -d'|' -f1 | fzf --prompt="💡 작업 선택: ")
 SERVICE_NAME=$(printf "%s\n" "${SERVICE_CHOICES[@]}" | cut -d'|' -f1 | fzf --prompt="💡 KOKKOK 서비스 선택: ")
 DEPLOY_ENV=$(printf "%s\n" "${ENV_CHOICES[@]}" | cut -d'|' -f1 | fzf --prompt="💡 배포 환경 선택: ")
-REF=$(printf "%s\n" "${BRANCH_CHOICES[@]}" | cut -d'|' -f1 | fzf --prompt="💡 코드 브랜치 선택: ")
 
 # NOTE: 선택한 항목에서 실제 사용할 값(뒷부분) 추출
 WORK_FLOW_NAME=$(printf "%s\n" "${WORK_FLOW_CHOICES[@]}" | grep "^$WORK_FLOW_NAME|" | cut -d'|' -f2)
 SERVICE_NAME=$(printf "%s\n" "${SERVICE_CHOICES[@]}" | grep "^$SERVICE_NAME|" | cut -d'|' -f2)
 DEPLOY_ENV=$(printf "%s\n" "${ENV_CHOICES[@]}" | grep "^$DEPLOY_ENV|" | cut -d'|' -f2)
-REF=$(printf "%s\n" "${BRANCH_CHOICES[@]}" | grep "^$REF|" | cut -d'|' -f2)
+
+# NOTE: rollback.yml 실행 시 브랜치 선택 건너뛰기
+if [[ "$WORK_FLOW_NAME" != "rollback.yml" ]]; then
+  REF=$(printf "%s\n" "${BRANCH_CHOICES[@]}" | cut -d'|' -f1 | fzf --prompt="💡 코드 브랜치 선택: ")
+
+  # NOTE: 선택한 항목에서 실제 사용할 값(뒷부분) 추출
+  REF=$(printf "%s\n" "${BRANCH_CHOICES[@]}" | grep "^$REF|" | cut -d'|' -f2)
+
+  # NOTE: 입력값 검증 (rollback 제외)
+  if [[ -z "$REF" ]]; then
+    printf "❌ Error: \x1b[31m브랜치를 선택해야 합니다.\x1b[0m\n"
+    exit 1
+  fi
+else
+  REF="" # rollback일 때 REF 값 비우기
+fi
 
 # NOTE: 입력값 검증
 if [[ -z "$WORK_FLOW_NAME" || -z "$SERVICE_NAME" || -z "$DEPLOY_ENV" || -z "$REF" ]]; then
@@ -60,7 +74,11 @@ fi
 REPO="JaegyeongCoconut/React_CICD"
 
 # NOTE: GitHub Workflow 실행
-gh workflow run "$WORK_FLOW_NAME" --repo "$REPO" --ref "$REF" --field SERVICE_NAME="$SERVICE_NAME" --field DEPLOY_ENV="$DEPLOY_ENV" &
+if [[ -n "$REF" ]]; then
+  gh workflow run "$WORK_FLOW_NAME" --repo "$REPO" --ref "$REF" --field SERVICE_NAME="$SERVICE_NAME" --field DEPLOY_ENV="$DEPLOY_ENV" &
+else
+  gh workflow run "$WORK_FLOW_NAME" --repo "$REPO" --field SERVICE_NAME="$SERVICE_NAME" --field DEPLOY_ENV="$DEPLOY_ENV" &
+fi
 
 # NOTE: 일정 시간 대기 (3초)
 sleep 3
