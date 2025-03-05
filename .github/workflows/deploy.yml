@@ -199,9 +199,9 @@ jobs:
             exit 1
           fi
 
-          printf "::notice:: ✅ S3 업로드 경로 확인: $BUILD_DIR\n"
+          printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
 
-          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME || {
+          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
             printf "::error:: 🚨 S3에 파일 업로드 실패!\n"
             exit 1
           }
