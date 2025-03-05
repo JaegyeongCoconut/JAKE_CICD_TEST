@@ -10,7 +10,7 @@ on:
         description: "배포 환경"
         required: true
 
-run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
+run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 롤백 실행"
 
 jobs:
   run-job:
@@ -25,7 +25,6 @@ jobs:
         "moveRanking-dev": {"s3BucketName": "jakecicd"}
         }'
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
-      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
 
     steps:
       - name: "🔑 AWS IAM KEY 설정"
