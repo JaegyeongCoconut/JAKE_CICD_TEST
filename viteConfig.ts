@@ -19,6 +19,7 @@ export const generateViteConfig = ({
   mode,
 }: GenerateCommonViteConfigProps): {
   plugins: any[];
+  base: "./";
   root: string;
   server: { port: number; host: boolean; open: boolean };
   build: { cacheDir: string; outDir: string };
@@ -56,6 +57,7 @@ export const generateViteConfig = ({
         },
       }),
     ],
+    base: "./",
     root,
     server: { port, host: true, open: true },
     build: { cacheDir: ".vite/build", outDir: buildFolderName },
