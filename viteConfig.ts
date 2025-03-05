@@ -19,7 +19,7 @@ export const generateViteConfig = ({
   mode,
 }: GenerateCommonViteConfigProps): {
   plugins: any[];
-  base: "/build";
+  base: "/build" | "/";
   root: string;
   server: { port: number; host: boolean; open: boolean };
   build: { cacheDir: string; outDir: string };
@@ -34,7 +34,7 @@ export const generateViteConfig = ({
   const buildFolderName = generateBuildFolderName();
 
   const argv = process.env.npm_lifecycle_event!;
-  const [command] = argv.split(":");
+  const [command] = argv.split(":") as ["dev" | "build" | "preview"];
 
   console.log("🚀 실행 서비스: ", `\x1b[34m${serviceName}\x1b[0m`);
   console.log("🚀 실행 명령어: ", `\x1b[34m${command}\x1b[0m`);
@@ -57,7 +57,7 @@ export const generateViteConfig = ({
         },
       }),
     ],
-    base: "/build",
+    base: command === "dev" ? "/" : "/build",
     root,
     server: { port, host: true, open: true },
     build: { cacheDir: ".vite/build", outDir: buildFolderName },
