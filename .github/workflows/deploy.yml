@@ -188,7 +188,7 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
-      - name: "☁️ 파일을 S3에 업로드"
+      - name: "☁️ S3에 빌드 파일 업로드"
         run: |
           APP_DIR="apps/$SERVICE_NAME"
           BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
@@ -201,7 +201,17 @@ jobs:
 
           printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
 
-          # ✅ index.html 생성하여 build/index.html을 가리키도록 설정
+          # ✅ 빌드 파일을 S3의 /build 폴더에 업로드
+          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
+            printf "::error:: 🚨 S3에 빌드 파일 업로드 실패!\n"
+            exit 1
+          }
+
+          printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: $S3_BUCKET_NAME/build\n"
+
+      - name: "📄 S3 루트에 index.html 업로드"
+        run: |
+          # ✅ S3 루트(index.html) 생성하여 /build/index.html로 리다이렉트 설정
           echo '<!DOCTYPE html>
           <html lang="en">
           <head>
@@ -213,13 +223,14 @@ jobs:
           <body>
             <p>If you are not redirected, <a href="/build/index.html">click here</a>.</p>
           </body>
-          </html>' > "$BUILD_DIR/index.html"
+          </html>' > index.html
 
           printf "::notice:: ✅ index.html 생성 완료\n"
 
-          # ✅ S3에 업로드
-          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
-            printf "::error:: 🚨 S3에 파일 업로드 실패!\n"
+          # ✅ index.html을 S3 루트에 업로드
+          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION index.html s3://$S3_BUCKET_NAME/index.html || {
+            printf "::error:: 🚨 S3 루트 경로에 index.html 업로드 실패!\n"
             exit 1
           }
-          printf "::notice:: ✅ 파일이 S3 버킷에 성공적으로 업로드되었습니다: $S3_BUCKET_NAME\n"
+
+          printf "::notice:: ✅ S3 루트에 index.html이 성공적으로 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
