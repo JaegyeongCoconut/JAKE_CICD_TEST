@@ -201,6 +201,23 @@ jobs:
 
           printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
 
+          # ✅ index.html 생성하여 build/index.html을 가리키도록 설정
+          echo '<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Redirecting...</title>
+            <meta http-equiv="refresh" content="0; url=/build/index.html">
+          </head>
+          <body>
+            <p>If you are not redirected, <a href="/build/index.html">click here</a>.</p>
+          </body>
+          </html>' > "$BUILD_DIR/index.html"
+
+          printf "::notice:: ✅ index.html 생성 완료\n"
+
+          # ✅ S3에 업로드
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
             printf "::error:: 🚨 S3에 파일 업로드 실패!\n"
             exit 1
