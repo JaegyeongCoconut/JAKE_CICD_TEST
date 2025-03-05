@@ -208,29 +208,3 @@ jobs:
           }
 
           printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: $S3_BUCKET_NAME/build\n"
-
-      - name: "📄 S3 루트에 index.html 업로드"
-        run: |
-          # ✅ S3 루트(index.html) 생성하여 /build/index.html로 리다이렉트 설정
-          echo '<!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Redirecting...</title>
-            <meta http-equiv="refresh" content="0; url=/build/index.html">
-          </head>
-          <body>
-            <p>If you are not redirected, <a href="/build/index.html">click here</a>.</p>
-          </body>
-          </html>' > index.html
-
-          printf "::notice:: ✅ index.html 생성 완료\n"
-
-          # ✅ index.html을 S3 루트에 업로드
-          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION index.html s3://$S3_BUCKET_NAME/index.html || {
-            printf "::error:: 🚨 S3 루트 경로에 index.html 업로드 실패!\n"
-            exit 1
-          }
-
-          printf "::notice:: ✅ S3 루트에 index.html이 성공적으로 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
