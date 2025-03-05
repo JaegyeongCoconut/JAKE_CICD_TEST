@@ -188,6 +188,16 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
+      - name: "🗑️ S3에서 build-new 폴더 삭제"
+        run: |
+          if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-new  | grep -q .; then
+            printf "::notice:: 🗑️ build-new 폴더 삭제 중...\n"
+            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-new 
+            printf "::notice:: ✅ build-new 폴더 삭제 완료\n"
+          else
+            printf "::notice:: ⚠️ build-new 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
+          fi
+
       - name: "🗂️ 기존 빌드 백업 (build → build-before)"
         run: |
           # ✅ 기존 빌드 파일을 build-before 폴더로 백업
