@@ -22,7 +22,7 @@ jobs:
 
       # NOTE: 서비스별 S3 버킷, CloudFront ID 목록. JSON 형태로 작성. ','로 구분. 띄어쓰기 x
       AWS_CONFIG: '{
-        "moveRanking-dev": {"s3BucketName": "jakecicd"},
+        "moveRanking-dev": {"s3BucketName": "jakecicd"}
         }'
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
@@ -32,7 +32,7 @@ jobs:
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ COCONUT AWS IAM KEY 설정이 완료되었습니다.\n"
+          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
       - name: "⚙️ GitHub Actions 환경 변수 설정"
         run: |

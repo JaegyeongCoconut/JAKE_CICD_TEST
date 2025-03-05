@@ -73,17 +73,7 @@ printf "🚀 코드 브랜치: \x1b[34m$REF\x1b[0m\n"
 SERVICE_DOMAIN=""
 
 case "${SERVICE_NAME}-${DEPLOY_ENV}" in
-  "carAdmin-dev") SERVICE_DOMAIN="dev.admin.car.laosmartmobility.com" ;;
-  "carAdmin-prod") SERVICE_DOMAIN="admin.car.laosmartmobility.com" ;;
-  "carInspection-dev") SERVICE_DOMAIN="dev.inspection.car.laosmartmobility.com" ;;
-  "carInspection-prod") SERVICE_DOMAIN="inspection.car.laosmartmobility.com" ;;
-  "eCommerceAdmin-dev") SERVICE_DOMAIN="dev.admin.ecomm.laosmartmobility.com" ;;
-  "logisticsAdmin-dev") SERVICE_DOMAIN="dev.logistics.laosmartmobility.com" ;;
-  "logisticsAdmin-prod") SERVICE_DOMAIN="logistics.laosmartmobility.com" ;;
-  "moveAdmin-dev") SERVICE_DOMAIN="dev.admin.move.laosmartmobility.com" ;;
-  "moveAdmin-prod") SERVICE_DOMAIN="admin.move.laosmartmobility.com" ;;
-  "moveRanking-dev") SERVICE_DOMAIN="dev.hero.move.laosmartmobility.com/ranking" ;;
-  "moveRanking-prod") SERVICE_DOMAIN="hero.move.laosmartmobility.com/ranking" ;;
+  "moveRanking-dev") SERVICE_DOMAIN="http://jakecicd.s3-website-ap-southeast-1.amazonaws.com/ranking" ;;
 esac
 
 
