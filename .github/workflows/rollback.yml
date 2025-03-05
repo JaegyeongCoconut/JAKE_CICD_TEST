@@ -107,7 +107,7 @@ jobs:
       - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
         run: |
           # ✅ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
-          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR/index.html s3://$S3_BUCKET_NAME/index.html || {
+          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before/index.html s3://$S3_BUCKET_NAME/index.html || {
             printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
             exit 1
           }
