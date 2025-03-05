@@ -73,14 +73,14 @@ printf "🚀 코드 브랜치: \x1b[34m$REF\x1b[0m\n"
 SERVICE_DOMAIN=""
 
 case "${SERVICE_NAME}-${DEPLOY_ENV}" in
-  "moveRanking-dev") SERVICE_DOMAIN="http://jakecicd.s3-website-ap-southeast-1.amazonaws.com/ranking" ;;
+  "moveRanking-dev") SERVICE_DOMAIN="jakecicd.s3-website-ap-southeast-1.amazonaws.com/ranking" ;;
 esac
 
 
 # NOTE: 도메인 열기 (존재하면)
 if [[ -n "$SERVICE_DOMAIN" ]]; then
   printf "\n🌍 서비스 도메인 열기: \x1b[32m$SERVICE_DOMAIN\x1b[0m\n"
-  open "https://$SERVICE_DOMAIN"
+  open "http://$SERVICE_DOMAIN"
 else
   printf "❗ \x1b[31m서비스 도메인이 설정되어 있지 않습니다.\x1b[0m\n"
 fi
