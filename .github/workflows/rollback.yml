@@ -70,7 +70,7 @@ jobs:
 
           printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
 
-      - name: "📦 AWS 배포 환경 설정"
+      - name: "🛠️ AWS 배포 환경 설정"
         run: |
           SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
 
@@ -95,7 +95,7 @@ jobs:
           }
           printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
 
-      - name: "📦 기존 빌드 백업 (build → build-new)"
+      - name: "🗂️ 기존 빌드 백업 (build → build-new)"
         run: |
           # ✅ 기존 빌드 파일을 build-new 폴더로 백업
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-new || {
@@ -104,7 +104,7 @@ jobs:
 
           printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
 
-      - name: "📦↩️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
+      - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
         run: |
           # ✅ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
           aws s3 cp --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR/index.html s3://$S3_BUCKET_NAME/index.html || {
@@ -114,7 +114,7 @@ jobs:
 
           printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
 
-      - name: "📦↩️ 이전 빌드 롤백 (build-before → build) 및 index.html root 경로 업로드"
+      - name: "↩️ 이전 빌드 롤백 (build-before → build) 및 index.html root 경로 업로드"
         run: |
           # ✅ 이전 빌드 파일을 build 폴더로 롤백
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before s3://$S3_BUCKET_NAME/build || {

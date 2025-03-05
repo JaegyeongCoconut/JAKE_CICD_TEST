@@ -188,7 +188,7 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
-      - name: "📦 기존 빌드 백업 (build → build-before)"
+      - name: "🗂️ 기존 빌드 백업 (build → build-before)"
         run: |
           # ✅ 기존 빌드 파일을 build-before 폴더로 백업
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-before || {
