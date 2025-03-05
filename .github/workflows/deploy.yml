@@ -197,7 +197,7 @@ jobs:
 
           printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
 
-      - name: "☁️ S3에 빌드 파일 업로드"
+      - name: "☁️ S3에 빌드 파일 업로드 및 index.html root 경로 업로드"
         run: |
           APP_DIR="apps/$SERVICE_NAME"
           BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
