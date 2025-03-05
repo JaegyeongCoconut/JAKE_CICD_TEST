@@ -22,21 +22,14 @@ fi
 
 # NOTE: 서비스 목록 (표시될 값 | 실제 값)
 SERVICE_CHOICES=(
-  "KOKKOK Car Admin WEB|carAdmin"
-  "KOKKOK Car Inspection WEB|carInspection"
-  "KOKKOK E-Commerce Admin WEB|eCommerceAdmin"
-  "KOKKOK Logistics Admin WEB|logisticsAdmin"
-  "KOKKOK Move Admin WEB|moveAdmin"
   "KOKKOK Move Ranking WEB|moveRanking"
 )
 
 ENV_CHOICES=(
   "개발 환경 (development)|dev"
-  "운영 환경 (production)|prod"
 )
 
 BRANCH_CHOICES=(
-  "개발 브랜치 (develop)|develop"
   "운영 브랜치 (main)|main"
 )
 
@@ -56,14 +49,17 @@ if [[ -z "$SERVICE_NAME" || -z "$DEPLOY_ENV" || -z "$REF" ]]; then
   exit 1
 fi
 
+# NOTE: 배포할 GitHub 레포지토리 설정 (변수화)
+REPO="JaegyeongCoconut/React_CICD"
+
 # NOTE: GitHub Workflow 실행
-gh workflow run deploy.yml --repo coconutsilo/kk-monorepo-web --ref "$REF" --field SERVICE_NAME="$SERVICE_NAME" --field DEPLOY_ENV="$DEPLOY_ENV" &
+gh workflow run deploy.yml --repo "$REPO" --ref "$REF" --field SERVICE_NAME="$SERVICE_NAME" --field DEPLOY_ENV="$DEPLOY_ENV" &
 
 # NOTE: 일정 시간 대기 (3초)
 sleep 3
 
 # NOTE: 최신 실행된 워크플로우 URL 가져와서 브라우저에서 열기
-gh run list --repo coconutsilo/kk-monorepo-web --limit 1 --json url --jq '.[0].url' | xargs open
+gh run list --repo "$REPO" --limit 1 --json url --jq '.[0].url' | xargs open
 
 # NOTE: 코드 실행 완료 메시지
 printf "\n-----------------------------------------\n\n"
