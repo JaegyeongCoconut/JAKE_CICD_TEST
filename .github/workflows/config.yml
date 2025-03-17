@@ -1,0 +1,25 @@
+name: Common Workflow
+
+on:
+  workflow_call:
+    outputs:
+      AUTHORIZED_ENV:
+        description: "AWS Region"
+        value: ${{ jobs.setup.outputs.AUTHORIZED_ENV }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
+
+    steps:
+      - name: Set Environment Variables
+        id: export-env
+        run: |
+          echo "AUTHORIZED_ENV='dev,prod'" >> $GITHUB_ENV
+          echo "::set-output name=AUTHORIZED_ENV::'dev,prod'"
+
+      - name: Print Environment Variables
+        run: |
+          echo "AUTHORIZED_ENV=${{ steps.export-env.outputs.AUTHORIZED_ENV }}"
