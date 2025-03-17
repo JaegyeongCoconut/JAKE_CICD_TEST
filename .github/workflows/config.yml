@@ -17,8 +17,7 @@ jobs:
       - name: Set Environment Variables
         id: export-env
         run: |
-          echo "AUTHORIZED_ENV='dev,prod'" >> $GITHUB_ENV
-          echo "::set-output name=AUTHORIZED_ENV::'dev,prod'"
+          echo "AUTHORIZED_ENV='dev,prod'" >> $GITHUB_OUTPUT
 
       - name: Print Environment Variables
         run: |
