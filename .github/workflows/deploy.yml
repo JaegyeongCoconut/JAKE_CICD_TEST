@@ -15,6 +15,9 @@ run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환
 jobs:
   call-common:
     uses: ./.github/workflows/common.yml # ✅ 공용 YML 호출
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   deploy:
     runs-on: ubuntu-latest
     needs: call-common
