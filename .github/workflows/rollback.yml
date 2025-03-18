@@ -41,6 +41,7 @@ jobs:
           printf "::notice:: ✅ ${ENV_MOVERANKING_DEV}\n"
           printf "::notice:: ✅ ${SERVICE_NAME}\n"
           printf "::notice:: ✅ ${DEPLOY_ENV}\n"
+          printf "::notice:: ✅ ${S3_BUCKET_NAME}\n"
 
       - name: "🗂️ 기존 빌드 백업 (build → build-new)"
         run: |
