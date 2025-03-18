@@ -9,6 +9,7 @@ on:
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
+
   workflow_call:
     outputs:
       AUTHORIZED_ENV:
@@ -70,6 +71,12 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+
+      - name: "🔍 AWS Credentials Debug"
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
+          aws sts get-caller-identity || echo "🚨 AWS Credentials 설정 오류 발생"
 
       - name: "🛡️ 배포 환경 유효성 검사"
         run: |
