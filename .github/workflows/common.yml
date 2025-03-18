@@ -44,9 +44,6 @@ jobs:
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: ${{ steps.export-env.outputs.AUTHORIZED_BRANCHES }}
@@ -71,8 +68,10 @@ jobs:
 
       - name: "🔑 AWS IAM KEY 설정"
         run: |
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
           printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
       - name: "🛡️ 배포 환경 유효성 검사"
