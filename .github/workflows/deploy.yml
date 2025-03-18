@@ -27,11 +27,13 @@ jobs:
       AUTHORIZED_USERS_IN_DEV: ${{ needs.call-common.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_CONFIG: ${{ needs.call-common.outputs.AWS_CONFIG }}
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-common.outputs.S3_DEPLOY_BUCKET_REGION }}
-      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      S3_BUCKET_NAME: ${{ needs.call-common.outputs.S3_BUCKET_NAME }}
+
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
       CURRENT_BRANCH: ${{ github.ref_name }}
-      S3_BUCKET_NAME: ${{ needs.call-common.outputs.S3_BUCKET_NAME }}
+
+      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
 
     steps:
       - name: Deploy Service
