@@ -23,7 +23,7 @@ jobs:
     needs: call-common
     env:
       AUTHORIZED_ENV: ${{ needs.call-common.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: ${{ needs.call-common.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ needs.call-common.outputs.AUTHORIZED_BRANCHES }}
       AUTHORIZED_USERS_IN_DEV: ${{ needs.call-common.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_CONFIG: ${{ needs.call-common.outputs.AWS_CONFIG }}
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-common.outputs.S3_DEPLOY_BUCKET_REGION }}
