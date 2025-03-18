@@ -38,7 +38,6 @@ jobs:
           printf "::notice:: ✅ ${AUTHORIZED_USERS_IN_DEV}\n"
           printf "::notice:: ✅ ${AWS_CONFIG}\n"
           printf "::notice:: ✅ ${S3_DEPLOY_BUCKET_REGION}\n"
-          printf "::notice:: ✅ ${ENV_MOVERANKING_DEV}\n"
           printf "::notice:: ✅ ${SERVICE_NAME}\n"
           printf "::notice:: ✅ ${DEPLOY_ENV}\n"
           printf "::notice:: ✅ ${S3_BUCKET_NAME}\n"

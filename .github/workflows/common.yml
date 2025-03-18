@@ -61,15 +61,6 @@ jobs:
       S3_BUCKET_NAME: ${{ steps.export-env.outputs.S3_BUCKET_NAME }}
 
     steps:
-      - name: 📌 공용 환경 변수 설정
-        id: export-env
-        run: |
-          echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
-          echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
-          echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
-          echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
-          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
-
       - name: "✔️ GitHub Actions Input 값 확인"
         run: |
           printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
@@ -115,7 +106,6 @@ jobs:
 
           # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정 및 output 설정
           echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
-          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
           printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
 
       - name: "🔎 S3 버킷 존재 여부 확인"
@@ -125,3 +115,13 @@ jobs:
             exit 1
           }
           printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
+
+      - name: 📌 공용 환경 변수 설정
+        id: export-env
+        run: |
+          echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
+          echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
+          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
