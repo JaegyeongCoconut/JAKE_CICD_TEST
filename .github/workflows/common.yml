@@ -8,7 +8,7 @@ on:
         value: ${{ jobs.setup.outputs.AUTHORIZED_ENV }}
 
 jobs:
-  setup:
+  upload-set-up:
     runs-on: ubuntu-latest
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
@@ -21,4 +21,4 @@ jobs:
 
       - name: Print Environment Variables
         run: |
-          echo "AUTHORIZED_ENV=${{ steps.export-env.outputs.AUTHORIZED_ENV }}"
+          printf "::notice:: ✅ AUTHORIZED_ENV=${{ steps.export-env.outputs.AUTHORIZED_ENV }}\n"
