@@ -146,7 +146,7 @@ jobs:
         run: |
           if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-legacy  | grep -q .; then
             printf "::notice:: 🗑️ build-legacy 폴더 삭제 중...\n"
-            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy
+            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy 
             printf "::notice:: ✅ build-legacy 폴더 삭제 완료\n"
           else
             printf "::notice:: ⚠️ build-legacy 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
@@ -155,12 +155,12 @@ jobs:
       - name: "🗂️ build 폴더를 buile-before 폴더로 백업 (build → build-before)"
         run: |
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-before || {
-            printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
+            printf "::notice:: 🔄 기존 build 폴더가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
           }
 
-          printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
+          printf "::notice:: ✅ 기존 build 폴더를 build-before로 백업 완료\n"
 
-      - name: "☁️ S3에 빌드 파일 업로드 및 index.html root 경로 업로드"
+      - name: "☁️ S3에 build 폴더 업로드 및 index.html root 경로 업로드"
         run: |
           APP_DIR="apps/$SERVICE_NAME"
           BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
