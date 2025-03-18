@@ -35,160 +35,160 @@ jobs:
     steps:
       - name: Deploy Service
         run: |
-          printf "::notice:: ${AUTHORIZED_ENV}\n"
-          printf "::notice:: ${AUTHORIZED_BRANCHES}\n"
-          printf "::notice:: ${AUTHORIZED_USERS_IN_DEV}\n"
-          printf "::notice:: ${AWS_CONFIG}\n"
-          printf "::notice:: ${S3_DEPLOY_BUCKET_REGION}\n"
-          printf "::notice:: ${ENV_MOVERANKING_DEV}\n"
-          printf "::notice:: ${SERVICE_NAME}\n"
-          printf "::notice:: ${DEPLOY_ENV}\n"
-          printf "::notice:: ${CURRENT_BRANCH}\n"
+          printf "::notice:: ✅ ${AUTHORIZED_ENV}\n"
+          printf "::notice:: ✅ ${AUTHORIZED_BRANCHES}\n"
+          printf "::notice:: ✅ ${AUTHORIZED_USERS_IN_DEV}\n"
+          printf "::notice:: ✅ ${AWS_CONFIG}\n"
+          printf "::notice:: ✅ ${S3_DEPLOY_BUCKET_REGION}\n"
+          printf "::notice:: ✅ ${ENV_MOVERANKING_DEV}\n"
+          printf "::notice:: ✅ ${SERVICE_NAME}\n"
+          printf "::notice:: ✅ ${DEPLOY_ENV}\n"
+          printf "::notice:: ✅ ${CURRENT_BRANCH}\n"
 
-      # - name: "🔍 배포 브랜치 유효성 검사"
-      #   run: |
-      #     if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
-      #       printf "::error:: 🚨 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
-      #       exit 1
-      #     fi
-      #     printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
+      - name: "🔍 배포 브랜치 유효성 검사"
+        run: |
+          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
+            printf "::error:: 🚨 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
 
-      # - name: "📥 소스 repo 코드 체크아웃"
-      #   uses: actions/checkout@v4
+      - name: "📥 소스 repo 코드 체크아웃"
+        uses: actions/checkout@v4
 
-      # - uses: pnpm/action-setup@v4
-      #   name: pnpm 설치
-      #   with:
-      #     # NOTE: pnpm 버전은 package.json에 명시된 버전과 일치해야 함
-      #     version: 9.4.0
-      #     run_install: false
+      - uses: pnpm/action-setup@v4
+        name: pnpm 설치
+        with:
+          # NOTE: pnpm 버전은 package.json에 명시된 버전과 일치해야 함
+          version: 9.4.0
+          run_install: false
 
-      # # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
-      # - name: "🛠️ Node.js 설치 및 의존성 cache 사용"
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 20
-      #     cache: "pnpm"
+      # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
+      - name: "🛠️ Node.js 설치 및 의존성 cache 사용"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
 
-      # - name: "📦 의존성 설치"
-      #   run: pnpm install
+      - name: "📦 의존성 설치"
+        run: pnpm install
 
-      # - name: "🔑 GitHub Secrets 환경 변수 설정"
-      #   run: |
-      #     # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
-      #     UPPER_SERVICE_NAME=$(echo "${{ github.event.inputs.SERVICE_NAME }}" | tr '[:lower:]' '[:upper:]')
-      #     UPPER_DEPLOY_ENV=$(echo "${{ github.event.inputs.DEPLOY_ENV }}" | tr '[:lower:]' '[:upper:]')
-      #     ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
-      #     printf "::notice:: ✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
+      - name: "🔑 GitHub Secrets 환경 변수 설정"
+        run: |
+          # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
+          UPPER_SERVICE_NAME=$(echo "$SERVICE_NAME" | tr '[:lower:]' '[:upper:]')
+          UPPER_DEPLOY_ENV=$(echo "$DEPLOY_ENV" | tr '[:lower:]' '[:upper:]')
+          ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
+          printf "::notice:: ✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
 
-      #     # NOTE: Secrets에서 값 가져오기
-      #     ENV_CONTENT="${!ENV_SECRET_NAME}"
+          # NOTE: Secrets에서 값 가져오기
+          ENV_CONTENT="${!ENV_SECRET_NAME}"
 
-      #     # NOTE: 빈 값 확인
-      #     if [[ -z "$ENV_CONTENT" ]]; then
-      #       printf "::error:: 🚨 $ENV_SECRET_NAME에 해당하는 시크릿을 찾을 수 없습니다.\n"
-      #       exit 1
-      #     fi
+          # NOTE: 빈 값 확인
+          if [[ -z "$ENV_CONTENT" ]]; then
+            printf "::error:: 🚨 $ENV_SECRET_NAME에 해당하는 시크릿을 찾을 수 없습니다.\n"
+            exit 1
+          fi
 
-      #     # NOTE: 환경 변수로 설정
-      #     echo "$ENV_CONTENT" | while IFS= read -r line; do
-      #       # NOTE: 빈 줄이나 잘못된 값 건너뛰기
-      #       if [[ -n "$line" ]]; then
-      #         echo "$line" >> $GITHUB_ENV
-      #       fi
-      #     done
+          # NOTE: 환경 변수로 설정
+          echo "$ENV_CONTENT" | while IFS= read -r line; do
+            # NOTE: 빈 줄이나 잘못된 값 건너뛰기
+            if [[ -n "$line" ]]; then
+              echo "$line" >> $GITHUB_ENV
+            fi
+          done
 
-      #     # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
-      #     ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
-      #     echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
-      #     printf "::notice:: ✅ 환경 변수를 $ENV_FILE_NAME 파일에 저장했습니다.\n"
+          # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
+          ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
+          printf "::notice:: ✅ 환경 변수를 $ENV_FILE_NAME 파일에 저장했습니다.\n"
 
-      #     # NOTE: ENV_FILE_NAME 환경 변수를 GITHUB_ENV에 저장
-      #     echo "ENV_FILE_NAME=$ENV_FILE_NAME" >> $GITHUB_ENV
+          # NOTE: ENV_FILE_NAME 환경 변수를 GITHUB_ENV에 저장
+          echo "ENV_FILE_NAME=$ENV_FILE_NAME" >> $GITHUB_ENV
 
-      #     # NOTE: .env.[환경] 파일 內 주석(#) 포함 여부 확인
-      #     if grep -q '^#' "$ENV_FILE_NAME"; then
-      #       printf "::warning:: 🚨 .env 파일에 '#'로 시작하는 주석이 포함되어 있어 오류가 발생할 수 있습니다.\n"
-      #       printf "::warning:: 🚨 github actions에서 .env 파일의 모든 '#'을 삭제해 주세요.\n"
-      #       exit 1
-      #     fi
+          # NOTE: .env.[환경] 파일 內 주석(#) 포함 여부 확인
+          if grep -q '^#' "$ENV_FILE_NAME"; then
+            printf "::warning:: 🚨 .env 파일에 '#'로 시작하는 주석이 포함되어 있어 오류가 발생할 수 있습니다.\n"
+            printf "::warning:: 🚨 github actions에서 .env 파일의 모든 '#'을 삭제해 주세요.\n"
+            exit 1
+          fi
 
-      # - name: "📂 프로젝트 디렉토리 설정 및 .env.[환경] 파일 위치 수정"
-      #   run: |
-      #     APP_DIR="apps/$SERVICE_NAME"
+      - name: "📂 프로젝트 디렉토리 설정 및 .env.[환경] 파일 위치 수정"
+        run: |
+          APP_DIR="apps/$SERVICE_NAME"
 
-      #     mv $ENV_FILE_NAME $APP_DIR || {
-      #       printf "::error:: 🚨 .env 파일을 $APP_DIR로 이동하지 못했습니다.\n"
-      #       exit 1
-      #     }
+          mv $ENV_FILE_NAME $APP_DIR || {
+            printf "::error:: 🚨 .env 파일을 $APP_DIR로 이동하지 못했습니다.\n"
+            exit 1
+          }
 
-      #     printf "::notice:: ✅ .env 파일을 $APP_DIR 디렉토리로 이동했습니다.\n"
-      #     cat $APP_DIR/$ENV_FILE_NAME
+          printf "::notice:: ✅ .env 파일을 $APP_DIR 디렉토리로 이동했습니다.\n"
+          cat $APP_DIR/$ENV_FILE_NAME
 
-      #     # NOTE: .env 파일 존재 여부 확인
-      #     if [ ! -f "$APP_DIR/$ENV_FILE_NAME" ]; then
-      #       printf "::error:: 🚨 환경 변수 파일을 찾을 수 없습니다: $APP_DIR/$ENV_FILE_NAME\n"
-      #       exit 1
-      #     fi
+          # NOTE: .env 파일 존재 여부 확인
+          if [ ! -f "$APP_DIR/$ENV_FILE_NAME" ]; then
+            printf "::error:: 🚨 환경 변수 파일을 찾을 수 없습니다: $APP_DIR/$ENV_FILE_NAME\n"
+            exit 1
+          fi
 
-      # - name: "⚡ React 빌드"
-      #   run: |
-      #     APP_DIR="apps/$SERVICE_NAME"
-      #     BUILD_COMMAND="$([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME"
+      - name: "⚡ React 빌드"
+        run: |
+          APP_DIR="apps/$SERVICE_NAME"
+          BUILD_COMMAND="$([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME"
 
-      #     printf "::notice:: 🔍 빌드 경로 확인: $APP_DIR\n"
-      #     printf "::notice:: 🔍 .env 파일 내용:\n"
-      #     cat "$APP_DIR/$ENV_FILE_NAME"
+          printf "::notice:: 🔍 빌드 경로 확인: $APP_DIR\n"
+          printf "::notice:: 🔍 .env 파일 내용:\n"
+          cat "$APP_DIR/$ENV_FILE_NAME"
 
-      #     printf "::notice:: ✅ 빌드 명령어: $BUILD_COMMAND\n"
+          printf "::notice:: ✅ 빌드 명령어: $BUILD_COMMAND\n"
 
-      #     set -a
-      #     pnpm run $BUILD_COMMAND
+          set -a
+          pnpm run $BUILD_COMMAND
 
-      # - name: "🗑️ S3에서 build-new 폴더 삭제"
-      #   run: |
-      #     if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-new  | grep -q .; then
-      #       printf "::notice:: 🗑️ build-new 폴더 삭제 중...\n"
-      #       aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-new
-      #       printf "::notice:: ✅ build-new 폴더 삭제 완료\n"
-      #     else
-      #       printf "::notice:: ⚠️ build-new 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
-      #     fi
+      - name: "🗑️ S3에서 build-new 폴더 삭제"
+        run: |
+          if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-new  | grep -q .; then
+            printf "::notice:: 🗑️ build-new 폴더 삭제 중...\n"
+            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-new
+            printf "::notice:: ✅ build-new 폴더 삭제 완료\n"
+          else
+            printf "::notice:: ⚠️ build-new 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
+          fi
 
-      # - name: "🗂️ 기존 빌드 백업 (build → build-before)"
-      #   run: |
-      #     # ✅ 기존 빌드 파일을 build-before 폴더로 백업
-      #     aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-before || {
-      #       printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
-      #     }
+      - name: "🗂️ 기존 빌드 백업 (build → build-before)"
+        run: |
+          # ✅ 기존 빌드 파일을 build-before 폴더로 백업
+          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-before || {
+            printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
+          }
 
-      #     printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
+          printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
 
-      # - name: "☁️ S3에 빌드 파일 업로드 및 index.html root 경로 업로드"
-      #   run: |
-      #     APP_DIR="apps/$SERVICE_NAME"
-      #     BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+      - name: "☁️ S3에 빌드 파일 업로드 및 index.html root 경로 업로드"
+        run: |
+          APP_DIR="apps/$SERVICE_NAME"
+          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
 
-      #     # NOTE: BUILD_DIR 존재 여부 확인
-      #     if [ ! -d "$BUILD_DIR" ]; then
-      #       printf "::error:: 🚨 빌드 결과 디렉토리를 찾을 수 없습니다: $BUILD_DIR\n"
-      #       exit 1
-      #     fi
+          # NOTE: BUILD_DIR 존재 여부 확인
+          if [ ! -d "$BUILD_DIR" ]; then
+            printf "::error:: 🚨 빌드 결과 디렉토리를 찾을 수 없습니다: $BUILD_DIR\n"
+            exit 1
+          fi
 
-      #     printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
+          printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
 
-      #     # ✅ S3에 빌드된 모든 파일 업로드 (build 폴더 내 파일)
-      #     aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
-      #       printf "::error:: 🚨 S3에 빌드 파일 업로드 실패!\n"
-      #       exit 1
-      #     }
+          # ✅ S3에 빌드된 모든 파일 업로드 (build 폴더 내 파일)
+          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
+            printf "::error:: 🚨 S3에 빌드 파일 업로드 실패!\n"
+            exit 1
+          }
 
-      #     printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: $S3_BUCKET_NAME/build\n"
+          printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: $S3_BUCKET_NAME/build\n"
 
-      #     # ✅ S3 루트에 index.html 업로드 (기존 build/index.html을 최상위로 복사)
-      #     aws s3 cp --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR/index.html s3://$S3_BUCKET_NAME/index.html || {
-      #       printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
-      #       exit 1
-      #     }
+          # ✅ S3 루트에 index.html 업로드 (기존 build/index.html을 최상위로 복사)
+          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR/index.html s3://$S3_BUCKET_NAME/index.html || {
+            printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
+            exit 1
+          }
 
-      #     printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
+          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
