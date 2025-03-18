@@ -11,6 +11,14 @@ on:
         required: true
 
   workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        description: "AWS IAM Access Key ID"
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        description: "AWS IAM Secret Access Key"
+        required: false
+
     outputs:
       AUTHORIZED_ENV:
         description: "배포 가능한 환경 목록"
@@ -52,7 +60,7 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: ${{ steps.export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
 
     steps:
-      - name: ⚙️ 공용 환경 변수 설정
+      - name: 📌 공용 환경 변수 설정
         id: export-env
         run: |
           echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
