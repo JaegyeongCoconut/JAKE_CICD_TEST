@@ -20,20 +20,20 @@ jobs:
     needs: call-common
     env:
       AUTHORIZED_ENV: ${{ needs.call-common.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
-      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # NOTE: 개발 환경 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
-
-      # NOTE: 서비스별 S3 버킷, CloudFront ID 목록. JSON 형태로 작성. ','로 구분. 띄어쓰기 x
-      AWS_CONFIG: '{
-        "moveRanking-dev": {"s3BucketName": "jakecicd"}
-        }'
-      S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
+      AUTHORIZED_BRANCHES: ${{ needs.call-common.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_USERS_IN_DEV: ${{ needs.call-common.outputs.AUTHORIZED_USERS_IN_DEV }}
+      AWS_CONFIG: ${{ needs.call-common.outputs.AWS_CONFIG }}
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.call-common.outputs.S3_DEPLOY_BUCKET_REGION }}
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
 
     steps:
       - name: Deploy Service
         run: |
-          echo "${AUTHORIZED_ENV}"
+          printf "::notice:: ${AUTHORIZED_ENV}\n"
+          printf "::notice:: ${AUTHORIZED_BRANCHES}\n"
+          printf "::notice:: ${AUTHORIZED_USERS_IN_DEV}\n"
+          printf "::notice:: ${AWS_CONFIG}\n"
+          printf "::notice:: ${S3_DEPLOY_BUCKET_REGION}\n"
       # - name: "🔑 AWS IAM KEY 설정"
       #   run: |
       #     echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
