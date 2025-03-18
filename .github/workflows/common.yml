@@ -11,14 +11,6 @@ on:
         required: true
 
   workflow_call:
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        description: "AWS IAM Access Key ID"
-        required: false
-      AWS_SECRET_ACCESS_KEY:
-        description: "AWS IAM Secret Access Key"
-        required: false
-
     outputs:
       AUTHORIZED_ENV:
         description: "배포 가능한 환경 목록"
@@ -51,6 +43,9 @@ jobs:
 
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
