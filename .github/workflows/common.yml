@@ -1,6 +1,14 @@
 name: Common Workflow
 
 on:
+  workflow_dispatch:
+    inputs:
+      SERVICE_NAME:
+        description: "배포 서비스 이름"
+        required: true
+      DEPLOY_ENV:
+        description: "배포 환경"
+        required: true
   workflow_call:
     outputs:
       AUTHORIZED_ENV:
@@ -40,7 +48,7 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: ${{ steps.export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
 
     steps:
-      - name: Set up output
+      - name: ⚙️ 공용 환경 변수 설정
         id: export-env
         run: |
           echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
@@ -48,3 +56,47 @@ jobs:
           echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
           echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
           echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
+
+      - name: "🛡️ 배포 환경 유효성 검사"
+        run: |
+          if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
+            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: $DEPLOY_ENV\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ 배포 환경 '$DEPLOY_ENV'는 유효합니다.\n"
+
+      - name: "👤 배포 실행 사용자 권한 검증"
+        run: |
+          AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+            printf "::error:: 🚨 사용자 '${{ github.actor }}'는 배포 권한이 없습니다.\n"
+            exit 1
+          fi
+
+          printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
+
+      - name: "🛠️ AWS 배포 환경 설정"
+        run: |
+          SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
+
+          # NOTE: JSON 환경 변수에서 S3 및 CloudFront ID 찾기
+          S3_BUCKET_NAME=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].s3BucketName')
+
+          # NOTE: S3 버킷 값 존재 여부 검증
+          if [[ -z "$S3_BUCKET_NAME" || "$S3_BUCKET_NAME" == "null" ]]; then
+            printf "::error:: 🚨 S3 버킷 정보가 존재하지 않습니다: $SERVICE_KEY\n"
+            exit 1
+          fi
+
+          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+          printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
+
+      - name: "🔎 S3 버킷 존재 여부 확인"
+        run: |
+          aws s3api head-bucket --bucket $S3_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
+            printf "::error:: 🚨 S3 버킷 '$S3_BUCKET_NAME'이 존재하지 않습니다.\n"
+            exit 1
+          }
+          printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
