@@ -31,6 +31,7 @@ jobs:
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
       CURRENT_BRANCH: ${{ github.ref_name }}
+      S3_BUCKET_NAME: ${{ needs.call-common.outputs.S3_BUCKET_NAME }}
 
     steps:
       - name: Deploy Service

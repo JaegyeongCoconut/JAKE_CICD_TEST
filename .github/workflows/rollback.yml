@@ -28,6 +28,7 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-common.outputs.S3_DEPLOY_BUCKET_REGION }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+      S3_BUCKET_NAME: ${{ needs.call-common.outputs.S3_BUCKET_NAME }}
 
     steps:
       - name: Rollback Service

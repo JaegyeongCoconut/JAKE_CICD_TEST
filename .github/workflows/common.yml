@@ -32,6 +32,9 @@ on:
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
         value: ${{ jobs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME:
+        description: "서비스 S3 버킷 이름"
+        value: ${{ jobs.output-set-up.outputs.S3_BUCKET_NAME }}
 
 jobs:
   output-set-up:
@@ -48,6 +51,7 @@ jobs:
 
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+      S3_BUCKET_NAME: ""
 
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
@@ -55,6 +59,7 @@ jobs:
       AUTHORIZED_USERS_IN_DEV: ${{ steps.export-env.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_CONFIG: ${{ steps.export-env.outputs.AWS_CONFIG }}
       S3_DEPLOY_BUCKET_REGION: ${{ steps.export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ steps.export-env.outputs.S3_BUCKET_NAME }}
 
     steps:
       - name: 📌 공용 환경 변수 설정
