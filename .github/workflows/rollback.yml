@@ -31,47 +31,48 @@ jobs:
       S3_BUCKET_NAME: ${{ needs.call-common.outputs.S3_BUCKET_NAME }}
 
     steps:
-      - name: Rollback Service
-        run: |
-          printf "::notice:: ✅ AUTHORIZED_ENV: ${AUTHORIZED_ENV}\n"
-          printf "::notice:: ✅ AUTHORIZED_BRANCHES: ${AUTHORIZED_BRANCHES}\n"
-          printf "::notice:: ✅ AUTHORIZED_USERS_IN_DEV: ${AUTHORIZED_USERS_IN_DEV}\n"
-          printf "::notice:: ✅ AWS_CONFIG: ${AWS_CONFIG}\n"
-          printf "::notice:: ✅ S3_DEPLOY_BUCKET_REGION: ${S3_DEPLOY_BUCKET_REGION}\n"
-          printf "::notice:: ✅ SERVICE_NAME: ${SERVICE_NAME}\n"
-          printf "::notice:: ✅ DEPLOY_ENV: ${DEPLOY_ENV}\n"
-          printf "::notice:: ✅ S3_BUCKET_NAME: ${S3_BUCKET_NAME}\n"
-
       - name: "🔑 AWS IAM KEY 설정"
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
-      - name: "🗂️ 기존 빌드 백업 (build → build-new)"
+      - name: "🗂️ build 폴더를 build-legacy 폴더로 백업 (build → build-legacy)"
         run: |
-          # ✅ 기존 빌드 파일을 build-new 폴더로 백업
-          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-new || {
-            printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
+          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-legacy || {
+            printf "::error:: 🚨 기존 build 폴더가 없습니다.\n"
+            exit 1
           }
 
-          printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
+          printf "::notice:: ✅ 기존 build를 build-new로 백업 완료\n"
 
       - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
         run: |
-          # ✅ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
+          # NOTE: S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
           aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before/index.html s3://$S3_BUCKET_NAME/index.html || {
             printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
+
+            aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy s3://$S3_BUCKET_NAME/build
+            printf "::notice:: 🔄 build-legacy → build 폴더로 롤백 완료\n"
+
             exit 1
           }
 
           printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
 
-      - name: "↩️ 이전 빌드 롤백 (build-before → build) 및 index.html root 경로 업로드"
+      - name: "↩️ build-before 폴더를 build 폴더로 롤백 (build-before → build) 및 index.html root 경로 업로드"
         run: |
-          # ✅ 이전 빌드 파일을 build 폴더로 롤백
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before s3://$S3_BUCKET_NAME/build || {
-            printf "::notice:: 🔄 이전 빌드가 없거나 롤백 중 일부 파일이 존재하지 않을 수 있습니다.\n"
+            printf "::error:: 🚨 build-before → build 폴더로 롤백 실패!\n"
+
+            aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy/index.html s3://$S3_BUCKET_NAME/index.html || {
+            printf "::notice:: 🔄 S3 루트에 index.html 롤백 완료\n"
+
+            aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy s3://$S3_BUCKET_NAME/build
+            printf "::notice:: 🔄 build-legacy → build 폴더로 롤백 완료\n"
+            
+            exit 1
+            }
           }
 
-          printf "::notice:: ✅ 이전 빌드를 build로 롤백 완료\n"
+          printf "::notice:: ✅ build-before → build 롤백 완료\n"
