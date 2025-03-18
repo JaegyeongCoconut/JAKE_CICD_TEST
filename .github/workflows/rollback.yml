@@ -26,88 +26,95 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
 
     steps:
-      - name: "🔑 AWS IAM KEY 설정"
+      - name: Rollback Service
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+          printf "::notice:: ${AUTHORIZED_ENV}\n"
+          printf "::notice:: ${AUTHORIZED_BRANCHES}\n"
+          printf "::notice:: ${AUTHORIZED_USERS_IN_DEV}\n"
+          printf "::notice:: ${AWS_CONFIG}\n"
+          printf "::notice:: ${S3_DEPLOY_BUCKET_REGION}\n"
+      # - name: "🔑 AWS IAM KEY 설정"
+      #   run: |
+      #     echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+      #     echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+      #     printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
-      - name: "⚙️ GitHub Actions 환경 변수 설정"
-        run: |
-          echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-          echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+      # - name: "⚙️ GitHub Actions 환경 변수 설정"
+      #   run: |
+      #     echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
+      #     echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
 
-          printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
-          printf "::notice:: ✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
+      #     printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
+      #     printf "::notice:: ✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
 
-      - name: "🛡️ 배포 환경 유효성 검사"
-        run: |
-          if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
-            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: $DEPLOY_ENV\n"
-            exit 1
-          fi
-          printf "::notice:: ✅ 배포 환경 '$DEPLOY_ENV'는 유효합니다.\n"
+      # - name: "🛡️ 배포 환경 유효성 검사"
+      #   run: |
+      #     if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
+      #       printf "::error:: 🚨 지원되지 않는 배포 환경입니다: $DEPLOY_ENV\n"
+      #       exit 1
+      #     fi
+      #     printf "::notice:: ✅ 배포 환경 '$DEPLOY_ENV'는 유효합니다.\n"
 
-      - name: "👤 배포 실행 사용자 권한 검증"
-        run: |
-          AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+      # - name: "👤 배포 실행 사용자 권한 검증"
+      #   run: |
+      #     AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
 
-          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
-            printf "::error:: 🚨 사용자 '${{ github.actor }}'는 배포 권한이 없습니다.\n"
-            exit 1
-          fi
+      #     if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+      #       printf "::error:: 🚨 사용자 '${{ github.actor }}'는 배포 권한이 없습니다.\n"
+      #       exit 1
+      #     fi
 
-          printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
+      #     printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
 
-      - name: "🛠️ AWS 배포 환경 설정"
-        run: |
-          SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
+      # - name: "🛠️ AWS 배포 환경 설정"
+      #   run: |
+      #     SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
 
-          # NOTE: JSON 환경 변수에서 S3 및 CloudFront ID 찾기
-          S3_BUCKET_NAME=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].s3BucketName')
+      #     # NOTE: JSON 환경 변수에서 S3 및 CloudFront ID 찾기
+      #     S3_BUCKET_NAME=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].s3BucketName')
 
-          # NOTE: S3 버킷 값 존재 여부 검증
-          if [[ -z "$S3_BUCKET_NAME" || "$S3_BUCKET_NAME" == "null" ]]; then
-            printf "::error:: 🚨 S3 버킷 정보가 존재하지 않습니다: $SERVICE_KEY\n"
-            exit 1
-          fi
+      #     # NOTE: S3 버킷 값 존재 여부 검증
+      #     if [[ -z "$S3_BUCKET_NAME" || "$S3_BUCKET_NAME" == "null" ]]; then
+      #       printf "::error:: 🚨 S3 버킷 정보가 존재하지 않습니다: $SERVICE_KEY\n"
+      #       exit 1
+      #     fi
 
-          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
-          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
-          printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
+      #     # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
+      #     echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+      #     printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
 
-      - name: "🔎 S3 버킷 존재 여부 확인"
-        run: |
-          aws s3api head-bucket --bucket $S3_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
-            printf "::error:: 🚨 S3 버킷 '$S3_BUCKET_NAME'이 존재하지 않습니다.\n"
-            exit 1
-          }
-          printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
+      # - name: "🔎 S3 버킷 존재 여부 확인"
+      #   run: |
+      #     aws s3api head-bucket --bucket $S3_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
+      #       printf "::error:: 🚨 S3 버킷 '$S3_BUCKET_NAME'이 존재하지 않습니다.\n"
+      #       exit 1
+      #     }
+      #     printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
 
-      - name: "🗂️ 기존 빌드 백업 (build → build-new)"
-        run: |
-          # ✅ 기존 빌드 파일을 build-new 폴더로 백업
-          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-new || {
-            printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
-          }
+      # - name: "🗂️ 기존 빌드 백업 (build → build-new)"
+      #   run: |
+      #     # ✅ 기존 빌드 파일을 build-new 폴더로 백업
+      #     aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-new || {
+      #       printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
+      #     }
 
-          printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
+      #     printf "::notice:: ✅ 기존 빌드를 build-before로 백업 완료\n"
 
-      - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
-        run: |
-          # ✅ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
-          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before/index.html s3://$S3_BUCKET_NAME/index.html || {
-            printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
-            exit 1
-          }
+      # - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
+      #   run: |
+      #     # ✅ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
+      #     aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before/index.html s3://$S3_BUCKET_NAME/index.html || {
+      #       printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
+      #       exit 1
+      #     }
 
-          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
+      #     printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
 
-      - name: "↩️ 이전 빌드 롤백 (build-before → build) 및 index.html root 경로 업로드"
-        run: |
-          # ✅ 이전 빌드 파일을 build 폴더로 롤백
-          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before s3://$S3_BUCKET_NAME/build || {
-            printf "::notice:: 🔄 이전 빌드가 없거나 롤백 중 일부 파일이 존재하지 않을 수 있습니다.\n"
-          }
+      # - name: "↩️ 이전 빌드 롤백 (build-before → build) 및 index.html root 경로 업로드"
+      #   run: |
+      #     # ✅ 이전 빌드 파일을 build 폴더로 롤백
+      #     aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before s3://$S3_BUCKET_NAME/build || {
+      #       printf "::notice:: 🔄 이전 빌드가 없거나 롤백 중 일부 파일이 존재하지 않을 수 있습니다.\n"
+      #     }
 
-          printf "::notice:: ✅ 이전 빌드를 build로 롤백 완료\n"
+      #     printf "::notice:: ✅ 이전 빌드를 build로 롤백 완료\n"
