@@ -36,18 +36,6 @@ jobs:
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
 
     steps:
-      - name: Deploy Service
-        run: |
-          printf "::notice:: ✅ AUTHORIZED_ENV: ${AUTHORIZED_ENV}\n"
-          printf "::notice:: ✅ AUTHORIZED_BRANCHES: ${AUTHORIZED_BRANCHES}\n"
-          printf "::notice:: ✅ AUTHORIZED_USERS_IN_DEV: ${AUTHORIZED_USERS_IN_DEV}\n"
-          printf "::notice:: ✅ AWS_CONFIG: ${AWS_CONFIG}\n"
-          printf "::notice:: ✅ S3_DEPLOY_BUCKET_REGION: ${S3_DEPLOY_BUCKET_REGION}\n"
-          printf "::notice:: ✅ ENV_MOVERANKING_DEV: ${ENV_MOVERANKING_DEV}\n"
-          printf "::notice:: ✅ SERVICE_NAME: ${SERVICE_NAME}\n"
-          printf "::notice:: ✅ DEPLOY_ENV: ${DEPLOY_ENV}\n"
-          printf "::notice:: ✅ CURRENT_BRANCH: ${CURRENT_BRANCH}\n"
-          printf "::notice:: ✅ S3_BUCKET_NAME: ${S3_BUCKET_NAME}\n"
       - name: "🔑 AWS IAM KEY 설정"
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
@@ -154,19 +142,18 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
-      - name: "🗑️ S3에서 build-new 폴더 삭제"
+      - name: "🗑️ S3에서 build-legacy 폴더 삭제"
         run: |
-          if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-new  | grep -q .; then
-            printf "::notice:: 🗑️ build-new 폴더 삭제 중...\n"
-            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-new
-            printf "::notice:: ✅ build-new 폴더 삭제 완료\n"
+          if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-legacy  | grep -q .; then
+            printf "::notice:: 🗑️ build-legacy 폴더 삭제 중...\n"
+            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy
+            printf "::notice:: ✅ build-legacy 폴더 삭제 완료\n"
           else
-            printf "::notice:: ⚠️ build-new 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
+            printf "::notice:: ⚠️ build-legacy 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
           fi
 
-      - name: "🗂️ 기존 빌드 백업 (build → build-before)"
+      - name: "🗂️ build 폴더를 buile-before 폴더로 백업 (build → build-before)"
         run: |
-          # ✅ 기존 빌드 파일을 build-before 폴더로 백업
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-before || {
             printf "::notice:: 🔄 기존 빌드가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
           }
@@ -194,7 +181,7 @@ jobs:
 
           printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: $S3_BUCKET_NAME/build\n"
 
-          # ✅ S3 루트에 index.html 업로드 (기존 build/index.html을 최상위로 복사)
+          # ✅ S3 루트에 index.html 업로드
           aws s3 cp --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR/index.html s3://$S3_BUCKET_NAME/index.html || {
             printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
             exit 1
