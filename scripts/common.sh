@@ -70,17 +70,7 @@ openServiceDomain() {
   # NOTE: 서비스별 도메인 매핑
   getServiceDomain() {
     case "${1}-${2}" in
-      "carAdmin-dev") echo "dev.admin.car.laosmartmobility.com" ;;
-      "carAdmin-prod") echo "admin.car.laosmartmobility.com" ;;
-      "carInspection-dev") echo "dev.inspection.car.laosmartmobility.com" ;;
-      "carInspection-prod") echo "inspection.car.laosmartmobility.com" ;;
-      "eCommerceAdmin-dev") echo "dev.admin.ecomm.laosmartmobility.com" ;;
-      "logisticsAdmin-dev") echo "dev.logistics.laosmartmobility.com" ;;
-      "logisticsAdmin-prod") echo "logistics.laosmartmobility.com" ;;
-      "moveAdmin-dev") echo "dev.admin.move.laosmartmobility.com" ;;
-      "moveAdmin-prod") echo "admin.move.laosmartmobility.com" ;;
-      "moveRanking-dev") echo "dev.hero.move.laosmartmobility.com/ranking" ;;
-      "moveRanking-prod") echo "hero.move.laosmartmobility.com/ranking" ;;
+      "moveRanking-dev") echo "http://jakecicd.s3-website-ap-southeast-1.amazonaws.com/ranking" ;;
       *) echo "" ;;
     esac
   }
