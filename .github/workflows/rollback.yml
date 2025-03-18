@@ -34,11 +34,9 @@ jobs:
           printf "::notice:: ${AUTHORIZED_USERS_IN_DEV}\n"
           printf "::notice:: ${AWS_CONFIG}\n"
           printf "::notice:: ${S3_DEPLOY_BUCKET_REGION}\n"
-      # - name: "🔑 AWS IAM KEY 설정"
-      #   run: |
-      #     echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-      #     echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-      #     printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+          printf "::notice:: ${ENV_MOVERANKING_DEV}\n"
+          printf "::notice:: ${SERVICE_NAME}\n"
+          printf "::notice:: ${DEPLOY_ENV}\n"
 
       # - name: "🗂️ 기존 빌드 백업 (build → build-new)"
       #   run: |

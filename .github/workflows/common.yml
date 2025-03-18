@@ -60,10 +60,16 @@ jobs:
           echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
           echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
 
-      - name: "⚙️ GitHub Actions Input 값 확인"
+      - name: "✔️ GitHub Actions Input 값 확인"
         run: |
           printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
           printf "::notice:: ✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
+
+      - name: "🔑 AWS IAM KEY 설정"
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
       - name: "🛡️ 배포 환경 유효성 검사"
         run: |
