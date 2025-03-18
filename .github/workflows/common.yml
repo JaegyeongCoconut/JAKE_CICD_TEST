@@ -40,6 +40,9 @@ jobs:
         }'
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
 
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: ${{ steps.export-env.outputs.AUTHORIZED_BRANCHES }}
@@ -56,6 +59,11 @@ jobs:
           echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
           echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
           echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
+
+      - name: "⚙️ GitHub Actions Input 값 확인"
+        run: |
+          printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
+          printf "::notice:: ✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
 
       - name: "🛡️ 배포 환경 유효성 검사"
         run: |

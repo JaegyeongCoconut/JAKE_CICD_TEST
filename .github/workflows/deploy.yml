@@ -25,6 +25,9 @@ jobs:
       AWS_CONFIG: ${{ needs.call-common.outputs.AWS_CONFIG }}
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-common.outputs.S3_DEPLOY_BUCKET_REGION }}
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+      CURRENT_BRANCH: ${{ github.ref_name }}
 
     steps:
       - name: Deploy Service
@@ -39,16 +42,6 @@ jobs:
       #     echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
       #     echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
       #     printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
-
-      # - name: "⚙️ GitHub Actions 환경 변수 설정"
-      #   run: |
-      #     echo "SERVICE_NAME=${{ github.event.inputs.SERVICE_NAME }}" >> $GITHUB_ENV
-      #     echo "DEPLOY_ENV=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
-      #     echo "CURRENT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      #     printf "::notice:: ✅ github actions에 'SERVICE_NAME' 환경 변수가 설정되었습니다: ${{ github.event.inputs.SERVICE_NAME }}\n"
-      #     printf "::notice:: ✅ github actions에 'DEPLOY_ENV' 환경 변수가 설정되었습니다: ${{ github.event.inputs.DEPLOY_ENV }}\n"
-      #     printf "::notice:: ✅ github actions에 'CURRENT_BRANCH' 환경 변수가 설정되었습니다: ${{ github.ref_name }}\n"
 
       # - name: "🔍 배포 브랜치 유효성 검사"
       #   run: |
