@@ -4,21 +4,19 @@ on:
   workflow_call:
     outputs:
       AUTHORIZED_ENV:
-        description: "AWS Region"
-        value: ${{ jobs.setup.outputs.AUTHORIZED_ENV }}
+        description: "배포 가능한 환경 목록"
+        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_ENV }}
 
 jobs:
-  upload-set-up:
+  output-set-up:
     runs-on: ubuntu-latest
+    env:
+      AUTHORIZED_ENV: "dev,prod" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
 
     steps:
-      - name: Set Environment Variables
+      - name: Set up output
         id: export-env
         run: |
-          echo "AUTHORIZED_ENV='dev,prod'" >> $GITHUB_OUTPUT
-
-      - name: Print Environment Variables
-        run: |
-          printf "::notice:: ✅ AUTHORIZED_ENV=${{ steps.export-env.outputs.AUTHORIZED_ENV }}\n"
+          echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT

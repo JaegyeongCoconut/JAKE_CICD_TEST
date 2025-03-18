@@ -13,13 +13,13 @@ on:
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
 jobs:
-  call-config:
-    uses: ./.github/workflows/config.yml # ✅ 공용 YML 호출
+  call-common:
+    uses: ./.github/workflows/common.yml # ✅ 공용 YML 호출
   deploy:
     runs-on: ubuntu-latest
-    needs: call-config
+    needs: call-common
     env:
-      AUTHORIZED_ENV: ${{ needs.call-config.outputs.AUTHORIZED_ENV }} # ✅ 공용 YML에서 가져온 환경 변수
+      AUTHORIZED_ENV: ${{ needs.call-common.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
       AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # NOTE: 개발 환경 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
 
