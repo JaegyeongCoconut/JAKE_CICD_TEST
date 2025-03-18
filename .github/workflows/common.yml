@@ -114,8 +114,9 @@ jobs:
             exit 1
           fi
 
-          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
+          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정 및 output 설정
           echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
           printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
 
       - name: "🔎 S3 버킷 존재 여부 확인"
