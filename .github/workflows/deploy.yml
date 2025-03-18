@@ -36,16 +36,21 @@ jobs:
     steps:
       - name: Deploy Service
         run: |
-          printf "::notice:: ✅ ${AUTHORIZED_ENV}\n"
-          printf "::notice:: ✅ ${AUTHORIZED_BRANCHES}\n"
-          printf "::notice:: ✅ ${AUTHORIZED_USERS_IN_DEV}\n"
-          printf "::notice:: ✅ ${AWS_CONFIG}\n"
-          printf "::notice:: ✅ ${S3_DEPLOY_BUCKET_REGION}\n"
-          printf "::notice:: ✅ ${ENV_MOVERANKING_DEV}\n"
-          printf "::notice:: ✅ ${SERVICE_NAME}\n"
-          printf "::notice:: ✅ ${DEPLOY_ENV}\n"
-          printf "::notice:: ✅ ${CURRENT_BRANCH}\n"
-          printf "::notice:: ✅ ${S3_BUCKET_NAME}\n"
+          printf "::notice:: ✅ AUTHORIZED_ENV: ${AUTHORIZED_ENV}\n"
+          printf "::notice:: ✅ AUTHORIZED_BRANCHES: ${AUTHORIZED_BRANCHES}\n"
+          printf "::notice:: ✅ AUTHORIZED_USERS_IN_DEV: ${AUTHORIZED_USERS_IN_DEV}\n"
+          printf "::notice:: ✅ AWS_CONFIG: ${AWS_CONFIG}\n"
+          printf "::notice:: ✅ S3_DEPLOY_BUCKET_REGION: ${S3_DEPLOY_BUCKET_REGION}\n"
+          printf "::notice:: ✅ ENV_MOVERANKING_DEV: ${ENV_MOVERANKING_DEV}\n"
+          printf "::notice:: ✅ SERVICE_NAME: ${SERVICE_NAME}\n"
+          printf "::notice:: ✅ DEPLOY_ENV: ${DEPLOY_ENV}\n"
+          printf "::notice:: ✅ CURRENT_BRANCH: ${CURRENT_BRANCH}\n"
+          printf "::notice:: ✅ S3_BUCKET_NAME: ${S3_BUCKET_NAME}\n"
+      - name: "🔑 AWS IAM KEY 설정"
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
       - name: "🔍 배포 브랜치 유효성 검사"
         run: |
