@@ -6,9 +6,15 @@ on:
       SERVICE_NAME:
         description: "배포 서비스 이름"
         required: true
+        type: choice
+        options:
+          - moveRanking
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
+        type: choice
+        options:
+          - dev
 
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
