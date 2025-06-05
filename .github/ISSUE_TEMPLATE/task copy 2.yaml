@@ -1,0 +1,34 @@
+name: Task
+description: 일반적인 작업을 등록할 때 사용
+title: "[Task] "
+labels: ["type:task", "status:todo"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - feat
+        - bug
+        - refactor
+        - chore
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - 🟥 High
+        - 🟨 Medium
+        - 🟩 Low
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: |
+        어떤 작업을 하는지 구체적으로 작성해주세요.
+    validations:
+      required: true
