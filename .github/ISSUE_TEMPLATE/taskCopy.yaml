@@ -1,4 +1,4 @@
-name: Task
+name: Task_Copy
 description: 일반적인 작업을 등록할 때 사용
 title: "[Task] "
 labels: ["type:task", "status:todo"]
