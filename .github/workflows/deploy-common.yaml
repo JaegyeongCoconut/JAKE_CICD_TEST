@@ -12,8 +12,10 @@ on:
         required: true
         type: string
     secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
     outputs:
       AUTHORIZED_ENV:
         description: "배포 가능한 환경 목록"
