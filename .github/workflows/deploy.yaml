@@ -48,6 +48,12 @@ jobs:
       ENV_MOVERANKING_PROD: ${{ secrets.ENV_MOVERANKING_PROD }}
 
     steps:
+      - name: "🔑 AWS IAM KEY 설정"
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+
       - name: "📥 소스 repo 코드 체크아웃"
         uses: actions/checkout@v4
 
