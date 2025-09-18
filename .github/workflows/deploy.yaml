@@ -38,7 +38,7 @@ jobs:
       AWS_ACCOUNT_ID_LOGISTICS: ${{secrets.AWS_ACCOUNT_ID_LOGISTICS}}
 
   run-deploy:
-    runs-on: kokkok # NOTE: 'kokkok'이라는 self-hosted runner에서 실행됨
+    runs-on: ubuntu-latest
     permissions:
       id-token: write # NOTE: OIDC 토큰을 발급받을 수 있게 허용 (AWS/GCP 같은 외부 클라우드 인증에 사용)
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
@@ -97,7 +97,6 @@ jobs:
           version: 9.4.0
           run_install: false
 
-      # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
       - name: "🛠️ Node.js 설치 및 의존성 cache 사용"
         uses: actions/setup-node@v4
         with:
