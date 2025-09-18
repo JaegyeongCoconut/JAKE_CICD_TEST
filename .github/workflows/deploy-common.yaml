@@ -1,0 +1,188 @@
+# LINK: 배포 Flow chart https://boardmix.com/app/editor/yrBD1jJ3wyfQEpDyjjGuqw
+# LINK: Notion env https://www.notion.so/coconutsilo/1f74486ed21f47a3a4f087d0ed94c263?v=aad4eec6ae7c43918581c212864c424d
+# LINK: S3 배포 버킷 https://ap-southeast-1.console.aws.amazon.com/s3/home
+# LINK: CloudFront https://us-east-1.console.aws.amazon.com/cloudfront/v4/home
+# LINK: Github Secrets Actions https://github.com/coconutsilo/kk-monorepo-web/settings/secrets/actions
+
+name: Common Workflow
+
+on:
+  workflow_call:
+    inputs:
+      SERVICE_NAME:
+        description: "배포 서비스 이름"
+        required: true
+        type: string
+      DEPLOY_ENV:
+        description: "배포 환경"
+        required: true
+        type: string
+    secrets:
+      AWS_ACCOUNT_ID_MOVE:
+        required: true
+      AWS_ACCOUNT_ID_CAR:
+        required: true
+      AWS_ACCOUNT_ID_KOKKOK:
+        required: true
+      AWS_ACCOUNT_ID_LOGISTICS:
+        required: true
+    outputs:
+      AUTHORIZED_ENV:
+        description: "배포 가능한 환경 목록"
+        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES:
+        description: "배포 가능한 브랜치 목록"
+        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV:
+        description: "개발 환경 배포 권한이 있는 사용자 목록"
+        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
+      AUTHORIZED_USERS_IN_PROD:
+        description: "운영 환경 배포 권한이 있는 사용자 목록"
+        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_USERS_IN_PROD }}
+      S3_DEPLOY_BUCKET_REGION:
+        description: "배포 S3 버킷이 생성된 리전"
+        value: ${{ jobs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME:
+        description: "서비스 S3 버킷 이름"
+        value: ${{ jobs.output-set-up.outputs.S3_BUCKET_NAME }}
+      CLOUDFRONT_ID:
+        description: "서비스 CloudFront ID"
+        value: ${{ jobs.output-set-up.outputs.CLOUDFRONT_ID }}
+
+jobs:
+  output-set-up:
+    runs-on: kokkok # NOTE: 'kokkok'이라는 self-hosted runner에서 실행됨
+    permissions:
+      id-token: write # NOTE: OIDC 토큰을 발급받을 수 있게 허용 (AWS/GCP 같은 외부 클라우드 인증에 사용)
+      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
+    env:
+      AUTHORIZED_ENV: "dev,prod" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_BRANCHES: "main,develop" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut,Hyyunjin,CoconutJiyong,HojinChoicoco" # NOTE: 개발 환경 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+      AUTHORIZED_USERS_IN_PROD: "JaegyeongCoconut,Hyyunjin,CoconutJiyong" # NOTE: 운영 환경 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+      # NOTE: 서비스별 S3 버킷, CloudFront ID 목록. JSON 형태로 작성. ','로 구분. 띄어쓰기 x
+      AWS_CONFIG: '{
+        "carAdmin-dev": {"s3BucketName": "kk-car-dev-web-admin-s3","cloudFrontId": "E17MXXTSTC7T2V"},
+        "carAdmin-prod": {"s3BucketName": "kk-car-prd-web-admin-s3","cloudFrontId": "E390IFT65Z7ZH0"},
+        "carInspection-dev": {"s3BucketName": "kk-car-dev-web-inspection-s3","cloudFrontId": "E3LLHE9NNW3YP9"},
+        "carInspection-prod": {"s3BucketName": "kk-car-prd-web-inspection-s3","cloudFrontId": "E7SFKUZ6SAXPI"},
+        "logisticsAdmin-dev": {"s3BucketName": "kk-logi-dev-web-admin-s3","cloudFrontId": "E2SWS2ACKORIRE"},
+        "logisticsAdmin-prod": {"s3BucketName": "kk-logi-prd-web-admin-s3","cloudFrontId": "E1OZLO3FRDYO9M"},
+        "moveAdmin-dev": {"s3BucketName": "kk-move-admin-web-dev-s3","cloudFrontId": "E3HUOCGLCJMHVX"},
+        "moveAdmin-prod": {"s3BucketName": "kk-move-admin-web-prd-s3","cloudFrontId": "E30LDFQ6MF140S"},
+        "moveRanking-dev": {"s3BucketName": "kk-move-hero-web-dev-s3","cloudFrontId": "E315T6K6JEU9LJ"},
+        "moveRanking-prod": {"s3BucketName": "kk-move-hero-web-prd-s3","cloudFrontId": "E2O1XXK5MEJN12"},
+        "kokkokAdmin-dev": {"s3BucketName": "kokkok-dev-web-admin-s3","cloudFrontId": "E2HNV4S6DUBF59"},
+        "kokkokAdmin-prod": {"s3BucketName": "kokkok-prd-web-admin-s3","cloudFrontId": ""},
+        "delivery-dev": {"s3BucketName": "kokkok-dev-web-delivery-s3","cloudFrontId": "E2OOTKAI0ILWP"},
+        "delivery-prod": {"s3BucketName": "kokkok-prd-web-delivery-s3","cloudFrontId": ""}
+        }'
+      AWS_IAM_ROLE: ""
+      S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+    outputs:
+      AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ steps.export-env.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_PROD: ${{ steps.export-env.outputs.AUTHORIZED_USERS_IN_PROD }}
+      AUTHORIZED_USERS_IN_DEV: ${{ steps.export-env.outputs.AUTHORIZED_USERS_IN_DEV }}
+      S3_DEPLOY_BUCKET_REGION: ${{ steps.export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ steps.export-env.outputs.S3_BUCKET_NAME }}
+      CLOUDFRONT_ID: ${{ steps.export-env.outputs.CLOUDFRONT_ID }}
+    steps:
+      - name: "🔑 서비스 이름에 따라 IAM ROLE 값 설정"
+        run: |
+          if [[ "${SERVICE_NAME}" == *"move"* ]]; then
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_MOVE }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ MOVE IAM ROLE 설정 완료"
+          elif [[ "${SERVICE_NAME}" == *"car"* ]]; then
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_CAR }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ CAR IAM ROLE 설정 완료"
+          elif [[ "${SERVICE_NAME}" == *"logistics"* ]]; then
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_LOGISTICS }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ LOGISTICS IAM ROLE 설정 완료"
+          else
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_KOKKOK }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ KOKKOK IAM ROLE 설정 완료"
+          fi
+
+      - name: "🔐 AWS IAM Role assume 설정"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_IAM_ROLE }}
+          aws-region: ${{ env.S3_DEPLOY_BUCKET_REGION }}
+
+      - name: "🛡️ 배포 환경 유효성 검사"
+        run: |
+          if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
+            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: $DEPLOY_ENV\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ 배포 환경 '$DEPLOY_ENV'는 유효합니다.\n"
+
+      - name: "👤 배포 실행 사용자 권한 검증"
+        run: |
+          AUTHORIZED_USERS=$([[ "$DEPLOY_ENV" == "dev" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
+            printf "::error:: 🚨 사용자 '${{ github.actor }}'는 배포 권한이 없습니다.\n"
+            exit 1
+          fi
+
+          printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
+
+      - name: "🛠️ AWS 배포 환경 설정"
+        run: |
+          SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
+
+          # NOTE: 상단에서 미리 작성해둔 AWS_CONFIG > JSON 환경 변수에서 S3 및 CloudFront ID 찾기
+          S3_BUCKET_NAME=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].s3BucketName')
+          CLOUDFRONT_ID=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].cloudFrontId')
+
+          # NOTE: AWS_CONFIG 객체 內 S3 버킷 값 존재 여부 검증
+          if [[ -z "$S3_BUCKET_NAME" || "$S3_BUCKET_NAME" == "null" ]]; then
+            printf "::error:: 🚨 S3 버킷 정보가 존재하지 않습니다: $SERVICE_KEY\n"
+            exit 1
+          fi
+
+          # NOTE: AWS_CONFIG 객체 內 CloudFront ID 값 존재 여부 검증
+          if [[ -z "$CLOUDFRONT_ID" || "$CLOUDFRONT_ID" == "null" ]]; then
+            printf "::error:: 🚨 CloudFront ID 정보가 존재하지 않습니다: $SERVICE_KEY\n"
+            exit 1
+          fi
+
+          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+          printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
+
+          # NOTE: GitHub Actions 환경 변수에 CloudFront ID 설정
+          echo "CLOUDFRONT_ID=${CLOUDFRONT_ID}" >> $GITHUB_ENV
+          printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 CloudFront ID는 '${CLOUDFRONT_ID}'입니다.\n"
+
+      - name: "🔎 S3 버킷 존재 여부 확인"
+        run: |
+          aws s3api head-bucket --bucket $S3_BUCKET_NAME --region $S3_DEPLOY_BUCKET_REGION || {
+            printf "::error:: 🚨 S3 버킷 '$S3_BUCKET_NAME'이 존재하지 않습니다.\n"
+            exit 1
+          }
+          printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
+
+      - name: "🔎 CloudFront ID 존재 여부 확인"
+        run: |
+          aws cloudfront get-distribution --id "$CLOUDFRONT_ID" > /dev/null 2>&1 || {
+            printf "::error:: 🚨 CloudFront ID '$CLOUDFRONT_ID'이 존재하지 않습니다.\n"
+            exit 1
+          }
+          printf "::notice:: ✅ CloudFront ID '$CLOUDFRONT_ID'에 접근할 수 있습니다.\n"
+
+      - name: 📌 다음 .yaml 에서 사용할 환경변수 export (return)
+        id: export-env
+        run: |
+          echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_USERS_IN_PROD=${AUTHORIZED_USERS_IN_PROD}" >> $GITHUB_OUTPUT
+          echo "AWS_IAM_ROLE=${AWS_IAM_ROLE}" >> $GITHUB_OUTPUT
+          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
+          echo "CLOUDFRONT_ID=${CLOUDFRONT_ID}" >> $GITHUB_OUTPUT

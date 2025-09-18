@@ -3,50 +3,97 @@ name: KOKKOK 웹 서비스 S3 배포
 on:
   workflow_dispatch:
     inputs:
-      SERVICE_NAME:
+      SERVICE_NAME: # NOTE: 폴더 이름과 동일하게 설정 필요
         description: "배포 서비스 이름"
         required: true
         type: choice
         options:
+          - carAdmin
+          - carInspection
+          - logisticsAdmin
+          - moveAdmin
           - moveRanking
+          - kokkokAdmin
+          - delivery
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
         type: choice
         options:
           - dev
+          - prod
 
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
 jobs:
-  call-common:
-    uses: ./.github/workflows/common.yml # ✅ 공용 YML 호출
+  call-deploy-common:
+    uses: ./.github/workflows/deploy-common.yaml # ✅ 공용 yaml 호출
+    with:
+      SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ inputs.DEPLOY_ENV }}
     secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  deploy:
-    runs-on: ubuntu-latest
-    needs: call-common
-    env:
-      AUTHORIZED_ENV: ${{ needs.call-common.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: ${{ needs.call-common.outputs.AUTHORIZED_BRANCHES }}
-      AUTHORIZED_USERS_IN_DEV: ${{ needs.call-common.outputs.AUTHORIZED_USERS_IN_DEV }}
-      AWS_CONFIG: ${{ needs.call-common.outputs.AWS_CONFIG }}
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.call-common.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.call-common.outputs.S3_BUCKET_NAME }}
+      AWS_ACCOUNT_ID_MOVE: ${{secrets.AWS_ACCOUNT_ID_MOVE}}
+      AWS_ACCOUNT_ID_CAR: ${{secrets.AWS_ACCOUNT_ID_CAR}}
+      AWS_ACCOUNT_ID_KOKKOK: ${{secrets.AWS_ACCOUNT_ID_KOKKOK}}
+      AWS_ACCOUNT_ID_LOGISTICS: ${{secrets.AWS_ACCOUNT_ID_LOGISTICS}}
 
+  run-deploy:
+    runs-on: kokkok # NOTE: 'kokkok'이라는 self-hosted runner에서 실행됨
+    permissions:
+      id-token: write # NOTE: OIDC 토큰을 발급받을 수 있게 허용 (AWS/GCP 같은 외부 클라우드 인증에 사용)
+      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
+    needs: call-deploy-common
+    env:
+      AUTHORIZED_ENV: ${{ needs.call-deploy-common.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ needs.call-deploy-common.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV: ${{ needs.call-deploy-common.outputs.AUTHORIZED_USERS_IN_DEV }}
+      AUTHORIZED_USERS_IN_PROD: ${{ needs.call-deploy-common.outputs.AUTHORIZED_USERS_IN_PROD }}
+      AWS_IAM_ROLE: ""
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.call-deploy-common.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ needs.call-deploy-common.outputs.S3_BUCKET_NAME }}
+      CLOUDFRONT_ID: ${{ needs.call-deploy-common.outputs.CLOUDFRONT_ID }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
       CURRENT_BRANCH: ${{ github.ref_name }}
 
-      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }} # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      ENV_CARADMIN_DEV: ${{ secrets.ENV_CARADMIN_DEV }}
+      ENV_CARADMIN_PROD: ${{ secrets.ENV_CARADMIN_PROD }}
+      ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
+      ENV_CARINSPECTION_PROD: ${{ secrets.ENV_CARINSPECTION_PROD }}
+      ENV_LOGISTICSADMIN_DEV: ${{ secrets.ENV_LOGISTICSADMIN_DEV }}
+      ENV_LOGISTICSADMIN_PROD: ${{ secrets.ENV_LOGISTICSADMIN_PROD }}
+      ENV_MOVEADMIN_DEV: ${{ secrets.ENV_MOVEADMIN_DEV }}
+      ENV_MOVEADMIN_PROD: ${{ secrets.ENV_MOVEADMIN_PROD }}
+      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
+      ENV_MOVERANKING_PROD: ${{ secrets.ENV_MOVERANKING_PROD }}
+      ENV_KOKKOKADMIN_DEV: ${{ secrets.ENV_KOKKOKADMIN_DEV }}
+      ENV_KOKKOKADMIN_PROD: ${{ secrets.ENV_KOKKOKADMIN_PROD }}
+      ENV_DELIVERY_DEV: ${{ secrets.ENV_DELIVERY_DEV }}
+      ENV_DELIVERY_PROD: ${{ secrets.ENV_DELIVERY_PROD }}
 
     steps:
-      - name: "🔑 AWS IAM KEY 설정"
+      - name: "🔑 서비스 이름에 따라 IAM ROLE 값 설정"
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+          if [[ "${SERVICE_NAME}" == *"move"* ]]; then
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_MOVE }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ MOVE IAM ROLE 설정 완료"
+          elif [[ "${SERVICE_NAME}" == *"car"* ]]; then
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_CAR }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ CAR IAM ROLE 설정 완료"
+          elif [[ "${SERVICE_NAME}" == *"logistics"* ]]; then
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_LOGISTICS }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ LOGISTICS IAM ROLE 설정 완료"
+          else
+            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_KOKKOK }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
+            echo "::notice:: ✅ KOKKOK IAM ROLE 설정 완료"
+          fi
+
+      - name: "🔐 AWS IAM Role assume 설정"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_IAM_ROLE }}
+          aws-region: ${{ env.S3_DEPLOY_BUCKET_REGION }}
 
       - name: "🔍 배포 브랜치 유효성 검사"
         run: |
@@ -194,3 +241,14 @@ jobs:
           }
 
           printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
+
+      - name: "🧹 CloudFront 캐시 무효화"
+        run: |
+          printf "::notice:: 🚀 CloudFront 배포의 캐시를 무효화합니다: $CLOUDFRONT_ID\n"
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_ID \
+            --paths "/*" || {
+            printf "::error:: 🚨 CloudFront 캐시 무효화 실패!\n"
+            exit 1
+          }
+          printf "::notice:: ✅ 배포 ID: $DISTRIBUTION_ID에 대한 캐시가 무효화되었습니다.\n"
