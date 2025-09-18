@@ -55,27 +55,11 @@ jobs:
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
     steps:
-      - name: "🔑 서비스 이름에 따라 IAM ROLE 값 설정"
+      - name: "🔑 AWS IAM KEY 설정"
         run: |
-          if [[ "${SERVICE_NAME}" == *"move"* ]]; then
-            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_MOVE }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
-            echo "::notice:: ✅ MOVE IAM ROLE 설정 완료"
-          elif [[ "${SERVICE_NAME}" == *"car"* ]]; then
-            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_CAR }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
-            echo "::notice:: ✅ CAR IAM ROLE 설정 완료"
-          elif [[ "${SERVICE_NAME}" == *"logistics"* ]]; then
-            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_LOGISTICS }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
-            echo "::notice:: ✅ LOGISTICS IAM ROLE 설정 완료"
-          else
-            echo "AWS_IAM_ROLE=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_KOKKOK }}:role/GithubActionsOIDCRole" >> $GITHUB_ENV
-            echo "::notice:: ✅ KOKKOK IAM ROLE 설정 완료"
-          fi
-
-      - name: "🔐 AWS IAM Role assume 설정"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.AWS_IAM_ROLE }}
-          aws-region: ${{ env.S3_DEPLOY_BUCKET_REGION }}
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
       - name: "🗂️ build 폴더를 build-legacy 폴더로 백업 (build → build-legacy)"
         run: |
