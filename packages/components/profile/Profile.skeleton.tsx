@@ -7,7 +7,7 @@ import * as S from "./Profile.styled";
 const ProfileSkeleton = () => {
   return (
     <S.Profile>
-      <Skeleton width="56px" height="56px" borderRadius="30px" />
+      <Skeleton height="56px" width="56px" borderRadius="30px" />
     </S.Profile>
   );
 };

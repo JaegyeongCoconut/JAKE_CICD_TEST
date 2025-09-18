@@ -1,40 +1,32 @@
-import React, { useEffect, useRef, type FC, type SVGProps } from "react";
+import type { FC, SVGProps } from "react";
+import React from "react";
 
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { Languages } from "@repo/types";
+import type { ButtonVariant, Languages } from "@repo/types";
 
 import * as S from "./Button.styled";
+import HeadlessButton from "./HeadlessButton";
 import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
-
-export type ButtonVariant =
-  | "error"
-  | "filled_gray_blue"
-  | "ghost_blue"
-  | "iconOnly"
-  | "outlined"
-  | "primary"
-  | "secondary"
-  | "third";
 
 interface BaseButtonProps {
   className?: string;
-  type?: "button" | "submit" | "reset";
-  Icon?: FC<SVGProps<SVGSVGElement>>;
   disabled: boolean;
+  Icon?: FC<SVGProps<SVGSVGElement>>;
+  type?: "button" | "submit" | "reset";
   handleButtonClick: (e: React.MouseEvent) => void;
 }
 
 interface IconOnlyProps extends BaseButtonProps {
   variant: "iconOnly";
+  isLoading?: never;
   Icon: FC<SVGProps<SVGSVGElement>>;
   label?: never;
-  isLoading?: never;
 }
 
 interface DefaultButtonProps extends BaseButtonProps {
   variant: Exclude<ButtonVariant, "iconOnly">;
-  label: Languages;
   isLoading: boolean;
+  label: Languages;
 }
 
 const Button = ({
@@ -47,26 +39,16 @@ const Button = ({
   variant,
   handleButtonClick,
 }: IconOnlyProps | DefaultButtonProps) => {
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-
   const { defaultLanguage } = useDefaultLanguage();
 
-  useEffect(() => {
-    if (isLoading && document.activeElement === buttonRef.current) {
-      (document.activeElement as HTMLElement)?.blur();
-    }
-  }, [isLoading]);
-
   return (
-    <S.Button
+    <HeadlessButton
+      css={S.button(isLoading, variant)}
       className={className}
-      ref={buttonRef}
-      isLoading={isLoading}
       disabled={disabled}
+      isLoading={isLoading}
       type={type}
-      variant={variant}
-      tabIndex={isLoading ? -1 : 0}
-      onClick={handleButtonClick}
+      handleButtonClick={handleButtonClick}
     >
       {isLoading ? (
         <S.LoadingWrapper>
@@ -82,7 +64,7 @@ const Button = ({
           {label && defaultLanguage(label)}
         </>
       )}
-    </S.Button>
+    </HeadlessButton>
   );
 };
 

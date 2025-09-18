@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 
 export const copyButton = (theme: Theme) => css`
   svg {
@@ -6,11 +7,11 @@ export const copyButton = (theme: Theme) => css`
     height: 16px;
   }
 
-  g > path {
-    fill: ${theme.color.blue_10};
+  path {
+    fill: ${theme.color.blue_60};
   }
 
-  &:hover g > path {
-    fill: ${theme.color.blue_20};
+  &:hover path {
+    fill: ${theme.color.blue_90};
   }
 `;

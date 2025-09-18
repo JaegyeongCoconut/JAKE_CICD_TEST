@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const Header = styled.div`
@@ -18,7 +19,7 @@ export const MonthYear = styled.button`
 
     & > time {
       ${theme.font.medium_16};
-      color: ${theme.color.black};
+      color: ${theme.color.gray_90};
     }
   `}
 `;
@@ -27,8 +28,8 @@ export const MonthYearContent = styled.div`
   ${({ theme }) => css`
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     justify-content: center;
+    align-items: flex-start;
     column-gap: 4px;
     height: 48px;
 

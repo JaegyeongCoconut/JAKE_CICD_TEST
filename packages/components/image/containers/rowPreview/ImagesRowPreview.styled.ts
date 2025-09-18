@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const trashButton = (theme: Theme) => css`
@@ -37,24 +38,17 @@ export const PreviewRow = styled.li`
 export const ProviewImageName = styled.span`
   display: -webkit-box;
   overflow: hidden;
+  word-break: break-word;
   text-overflow: ellipsis;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  word-break: break-word;
 `;
 
-export const loadingSpinner = css`
+export const image = (isLoading: boolean) => (theme: Theme) => css`
+  display: ${isLoading ? "none" : "block"};
   width: 106px;
   height: 60px;
-`;
-
-export const PreviewImg = styled.img<{ isLoading: boolean }>`
-  ${({ theme, isLoading }) => css`
-    display: ${isLoading ? "none" : "block"};
-    width: 106px;
-    height: 60px;
-    border-radius: 8px;
-    border: 1px solid ${theme.color.gray_20};
-    object-fit: cover;
-  `}
+  border: 1px solid ${theme.color.gray_20};
+  border-radius: 8px;
+  object-fit: cover;
 `;

@@ -11,8 +11,8 @@ const BaseModal = React.forwardRef<HTMLDialogElement, BaseModalProps>(
   ({ className, children }, ref) => {
     return (
       <S.BaseModal
-        ref={ref}
         className={className}
+        ref={ref}
         aria-haspopup="true"
         aria-labelledby="modal"
         aria-modal="true"

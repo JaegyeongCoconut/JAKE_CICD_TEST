@@ -2,13 +2,21 @@ import { useState, useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
-import { getAllQuery } from "@repo/utils/filter";
 import {
   getPreviousPageNumber,
   getNextPageNumber,
 } from "@repo/utils/pagination";
+import { getAllQuery } from "@repo/utils/queryFilter";
 
-const useQueryPagination = (maxPageCount: number, totalPages: number) => {
+interface UseQueryPaginationProps {
+  maxPageCount: number;
+  totalPages: number;
+}
+
+const useQueryPagination = ({
+  maxPageCount,
+  totalPages,
+}: UseQueryPaginationProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const page = searchParams.get("page");
@@ -17,7 +25,10 @@ const useQueryPagination = (maxPageCount: number, totalPages: number) => {
   const handlePreviousPageClick = (): void => {
     if (currentPage === 1) return;
 
-    const previousPageNumber = getPreviousPageNumber(currentPage, maxPageCount);
+    const previousPageNumber = getPreviousPageNumber({
+      currentPage,
+      maxPageCount,
+    });
 
     setSearchParams({
       ...getAllQuery(searchParams),
@@ -37,11 +48,11 @@ const useQueryPagination = (maxPageCount: number, totalPages: number) => {
   const handleNextPageClick = (): void => {
     if (currentPage === totalPages) return;
 
-    const nextPageNumber = getNextPageNumber(
+    const nextPageNumber = getNextPageNumber({
       currentPage,
       maxPageCount,
       totalPages,
-    );
+    });
 
     setSearchParams({
       ...getAllQuery(searchParams),

@@ -1,7 +1,7 @@
 import imageCompression from "browser-image-compression";
 
 import { COMMON_TOAST_MESSAGE } from "@repo/constants/toast";
-import type { Toast } from "@repo/types";
+import type { ToastType } from "@repo/types";
 
 import { getFileSize } from "./file";
 
@@ -15,8 +15,8 @@ export const extractS3ImageKey = (fullUrl: string) => {
 };
 
 interface CompressionImagesProps {
-  file: File;
   compressedMaxFileSize: number;
+  file: File;
   maxWidthHeight: number;
 }
 
@@ -46,12 +46,12 @@ export const compressionImage = async ({
 };
 
 interface AppendValidFilesProps {
-  sortedImageFiles: File[];
-  currentFiles: (string | File)[];
   hasLimit: boolean;
+  currentFiles: (string | File)[];
   maxFileCount: number;
-  maxFileCountLabel: Omit<Toast, "id">;
-  addToast: (toast: Omit<Toast, "id">) => void;
+  maxFileCountLabel: Omit<ToastType, "id">;
+  sortedImageFiles: File[];
+  handleToastAdd: (toast: Omit<ToastType, "id">) => void;
 }
 
 export const appendValidFiles = ({
@@ -60,20 +60,20 @@ export const appendValidFiles = ({
   hasLimit,
   maxFileCount,
   maxFileCountLabel,
-  addToast,
+  handleToastAdd,
 }: AppendValidFilesProps): File[] => {
   const validFiles: File[] = [];
 
   for (const file of sortedImageFiles) {
-    const fileSize = getFileSize("MB", file.size);
+    const fileSize = getFileSize({ type: "MB", size: file.size });
 
     if (hasLimit && fileSize > 0.5) {
-      addToast(COMMON_TOAST_MESSAGE.WARNING.FAIL_FILE_UPLOAD_500KB);
+      handleToastAdd(COMMON_TOAST_MESSAGE.WARNING.FAIL_FILE_UPLOAD_500KB);
       continue;
     }
 
     if (currentFiles.length + validFiles.length >= maxFileCount) {
-      addToast(maxFileCountLabel);
+      handleToastAdd(maxFileCountLabel);
 
       break;
     }

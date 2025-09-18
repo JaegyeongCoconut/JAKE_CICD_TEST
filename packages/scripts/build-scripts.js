@@ -1,30 +1,27 @@
-import { exec } from "child_process";
+import { SERVICE_INFO } from "../assets/static/serviceInfo.js";
 
-const runScript = (script) => {
-  return new Promise((resolve, reject) => {
-    console.log(`Running script: ${script}`);
-    exec(script, { stdio: "inherit" }, (error, stdout) => {
-      if (error) {
-        console.error(`Error running script: ${script}`);
-        return reject(error);
-      }
-      console.log(stdout); // NOTE: scripts 에 있는 console.log cli 에 출력
-      resolve();
-    });
-  });
+import { execSync } from "child_process";
+
+const runScript = (command) => {
+  execSync(command, { stdio: "inherit" });
 };
 
-const scripts = [
-  "node ../../packages/scripts/language-converter.js",
-  "node ../../packages/scripts/create-robots.js",
-  "node src/scripts/check-env-values.js",
-];
+const packageRun = () => {
+  let [command, serviceName] = process.env.npm_lifecycle_event.split(":");
 
-Promise.all(scripts.map(runScript))
-  .then(() => {
-    console.log("🚀 \x1b[32m스크립트 실행이 성공했습니다.\x1b[0m");
-  })
-  .catch((error) => {
-    console.error("❌ \x1b[31m스크립트 실행이 실패했습니다.\x1b[0m", error);
-    process.exit(1);
-  });
+  const isSingleService = !!serviceName;
+
+  if (isSingleService) {
+    const serviceInfo = Object.values(SERVICE_INFO).find(
+      (service) => service.serviceName === serviceName,
+    );
+
+    const scriptCommand = `turbo ${command} --filter=${serviceInfo.packageName}`;
+
+    runScript(scriptCommand);
+  } else {
+    runScript(`turbo ${command}`);
+  }
+};
+
+packageRun();

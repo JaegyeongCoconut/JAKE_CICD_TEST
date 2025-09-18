@@ -1,7 +1,8 @@
+import type { Theme } from "@emotion/react";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-import type { ButtonVariant } from "./Button";
+import type { ButtonVariant } from "@repo/types";
 
 const mixinContents = css`
   display: flex;
@@ -9,13 +10,8 @@ const mixinContents = css`
   column-gap: 8px;
 `;
 
-interface ButtonProps {
-  isLoading: boolean;
-  variant: ButtonVariant;
-}
-
-export const Button = styled.button<ButtonProps>`
-  ${({ theme, variant, isLoading }) => css`
+export const button =
+  (isLoading: boolean, variant: ButtonVariant) => (theme: Theme) => css`
     ${mixinContents};
     ${variant === "error" && theme.button.error};
     ${variant === "filled_gray_blue" && theme.button.filled_gray_blue};
@@ -25,8 +21,7 @@ export const Button = styled.button<ButtonProps>`
     ${variant === "secondary" && theme.button.secondary};
     ${variant === "third" && theme.button.third};
     pointer-events: ${isLoading && "none"};
-  `}
-`;
+  `;
 
 export const LoadingWrapper = styled.div`
   position: relative;

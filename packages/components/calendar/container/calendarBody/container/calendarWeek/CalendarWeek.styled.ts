@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const WeekRow = styled.ul`
@@ -39,8 +40,8 @@ export const CircleBox = styled.div`
 
 export const todayButton = (theme: Theme) => css`
   display: flex;
-  align-items: center;
   justify-content: flex-end;
+  align-items: center;
   column-gap: 4px;
   width: 100%;
   margin-bottom: 12px;

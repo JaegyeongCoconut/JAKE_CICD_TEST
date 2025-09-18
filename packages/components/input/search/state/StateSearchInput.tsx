@@ -7,35 +7,31 @@ import useStateSearchInput from "./hooks/useStateSearchInput";
 
 interface StateSearchInputProps {
   className?: string;
-  inputAsidePadding: number;
-  iconAsidePadding: number;
+  accessibleInputType: RegExp | undefined;
+  maxLength: number;
   placeholder: Languages;
-  maxLength?: number;
-  accessibleInputType?: RegExp;
-  updateValue: (input: string) => void;
-  resetValue?: () => void;
+  handleReset: () => void;
+  handleUpdate: (input: string) => void;
 }
+
 const StateSearchInput = ({
   className,
-  inputAsidePadding,
-  iconAsidePadding,
   placeholder,
   maxLength,
   accessibleInputType,
-  updateValue,
-  resetValue,
+  handleUpdate,
+  handleReset,
 }: StateSearchInputProps) => {
   const { stateInput, handleInputChange, handleInputReset, handleSearch } =
-    useStateSearchInput(updateValue, resetValue, accessibleInputType);
+    useStateSearchInput({ accessibleInputType, handleUpdate, handleReset });
 
   return (
     <SearchInput
       className={className}
-      inputAsidePadding={inputAsidePadding}
-      iconAsidePadding={iconAsidePadding}
+      disabled={false}
       value={stateInput}
-      placeholder={placeholder}
       maxLength={maxLength}
+      placeholder={placeholder}
       handleInputChange={handleInputChange}
       handleInputReset={handleInputReset}
       handleSearch={handleSearch}

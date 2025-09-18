@@ -23,14 +23,14 @@ export const MonthButton = styled.button<{
     ${theme.font.regular_14};
     width: 100%;
     height: 100%;
-    border: ${isCurrent && `1px solid ${theme.color.black}`};
+    border: ${isCurrent && `1px solid ${theme.color.gray_90}`};
     border-radius: 100px;
-    color: ${isSelected ? theme.color.white : theme.color.black};
-    background-color: ${isSelected && theme.color.blue_10};
+    color: ${isSelected ? theme.color.white_00 : theme.color.gray_90};
+    background-color: ${isSelected && theme.color.blue_60};
 
     &:hover {
       background-color: ${!isSelected &&
-      (isCurrent ? theme.color.gray_10 : theme.color.blue_10_10)};
+      (isCurrent ? theme.color.gray_10 : theme.color.blue_60_10)};
     }
   `}
 `;

@@ -8,8 +8,8 @@ const spin = keyframes`
 
 export const LoadingSpinnerWrapper = styled.div`
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
 `;
@@ -18,8 +18,8 @@ export const Spinner = styled.div`
   ${({ theme }) => css`
     width: 20px;
     height: 20px;
-    border: 2px solid ${theme.color.white};
-    border-top: 2px solid ${theme.color.blue_10};
+    border: 2px solid ${theme.color.white_00};
+    border-top: 2px solid ${theme.color.blue_60};
     border-radius: 20px;
     animation: ${spin} 0.7s linear infinite;
   `}

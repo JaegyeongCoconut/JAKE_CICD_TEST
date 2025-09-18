@@ -1,10 +1,12 @@
+import type { ChangeEvent } from "react";
 import React from "react";
 
 import { isEmpty } from "lodash-es";
 import { useFormContext } from "react-hook-form";
 
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { CreateNewPasswordFormType } from "@repo/types";
+import type { FormResetPassword } from "@repo/types";
 
 import * as S from "./CreateNewPasswordForm.styled";
 import Button from "../../../button/Button";
@@ -12,76 +14,98 @@ import AccountInput from "../../../input/accountInput/AccountInput";
 import PasswordCondition from "../../../passwordCondition/PasswordCondition";
 
 interface CreateNewPasswordFormProps {
+  className?: string;
   isLoading: boolean;
-  handlePasswordChange: () => void;
+  handlePasswordChange: (data: FormResetPassword) => void;
 }
 
 const CreateNewPasswordForm = ({
+  className,
   isLoading,
   handlePasswordChange,
 }: CreateNewPasswordFormProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   const {
-    control,
-    formState: { errors, touchedFields },
+    formState: { errors, touchedFields, dirtyFields },
+    handleSubmit,
+    register,
+    setValue,
     trigger,
     watch,
-  } = useFormContext<CreateNewPasswordFormType>();
+  } = useFormContext<FormResetPassword>();
+
+  const handleNewPasswordChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setValue("newPassword", e.target.value.trim());
+
+    if (!touchedFields.confirmPassword) return;
+
+    trigger("confirmPassword");
+  };
 
   return (
-    <S.CreateNewPasswordSection>
-      <S.Title>{defaultLanguage("Create a new password")}</S.Title>
-      <form onSubmit={handlePasswordChange}>
-        <S.HideSubmitButton disabled />
-        <AccountInput
-          css={S.accountLabelInput}
-          id="newPassword"
-          control={control}
-          name="newPassword"
-          label="New password"
-          type="password"
-          hasTrim={false}
-          trigger={trigger}
-          hasError={!!errors.newPassword?.message}
-        />
-        <PasswordCondition
-          css={S.newPasswordCondition}
-          touchedFields={touchedFields}
-          newPassword={watch("newPassword")}
-        >
-          <PasswordCondition.lengthCondition />
-          <PasswordCondition.textTypeCondition />
-        </PasswordCondition>
-        <AccountInput
-          css={S.accountLabelInput}
-          id="confirmPassword"
-          control={control}
-          name="confirmPassword"
-          label="Confirm password"
-          hasTrim={false}
-          trigger={trigger}
-          type="password"
-          hasError={!!errors.confirmPassword?.message}
-        />
-        <PasswordCondition
-          css={S.confirmPasswordCondition}
-          touchedFields={touchedFields}
-          newPassword={watch("newPassword")}
-          confirmPassword={watch("confirmPassword")}
-        >
-          <PasswordCondition.checkConfirmPassword />
-        </PasswordCondition>
-        <Button
-          css={S.createPasswordButton}
-          disabled={!isEmpty(errors)}
-          isLoading={isLoading}
-          type="submit"
-          variant="primary"
-          label="Done"
-          handleButtonClick={handlePasswordChange}
-        />
-      </form>
+    <S.CreateNewPasswordSection className={className}>
+      <S.Title>{defaultLanguage(LANGUAGE_LABEL.CREATE_A_NEW_PASSWORD)}</S.Title>
+      <S.HideSubmitButton disabled type="button" />
+      <AccountInput
+        css={S.accountLabelInput}
+        id="newPassword"
+        disabled={false}
+        hasError={!!errors.newPassword?.message}
+        isDirty={!!dirtyFields.newPassword}
+        label={LANGUAGE_LABEL.NEW_PASSWORD}
+        maxLength={100}
+        type="password"
+        register={register("newPassword", {
+          onChange: handleNewPasswordChange,
+          onBlur: (): void => {
+            trigger("newPassword");
+          },
+        })}
+      />
+      <PasswordCondition
+        css={S.newPasswordCondition}
+        errors={errors}
+        touchedFields={touchedFields}
+        watch={watch()}
+      >
+        <PasswordCondition.lengthCondition />
+        <PasswordCondition.textTypeCondition />
+      </PasswordCondition>
+      <AccountInput
+        css={S.accountLabelInput}
+        id="confirmPassword"
+        disabled={false}
+        hasError={!!errors.confirmPassword?.message}
+        isDirty={!!dirtyFields.confirmPassword}
+        label={LANGUAGE_LABEL.CONFIRM_PASSWORD}
+        maxLength={100}
+        type="password"
+        register={register("confirmPassword", {
+          onChange: (e: ChangeEvent<HTMLInputElement>): void =>
+            setValue("confirmPassword", e.target.value.trim()),
+          onBlur: (): void => {
+            trigger("confirmPassword");
+          },
+        })}
+      />
+      <PasswordCondition
+        css={S.confirmPasswordCondition}
+        errors={errors}
+        touchedFields={touchedFields}
+        watch={watch()}
+      >
+        <PasswordCondition.checkConfirmPassword />
+      </PasswordCondition>
+      <Button
+        css={S.createPasswordButton}
+        variant="primary"
+        disabled={!isEmpty(errors)}
+        isLoading={isLoading}
+        label={LANGUAGE_LABEL.DONE}
+        type="submit"
+        handleButtonClick={handleSubmit(handlePasswordChange)}
+      />
     </S.CreateNewPasswordSection>
   );
 };

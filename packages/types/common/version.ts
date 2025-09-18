@@ -1,12 +1,12 @@
-import { VERSION_OS, VERSION_PLATFORM } from "@repo/assets/static";
+import type { VERSION_OS, VERSION_PLATFORM } from "@repo/assets/static/version";
 
-import { ValueOf } from "./method";
+import type { ValueOf } from "./method";
 
 export interface AppVersion {
   new: string;
   old: string;
   os: ValueOf<typeof VERSION_OS>;
-  test: string;
   serviceName: ValueOf<typeof VERSION_PLATFORM>;
+  test: string;
   to: string;
 }

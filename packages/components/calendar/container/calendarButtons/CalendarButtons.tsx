@@ -1,5 +1,6 @@
 import React from "react";
 
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import type { FormatCalendar } from "@repo/types";
 
 import * as S from "./CalendarButtons.styled";
@@ -15,17 +16,17 @@ const CalendarButtons = ({ calendar }: CalendarButtonsProps) => {
       <Button
         css={S.resetButton}
         variant="secondary"
-        label="Reset"
-        isLoading={false}
         disabled={false}
+        isLoading={false}
+        label={LANGUAGE_LABEL.RESET}
         handleButtonClick={calendar.handleReset}
       />
       <Button
         css={S.applyButton}
         variant="primary"
-        label="Apply"
-        isLoading={false}
         disabled={calendar.isDisabledApplyButton}
+        isLoading={false}
+        label={LANGUAGE_LABEL.APPLY}
         handleButtonClick={calendar.handleApply}
       />
     </S.ButtonWrapper>

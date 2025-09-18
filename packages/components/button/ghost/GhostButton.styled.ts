@@ -4,8 +4,8 @@ import styled from "@emotion/styled";
 import type { ButtonVariant } from "./GhostButton";
 
 interface GhostButtonProps {
-  isLoading: boolean;
   variant: ButtonVariant;
+  isLoading: boolean;
 }
 
 export const GhostButton = styled.button<GhostButtonProps>`
@@ -24,7 +24,7 @@ export const loadingSpinner = css`
   position: absolute;
   top: 50%;
   left: 100%;
-  transform: translate(50%, -50%);
   width: 12px;
   height: 12px;
+  transform: translate(50%, -50%);
 `;

@@ -1,4 +1,4 @@
 export type PreviewImageFileType = {
-  src: string | ArrayBuffer;
   name: string;
+  src: string | ArrayBuffer;
 };

@@ -1,16 +1,33 @@
-import React, { useEffect, useRef, useState } from "react";
+import type { FocusEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import useKeyTrap from "../modal/useKeyTrap";
 import useOnClickOutside from "../useOnClickOutside";
 
-const useDropdown = (
-  selectedValue: string,
-  handleSelect?: (value: string) => void,
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void,
-  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void,
-) => {
+interface UseDropdownProps {
+  tagValue: string;
+  handleConditionBlur: ((e?: FocusEvent<HTMLInputElement>) => void) | undefined;
+  handleConditionFocus:
+    | ((e?: FocusEvent<HTMLInputElement>) => void)
+    | undefined;
+  handleSelect: ((value: string) => void) | undefined; // TODO: Dropdown 컴포넌트의 handleSelct가 optional이라 requried로 변경할 수 없음
+}
+
+const useDropdown = ({
+  tagValue,
+  handleSelect,
+  handleConditionFocus,
+  handleConditionBlur,
+}: UseDropdownProps) => {
   const dropdownRef = useRef(null);
-  const optionsRef = useRef(null);
+
+  const [optionsElement, setOptionsElement] = useState<HTMLElement | null>(
+    null,
+  );
+
+  const optionsRef = useCallback((element: HTMLElement | null) => {
+    setOptionsElement(element);
+  }, []);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -23,7 +40,7 @@ const useDropdown = (
   };
 
   const handleOptionClick = (key: string) => (): void => {
-    if (handleSelect && key !== selectedValue) {
+    if (handleSelect && key !== tagValue) {
       handleSelect(key);
     }
 
@@ -34,8 +51,13 @@ const useDropdown = (
     isOpen ? handleClose() : handleOpen();
   };
 
-  useOnClickOutside(dropdownRef, handleClose);
-  useKeyTrap(optionsRef, handleClose);
+  useOnClickOutside({
+    ref: dropdownRef,
+    handler: handleClose,
+    exceptEl: undefined,
+  });
+
+  useKeyTrap(optionsElement, handleClose);
 
   useEffect(() => {
     if (isOpen) {

@@ -8,7 +8,7 @@ KOKKOK RANKING WEB is a mobile web application that ranks RANKING Heroes.
 
 ```bash
 pnpm install
-pnpm start
+pnpm run dev
 ```
 
 ### Local Production

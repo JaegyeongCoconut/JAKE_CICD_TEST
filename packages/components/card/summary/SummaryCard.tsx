@@ -11,13 +11,13 @@ interface CommonProps {
 }
 
 interface Title extends CommonProps {
-  title: Readonly<Languages>;
   labelComponent?: never;
+  title: Readonly<Languages>;
 }
 
 interface LabelComponent extends CommonProps {
-  title?: never;
   labelComponent: React.ReactNode;
+  title?: never;
 }
 
 type SummaryCardProps = Title | LabelComponent;

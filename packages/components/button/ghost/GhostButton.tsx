@@ -16,15 +16,15 @@ export type ButtonVariant =
 
 interface GhostButtonProps {
   className?: string;
+  variant: ButtonVariant;
   disabled?: boolean;
   isLoading?: boolean;
-  type?: "button" | "submit" | "reset";
-  variant: ButtonVariant;
-  label: Languages;
   icon?: {
-    component: React.ReactNode;
     position: "left" | "right";
+    component: React.ReactNode;
   };
+  label: Languages;
+  type?: "button" | "submit" | "reset";
   handleButtonClick?: (e: React.MouseEvent) => void;
 }
 
@@ -43,10 +43,10 @@ const GhostButton = ({
   return (
     <S.GhostButton
       className={className}
-      isLoading={isLoading}
-      disabled={disabled}
-      type={type}
       variant={variant}
+      disabled={disabled}
+      isLoading={isLoading}
+      type={type}
       onClick={handleButtonClick}
     >
       {isLoading ? (

@@ -5,8 +5,8 @@ import type { AxiosError } from "axios";
 import ApiError from "../apiError/ApiError";
 
 interface Props {
-  children: React.ReactNode;
   path: string;
+  children: React.ReactNode;
 }
 
 interface State {
@@ -37,7 +37,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     }
   }
 
-  resetErrorState = () => {
+  onResetErrorState = () => {
     this.setState({
       hasError: false,
       badRequestError: false,
@@ -51,9 +51,9 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.notFoundError) {
       return (
         <ApiError
-          path={this.props.path}
           errorMessage="404 Not found"
-          resetErrorState={this.resetErrorState}
+          path={this.props.path}
+          onResetErrorState={this.onResetErrorState}
         />
       );
     }
@@ -61,9 +61,9 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.badRequestError) {
       return (
         <ApiError
-          path={this.props.path}
           errorMessage="400 Bad request"
-          resetErrorState={this.resetErrorState}
+          path={this.props.path}
+          onResetErrorState={this.onResetErrorState}
         />
       );
     }

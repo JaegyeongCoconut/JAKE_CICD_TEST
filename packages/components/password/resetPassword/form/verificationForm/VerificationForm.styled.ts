@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-export const VerificationForm = styled.form`
+export const VerificationSection = styled.section`
   margin-top: 24px;
 `;
 

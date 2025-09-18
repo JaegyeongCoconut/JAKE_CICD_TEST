@@ -1,0 +1,15 @@
+import { Meta, Title, IconGallery, IconItem } from "@storybook/blocks";
+
+import * as Icon from "./icon.barrel.ts";
+
+<Meta title="IconGallery" />
+
+# IconGallery
+
+<IconGallery>
+  {Object.entries(Icon).map(([name, icon], i) => (
+    <IconItem key={i} name={name}>
+      {icon()}
+    </IconItem>
+  ))}
+</IconGallery>

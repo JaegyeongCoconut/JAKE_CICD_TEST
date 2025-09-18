@@ -4,16 +4,19 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./filter": "./filter.ts",
+    "./apiDebug": "./apiDebug.ts",
+    "./checkIsDirty": "./checkIsDirty.ts",
     "./modal": "./modal.ts",
+    "./navigationBlockingModal": "./navigationBlockingModal.ts",
     "./persist": "./persist.ts",
-    "./prompt": "./prompt.ts",
+    "./queryFilter": "./queryFilter.ts",
+    "./queryFilterState": "./queryFilterState.ts",
     "./timer": "./timer.ts",
-    "./toast": "./toast.ts",
-    "./verifyAccount": "./verifyAccount.ts"
+    "./toast": "./toast.ts"
   },
   "dependencies": {
-    "@repo/types": "workspace:*"
+    "@repo/types": "workspace:*",
+    "@repo/assets": "workspace:*"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"

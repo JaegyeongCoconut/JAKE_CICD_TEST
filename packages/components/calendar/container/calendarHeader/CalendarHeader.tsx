@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ChevronDownIcon } from "@repo/assets/icon";
+import { ReactComponent as DownIcon } from "@repo/assets/icon/ic_down.svg";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { FormatCalendar, FormatDatePicker, Languages } from "@repo/types";
 
@@ -8,8 +8,8 @@ import * as S from "./CalendarHeader.styled";
 import Button from "../../../button/Button";
 
 interface CalendarHeaderProps {
-  datePicker: FormatDatePicker["calendarHeader"];
   calendar: FormatCalendar["calendarHeader"];
+  datePicker: FormatDatePicker["calendarHeader"];
 }
 
 const CalendarHeader = ({ datePicker, calendar }: CalendarHeaderProps) => {
@@ -18,8 +18,8 @@ const CalendarHeader = ({ datePicker, calendar }: CalendarHeaderProps) => {
   return (
     <S.Header>
       <S.MonthYear
-        type="button"
         aria-label="open month list"
+        type="button"
         onClick={calendar.handleMonthDialog}
       >
         <S.MonthYearContent>
@@ -31,9 +31,7 @@ const CalendarHeader = ({ datePicker, calendar }: CalendarHeaderProps) => {
                   .toUpperCase() as Languages,
               )}
             </time>
-            <ChevronDownIcon
-              css={S.chevronMonthIcon(!!calendar.isOpenMonthDialog)}
-            />
+            <DownIcon css={S.chevronMonthIcon(!!calendar.isOpenMonthDialog)} />
           </S.OpenMonthWrapper>
           <time>{datePicker.monthYear.value.format("YYYY")}</time>
         </S.MonthYearContent>
@@ -41,11 +39,11 @@ const CalendarHeader = ({ datePicker, calendar }: CalendarHeaderProps) => {
       <S.MoveButtonWrapper>
         <Button
           css={S.chevronNextButton(90)}
-          type="button"
           aria-label="move previous month"
           variant="iconOnly"
           disabled={false}
-          Icon={ChevronDownIcon}
+          Icon={DownIcon}
+          type="button"
           handleButtonClick={
             calendar.isOpenMonthDialog
               ? datePicker.handlePrevYearChange
@@ -54,11 +52,11 @@ const CalendarHeader = ({ datePicker, calendar }: CalendarHeaderProps) => {
         />
         <Button
           css={S.chevronNextButton(-90)}
-          type="button"
           aria-label="move next month"
           variant="iconOnly"
           disabled={false}
-          Icon={ChevronDownIcon}
+          Icon={DownIcon}
+          type="button"
           handleButtonClick={
             calendar.isOpenMonthDialog
               ? datePicker.handleNextYearChange

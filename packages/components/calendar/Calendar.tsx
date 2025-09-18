@@ -1,6 +1,6 @@
 import React from "react";
 
-import dayjs from "dayjs";
+import type dayjs from "dayjs";
 
 import type { CalendarType } from "@repo/types";
 
@@ -12,15 +12,15 @@ import useCalendar from "./hooks/useCalendar";
 
 interface CalendarProps {
   className?: string;
-  isDialogOpen?: boolean;
-  dialogPosition: "up" | "down";
-  type: CalendarType;
   as?: React.ElementType & string;
+  isDialogOpen?: boolean;
+  dialogPosition: "up" | "down" | "center";
   selectedDate: string[];
+  type: CalendarType;
+  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
   handleDateChange: (date: dayjs.Dayjs[] | []) => void;
   handleDialogClose?: () => void;
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
-  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const Calendar = React.forwardRef<HTMLDialogElement, CalendarProps>(
@@ -51,19 +51,19 @@ const Calendar = React.forwardRef<HTMLDialogElement, CalendarProps>(
 
     return (
       <S.Root
-        ref={ref}
         className={className}
+        ref={ref}
+        as={as}
         aria-modal="true"
         open={isDialogOpen}
-        as={as}
         dialogPosition={dialogPosition}
       >
         <CalendarHeader calendar={calendar} datePicker={datePicker} />
         <S.Body>
           <CalendarBody
-            type={type}
             calendar={calendar}
             datePicker={datePicker}
+            type={type}
           />
           {!calendar.isOpenMonthDialog && (
             <CalendarButtons calendar={calendar} />

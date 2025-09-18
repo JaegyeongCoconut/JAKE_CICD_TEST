@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import type { ChangeEvent } from "react";
+import { useState } from "react";
 
-import type { Toast } from "@repo/types";
+import type { ToastType } from "@repo/types";
 import { appendValidFiles, compressionImage } from "@repo/utils/image";
 
 import useToast from "./useToast";
 
 interface UseUploadImagesBaseProps {
-  images: (string | File)[];
   isNeedCompress: boolean;
+  images: (string | File)[] | undefined | null;
   maxFileCount: number;
-  maxFileCountLabel: Omit<Toast, "id">;
+  maxFileCountLabel: Omit<ToastType, "id">;
   handleFormPhotoUpdate: (file: (string | File)[]) => void;
 }
 
@@ -32,15 +33,17 @@ const useUploadImages = ({
   handleFormPhotoUpdate,
 }: UseUploadImagesCompressProps | UseUploadImagesNotCompressProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadImages, setUploadImages] = useState<(string | File)[]>(images);
+  const [uploadImages, setUploadImages] = useState<
+    (string | File)[] | undefined | null
+  >(images);
 
   const { addToast } = useToast();
 
   const handleImagesAdd = async (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const files = e.target.files;
-    if (!files || !files.length) return;
+    if (!files || !files.length || !uploadImages) return;
 
     const sortedImageFiles = Array.from(files).sort((a, b) =>
       a.name.localeCompare(b.name),
@@ -54,7 +57,7 @@ const useUploadImages = ({
       hasLimit: false,
       maxFileCount,
       maxFileCountLabel,
-      addToast,
+      handleToastAdd: addToast,
     });
 
     const convertFiles = isNeedCompress
@@ -80,7 +83,9 @@ const useUploadImages = ({
   };
 
   const handleImageRemove = (removeIndex: number) => (): void => {
-    const updatedImages = uploadImages.filter(
+    if (!uploadImages) return;
+
+    const updatedImages = uploadImages?.filter(
       (_, index) => index !== removeIndex,
     );
     setUploadImages(updatedImages);

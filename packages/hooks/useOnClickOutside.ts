@@ -1,10 +1,17 @@
-import React, { useEffect } from "react";
+import type { RefObject } from "react";
+import { useEffect } from "react";
 
-const useOnClickOutside = <T extends HTMLElement>(
-  ref: React.RefObject<T>,
-  handler: () => void,
-  exceptEl?: HTMLElement | null,
-) => {
+interface UseOnClickOutSideProps<T extends HTMLElement> {
+  ref: RefObject<T>;
+  exceptEl: HTMLElement | null | undefined;
+  handler: () => void;
+}
+
+const useOnClickOutside = <T extends HTMLElement>({
+  ref,
+  handler,
+  exceptEl,
+}: UseOnClickOutSideProps<T>) => {
   useEffect(() => {
     const listener = (e: MouseEvent) => {
       const el = ref?.current;

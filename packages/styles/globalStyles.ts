@@ -1,10 +1,11 @@
 import { css } from "@emotion/react";
 import emotionReset from "emotion-reset";
 
-import { FONT_FAMILY } from "@repo/assets/static";
+import { FONT_FAMILY } from "@repo/assets/static/common";
 
 import { infoWindow } from "./themes/map";
 import { theme } from "./themes/theme";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const globalStyles = css`
   ${emotionReset}
@@ -12,25 +13,25 @@ const globalStyles = css`
   *,
   *::before,
   *::after {
-    box-sizing: border-box;
     margin: 0;
     /* NOTE: 모바일 브라우저에서도 동일하게 보이도록 border 속성 초기화 추가 */
     border-radius: 0;
     padding: 0;
+    box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-smoothing: antialiased;
   }
 
   html {
-    font-size: 62.5%; // 10px
+    font-size: 62.5%; /* 10px */
   }
 
   body {
+    overflow-y: auto;
     font-family: ${FONT_FAMILY};
     font-display: swap;
-    color: ${theme.color.black};
-    overflow-y: auto;
+    color: ${theme.color.gray_90};
   }
 
   #root {
@@ -41,12 +42,12 @@ const globalStyles = css`
     position: absolute;
     width: 1px;
     height: 1px;
-    padding: 0;
     margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
     border: 0;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0, 0, 0, 0);
   }
 
   a {
@@ -55,9 +56,8 @@ const globalStyles = css`
 
   button {
     border: none;
-    background-color: transparent;
     font-family: "NotoSans", sans-serif;
-
+    background-color: transparent;
     cursor: pointer;
 
     &[disabled] {
@@ -87,8 +87,8 @@ const globalStyles = css`
     :-webkit-autofill:hover,
     :-webkit-autofill:focus,
     :-webkit-autofill:active {
-      transition: background-color 5000s ease-in-out 0s;
       -webkit-box-shadow: 0 0 0px 1000px inherit inset;
+      transition: background-color 5000s ease-in-out 0s;
     }
     &:disabled {
       ${theme.disabled.default};
@@ -119,9 +119,9 @@ const globalStyles = css`
       list-style: unset;
     }
   }
-  ${infoWindow.location};
-  ${infoWindow.fixedPoint};
   ${infoWindow.branch};
+  ${infoWindow.fixedPoint};
+  ${infoWindow.location};
 `;
 
 export default globalStyles;

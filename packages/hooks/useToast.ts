@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 
 import { useToastStore } from "@repo/stores/toast";
-import type { Toast } from "@repo/types";
+import type { ToastType } from "@repo/types";
 
 const useToast = () => {
-  const pushToast = useToastStore((state) => state.pushToast);
-  const deleteToast = useToastStore((state) => state.deleteToast);
+  const pushToast = useToastStore((state) => state.onPushToast);
+  const deleteToast = useToastStore((state) => state.onDeleteToast);
 
-  const addToast = (toast: Omit<Toast, "id">): void => {
+  const addToast = (toast: Omit<ToastType, "id">): void => {
     const id = uuidv4();
 
     pushToast({ id, ...toast });

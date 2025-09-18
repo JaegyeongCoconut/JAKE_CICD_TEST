@@ -1,13 +1,14 @@
 import React from "react";
 
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import { CalendarType, FormatCalendar } from "@repo/types";
+import type { CalendarType, FormatCalendar } from "@repo/types";
 
 import * as S from "./CalendarSelectedInput.styled";
 
 interface CalendarSelectedInputProps {
-  type: CalendarType;
   calendar: FormatCalendar["calendarSelectedInput"];
+  type: CalendarType;
 }
 
 const CalendarSelectedInput = ({
@@ -30,20 +31,21 @@ const CalendarSelectedInput = ({
       {type === "free" ? (
         <>
           <time>
-            {startSelectedDate?.format("DD/MM/YYYY") || defaultLanguage("From")}
+            {startSelectedDate?.format("DD/MM/YYYY") ||
+              defaultLanguage(LANGUAGE_LABEL.FROM)}
           </time>
           ~
           <time>
             {endSelectedDate
               ? endSelectedDate.format("DD/MM/YYYY")
               : startSelectedDate?.format("DD/MM/YYYY") ||
-                defaultLanguage("To")}
+                defaultLanguage(LANGUAGE_LABEL.TO)}
           </time>
         </>
       ) : type === "date" ? (
         <time>
           {startSelectedDate?.format("DD/MM/YYYY") ||
-            defaultLanguage("Select the date")}
+            defaultLanguage(LANGUAGE_LABEL.SELECT_THE_DATE)}
         </time>
       ) : null}
     </S.SelectedDates>

@@ -17,11 +17,10 @@ export const PasswordCondition = styled.div<PasswordConditionProps>`
     display: flex;
     align-items: center;
     column-gap: 6px;
-
     color: ${hasError === true
-      ? theme.color.red_20
+      ? theme.color.red_50
       : hasError === false
-        ? theme.color.green_20
+        ? theme.color.blue_60
         : theme.color.gray_60};
 
     & > svg {
@@ -30,9 +29,9 @@ export const PasswordCondition = styled.div<PasswordConditionProps>`
 
       & > path {
         fill: ${hasError === true
-          ? theme.color.red_20
+          ? theme.color.red_50
           : hasError === false
-            ? theme.color.green_20
+            ? theme.color.blue_60
             : theme.color.gray_60};
       }
     }

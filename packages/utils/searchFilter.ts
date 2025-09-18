@@ -1,6 +1,6 @@
 interface CheckSearchValueExistProps {
-  sourceString: string | null;
   searchString: string | null;
+  sourceString: string | null | undefined;
 }
 
 // NOTE: Input 검색어가 존재하는지 확인하는 함수

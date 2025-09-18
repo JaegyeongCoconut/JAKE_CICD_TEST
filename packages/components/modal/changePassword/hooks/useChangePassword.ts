@@ -1,58 +1,42 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { UseMutateFunction } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import * as yup from "yup";
+import { object } from "yup";
 
+import { COMMON_ERROR_CODE } from "@repo/constants/error/code";
 import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
-import { COMMON_TOAST_MESSAGE } from "@repo/constants/toast";
 import useModal from "@repo/hooks/modal/useModal";
-import useConfirmPasswordValidate from "@repo/hooks/password/useConfirmPasswordValidate";
-import useNewPasswordValidate from "@repo/hooks/password/useNewPasswordValidate";
 import useToast from "@repo/hooks/useToast";
+import useUnexpectedApiError from "@repo/hooks/useUnexpectedApiError";
 import type {
-  ApiErrorType,
+  CommonApiErrorType,
   ChangeAccountPasswordQueryModel,
+  Languages,
 } from "@repo/types";
-import { makeCryptoPassword } from "@repo/utils/crypto";
 import { SCHEMA } from "@repo/utils/yup/schema";
 import { TEST } from "@repo/utils/yup/yupTest";
 
 interface Form {
+  confirmPassword: string;
   currentPassword: string;
   newPassword: string;
-  confirmPassword: string;
 }
 
-const schema = yup.object({
-  currentPassword: SCHEMA.REQUIRED_STRING,
-  newPassword: SCHEMA.REQUIRED_STRING.test(
-    TEST.PASSWORD.TYPE.name,
-    TEST.PASSWORD.TYPE.message,
-    TEST.PASSWORD.TYPE.test,
-  )
-    .test(
-      TEST.PASSWORD.LENGTH.name,
-      TEST.PASSWORD.LENGTH.message,
-      TEST.PASSWORD.LENGTH.test,
-    )
-    .test(
-      TEST.PASSWORD.NEW.name,
-      TEST.PASSWORD.NEW.message,
-      TEST.PASSWORD.NEW.test,
-    ),
-  confirmPassword: SCHEMA.REQUIRED_STRING.test(
-    TEST.PASSWORD.CONFIRM.name,
-    TEST.PASSWORD.CONFIRM.message,
-    function (value) {
-      return TEST.PASSWORD.CONFIRM.test(value, this); //NOTE: 화살표 함수로는 this 객체를 넘길 수 없음
-    },
-  ),
+const schema = object({
+  currentPassword: SCHEMA.REQUIRED_STRING(),
+  newPassword: SCHEMA.REQUIRED_STRING()
+    .test(TEST.PASSWORD.TYPE)
+    .test(TEST.PASSWORD.LENGTH)
+    .test(TEST.PASSWORD.NEW),
+  confirmPassword: SCHEMA.REQUIRED_STRING().test(TEST.PASSWORD.CONFIRM),
 });
 
 interface UseChangePasswordProps {
-  changeAccountPasswordMutate: UseMutateFunction<
+  successToast: { content: Languages; type: "success" };
+  handleEncryptPassword: (password: string) => string;
+  onChangeAccountPasswordMutate: UseMutateFunction<
     unknown,
-    ApiErrorType,
+    CommonApiErrorType,
     ChangeAccountPasswordQueryModel,
     unknown
   >;
@@ -61,73 +45,68 @@ interface UseChangePasswordProps {
 const initForm = { currentPassword: "", newPassword: "", confirmPassword: "" };
 
 const useChangePassword = ({
-  changeAccountPasswordMutate,
+  successToast,
+  onChangeAccountPasswordMutate,
+  handleEncryptPassword,
 }: UseChangePasswordProps) => {
-  const {
-    register,
-    watch,
-    formState: { errors, touchedFields },
-    setError,
-    clearErrors,
-    handleSubmit,
-  } = useForm<Form>({
+  const formMethod = useForm<Form>({
     defaultValues: initForm,
     mode: "onTouched",
     resolver: yupResolver(schema),
   });
 
-  const { validateCurrentPasswordNewPassword, handleNewPasswordBlur } =
-    useNewPasswordValidate(setError, clearErrors);
-  const { validateNewPasswordConfirmPassword, handleConfirmPasswordBlur } =
-    useConfirmPasswordValidate(setError, clearErrors);
   const { handleModalClose } = useModal();
   const { addToast } = useToast();
+  const { showAlert } = useUnexpectedApiError();
 
-  const handlePasswordChange = handleSubmit(
+  const handlePasswordChange = formMethod.handleSubmit(
     ({ currentPassword, newPassword }) => {
-      const req = {
+      const req: ChangeAccountPasswordQueryModel = {
         body: {
-          currentPassword: makeCryptoPassword(currentPassword),
-          newPassword: makeCryptoPassword(newPassword),
+          currentPassword: handleEncryptPassword(currentPassword),
+          newPassword: handleEncryptPassword(newPassword),
         },
       };
 
-      changeAccountPasswordMutate(req, {
+      onChangeAccountPasswordMutate(req, {
         onSuccess: () => {
-          addToast(COMMON_TOAST_MESSAGE.SUCCESS.PASSWORD_CHANGE);
+          addToast(successToast);
           handleModalClose();
         },
         onError: (error) => {
-          if (error.response?.data.message === "CANNOT_UPDATE_PASSWORD") {
-            setError("currentPassword", {
+          if (
+            error.response?.data.message ===
+            COMMON_ERROR_CODE.CANNOT_UPDATE_PASSWORD
+          ) {
+            return formMethod.setError("currentPassword", {
               type: "validate",
               message: COMMON_ERROR_MESSAGE.CANNOT_UPDATE_PASSWORD,
             });
           }
 
-          if (error.response?.data.message === "INVALID_PASSWORD") {
-            setError("currentPassword", {
+          if (
+            error.response?.data.message === COMMON_ERROR_CODE.INVALID_PASSWORD
+          ) {
+            return formMethod.setError("currentPassword", {
               type: "validate",
               message: COMMON_ERROR_MESSAGE.CANNOT_UPDATE_PASSWORD,
             });
           }
+
+          showAlert({
+            method: error.config.method,
+            message: error.response?.data.message,
+            statusCode: undefined, // NOTE: CommonApiErrorType에 타입 작성이 되어 있지 않아 undeinfed 적용
+            url: error.config.url,
+          });
         },
       });
     },
   );
 
   return {
-    register,
-    errors,
-    touchedFields,
-    setError,
-    clearErrors,
-    watch,
+    formMethod,
     handlePasswordChange,
-    validateCurrentPasswordNewPassword,
-    handleNewPasswordBlur,
-    validateNewPasswordConfirmPassword,
-    handleConfirmPasswordBlur,
   };
 };
 

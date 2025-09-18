@@ -1,4 +1,5 @@
-import React, { useEffect, createContext, useContext, type JSX } from "react";
+import type { JSX } from "react";
+import React, { useEffect, createContext, useContext } from "react";
 
 import { useLocation } from "react-router-dom";
 
@@ -29,8 +30,8 @@ export function RoutePathProvider({
   children,
   nonSavedPath,
 }: {
-  children: JSX.Element;
   nonSavedPath: string[];
+  children: JSX.Element;
 }) {
   const { pathname, search } = useLocation();
 

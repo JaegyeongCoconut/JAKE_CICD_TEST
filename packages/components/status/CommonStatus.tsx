@@ -7,8 +7,8 @@ import * as S from "./CommonStatus.styled";
 
 interface CommonStatusProps {
   className?: string;
-  hasBg?: boolean;
   variant: "orange" | "green" | "blue" | "gray" | "red";
+  hasBg?: boolean;
   status: Languages;
 }
 

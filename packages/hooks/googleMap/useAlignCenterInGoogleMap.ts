@@ -1,7 +1,7 @@
 import { isEmpty } from "lodash-es";
 
 import { useGoogleMap } from "@repo/contexts/GoogleMapProvider";
-import type { LatLng } from "@repo/types";
+import type { LatLng, RecursiveUndefined } from "@repo/types";
 
 interface AlignCenterProps {
   paddingLeft: number;
@@ -14,13 +14,19 @@ const useAlignCenterInGoogleMap = ({
 }: AlignCenterProps) => {
   const { googleMap } = useGoogleMap();
 
-  const alignCenterInGoogleMap = (latLngs: LatLng[]): void => {
+  const alignCenterInGoogleMap = (
+    latLngs: RecursiveUndefined<LatLng>[],
+  ): void => {
     if (!latLngs || isEmpty(latLngs)) return;
     if (!googleMap) return;
 
     const latlngbounds = new google.maps.LatLngBounds();
 
-    latLngs.forEach((latLng) => latlngbounds.extend(latLng));
+    latLngs.forEach((latLng) => {
+      if (!latLng || !latLng.lat || !latLng.lng) return;
+
+      latlngbounds.extend({ lat: latLng.lat, lng: latLng.lng });
+    });
     googleMap.fitBounds(latlngbounds, {
       top: fitBoundsPadding,
       left: fitBoundsPadding + paddingLeft,

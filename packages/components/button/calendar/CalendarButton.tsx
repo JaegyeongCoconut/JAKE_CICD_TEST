@@ -6,20 +6,20 @@ import * as S from "./CalendarButton.styled";
 
 interface CalendarButtonProps {
   className?: string;
-  children: React.ReactNode;
-  disabled?: boolean;
+  disabled: boolean;
   handleOpen?: (state: boolean) => void;
-  popup: (
+  onPopup: (
     ref: React.RefObject<HTMLDialogElement>,
     isOpen: boolean,
     handleDialogClose: () => void,
   ) => void;
+  children: React.ReactNode;
 }
 
 const CalendarButton = React.forwardRef<HTMLButtonElement, CalendarButtonProps>(
-  ({ className, children, disabled, handleOpen, popup }, ref) => {
+  ({ className, children, disabled, handleOpen, onPopup }, ref) => {
     const { isDialogOpen, dialogRef, handleToggleDialog, handleDialogClose } =
-      useDialog();
+      useDialog({ disabled });
 
     useEffect(() => {
       typeof handleOpen === "function" && handleOpen(isDialogOpen);
@@ -28,15 +28,15 @@ const CalendarButton = React.forwardRef<HTMLButtonElement, CalendarButtonProps>(
     return (
       <>
         <S.CalendarButton
-          ref={ref}
           className={className}
+          ref={ref}
           onClick={handleToggleDialog}
         >
           {children}
         </S.CalendarButton>
-        {typeof popup === "function" &&
+        {typeof onPopup === "function" &&
           !disabled &&
-          popup(dialogRef, isDialogOpen, handleDialogClose)}
+          onPopup(dialogRef, isDialogOpen, handleDialogClose)}
       </>
     );
   },

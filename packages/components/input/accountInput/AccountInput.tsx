@@ -1,120 +1,68 @@
 import React, { useState } from "react";
 
-import { Control, Controller, Path, UseFormTrigger } from "react-hook-form";
+import type { jsx } from "@emotion/react";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
-import { EyeAbledIcon, EyeDisabledIcon } from "@repo/assets/icon";
-import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import { GetVerifyCodeQueryModel } from "@repo/types";
-import type {
-  CreateNewPasswordFormType,
-  Languages,
-  LoginFormType,
-  VerificationType,
-} from "@repo/types";
-import { numericOnly } from "@repo/utils/formatter/number";
+import { ReactComponent as EyeIcon } from "@repo/assets/icon/ic_eye.svg";
+import { ReactComponent as EyeOffIcon } from "@repo/assets/icon/ic_eye_off.svg";
+import type { Languages } from "@repo/types";
 
 import * as S from "./AccountInput.styled";
+import HeadlessAccountInput from "./HeadlessAccountInput";
 
-type AccountInputFormType =
-  | LoginFormType
-  | GetVerifyCodeQueryModel
-  | VerificationType
-  | CreateNewPasswordFormType;
-
-interface AccountInputProps<T extends AccountInputFormType> {
+interface AccountInputProps {
   className?: string;
   id: string;
-  control: Control<T>;
-  name: Path<T>;
-  label: Languages;
-  type: "text" | "password";
+  disabled: boolean;
   hasError: boolean;
-  trigger: UseFormTrigger<T>;
-  hasTrim: boolean;
-  disabled?: boolean;
-  maxLength?: number;
+  isDirty: boolean;
+  label: Languages;
+  maxLength: number;
+  type: "text" | "email" | "password";
+  register: UseFormRegisterReturn<string>;
 }
 
-const AccountInput = <T extends AccountInputFormType>({
+const AccountInput = ({
   className,
   id,
-  label,
-  hasError,
   type,
-  control,
-  name,
+  label,
+  maxLength,
   disabled,
-  hasTrim,
-  maxLength = 100,
-  trigger,
-}: AccountInputProps<T>) => {
-  const [focusedId, setFocusedId] = useState("");
-  const [isShow, setIsShow] = useState(false);
+  isDirty,
+  hasError,
+  register,
+}: AccountInputProps) => {
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
-  const { defaultLanguage } = useDefaultLanguage();
-
-  const inputType =
-    type === "password" ? (isShow ? "text" : "password") : "text";
-
+  const renderIcon = (isShow: boolean): jsx.JSX.Element => {
+    return isShow ? (
+      <EyeIcon css={S.eyeIcon(isShow)} />
+    ) : (
+      <EyeOffIcon css={S.eyeIcon(isShow)} />
+    );
+  };
   const handleSetFocuseId = (id: string) => (): void => setFocusedId(id);
-  const handleClick = (): void => setIsShow(!isShow);
 
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field: { value, onChange } }) => {
-        const handleOnChange = (
-          e: React.ChangeEvent<HTMLInputElement>,
-        ): void => {
-          onChange(e.target.value);
-          trigger(name);
-        };
-
-        const handleOnBlur = (): void => {
-          setFocusedId("");
-          trigger(name);
-        };
-
-        return (
-          <S.AccountInputWrapper className={className}>
-            <S.AccountInputLabel
-              htmlFor={id}
-              isLabelTop={focusedId === id || !!value}
-            >
-              {defaultLanguage(label)}
-            </S.AccountInputLabel>
-            <S.AccountInput
-              id={id}
-              type={inputType}
-              value={
-                name === "verificationCode"
-                  ? numericOnly(value)
-                  : hasTrim
-                    ? value.trim()
-                    : value
-              }
-              disabled={disabled}
-              maxLength={maxLength}
-              autoComplete={type === "text" ? "true" : "false"}
-              hasError={hasError}
-              onFocus={handleSetFocuseId(id)}
-              onBlur={handleOnBlur}
-              onChange={handleOnChange}
-            />
-            {type === "password" && (
-              <S.PasswordShowButton type="button" onClick={handleClick}>
-                {isShow ? (
-                  <EyeAbledIcon css={S.eyeIcon(isShow)} />
-                ) : (
-                  <EyeDisabledIcon css={S.eyeIcon(isShow)} />
-                )}
-              </S.PasswordShowButton>
-            )}
-          </S.AccountInputWrapper>
-        );
-      }}
-    />
+    <HeadlessAccountInput css={S.headlessAccountInput} className={className}>
+      <HeadlessAccountInput.Label
+        css={S.label(focusedId === id || isDirty)}
+        id={id}
+        label={label}
+      />
+      <HeadlessAccountInput.Input
+        css={S.input(hasError)}
+        disabled={disabled}
+        maxLength={maxLength}
+        type={type}
+        register={register}
+        handleFocus={handleSetFocuseId(id)}
+      />
+      {type === "password" && (
+        <HeadlessAccountInput.Button css={S.button} renderIcon={renderIcon} />
+      )}
+    </HeadlessAccountInput>
   );
 };
 

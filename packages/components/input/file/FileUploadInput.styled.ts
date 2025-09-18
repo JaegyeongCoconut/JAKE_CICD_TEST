@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const FileInputWrapper = styled.div`
@@ -11,8 +12,8 @@ export const FileInputWrapper = styled.div`
 `;
 
 interface LabelProps {
-  hasError: boolean;
   disabled: boolean;
+  hasError: boolean;
 }
 
 export const FileInput = styled.div<LabelProps>`
@@ -21,8 +22,8 @@ export const FileInput = styled.div<LabelProps>`
     display: flex;
     align-items: center;
     height: 40px;
-    border: 1px solid ${hasError ? theme.color.red_20 : theme.color.gray_30};
-    background-color: ${disabled ? theme.color.gray_10 : theme.color.white};
+    border: 1px solid ${hasError ? theme.color.red_50 : theme.color.gray_30};
+    background-color: ${disabled ? theme.color.gray_10 : theme.color.white_00};
 
     :hover {
       cursor: ${disabled ? "not-allowed" : "cursor"};
@@ -37,8 +38,8 @@ export const FileInput = styled.div<LabelProps>`
 export const FileButtonWrapper = styled.div`
   ${({ theme }) => css`
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     width: 40px;
     height: 100%;
     margin-left: auto;
@@ -50,7 +51,7 @@ export const FileInputPlaceholder = styled.span<{ isFileAttached: boolean }>`
   ${({ theme, isFileAttached }) => css`
     ${theme.font.regular_14};
     padding: 9px 12px;
-    color: ${isFileAttached ? theme.color.black : theme.color.gray_40};
+    color: ${isFileAttached ? theme.color.gray_90 : theme.color.gray_40};
   `}
 `;
 
@@ -63,8 +64,8 @@ export const FileUploadButton = styled.label`
     height: 100%;
 
     :hover {
-      cursor: pointer;
       background-color: ${theme.color.gray_10};
+      cursor: pointer;
     }
 
     > input {
@@ -82,8 +83,8 @@ export const DeleteButton = styled.button`
     height: 100%;
 
     :hover {
-      cursor: pointer;
       background-color: ${theme.color.gray_10};
+      cursor: pointer;
     }
 
     > svg {

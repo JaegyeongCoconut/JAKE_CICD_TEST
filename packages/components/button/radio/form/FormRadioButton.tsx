@@ -5,7 +5,7 @@ import type { UseFormRegisterReturn } from "react-hook-form";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages, RadioType } from "@repo/types";
 
-import * as S from "../RadioButton.styled";
+import * as S from "./FormRadioButton.styled";
 
 interface RadioButtonProps<T extends string | number> {
   className?: string;
@@ -28,10 +28,10 @@ const FormRadioButton = <T extends string | number>({
       {radioList.map((item) => (
         <S.Label key={item.key} disabled={disabled}>
           <input
-            type="radio"
             id={item.key + uuid}
             disabled={disabled}
             value={item.key}
+            type="radio"
             {...register}
           />
           <S.RadioButton htmlFor={item.key + uuid} tabIndex={0} />

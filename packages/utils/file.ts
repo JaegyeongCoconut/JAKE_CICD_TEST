@@ -1,6 +1,16 @@
+import type { AxiosResponse } from "axios";
+
 import type { S3PresignedServerModel } from "@repo/types";
 
-export const getFileSize = (type: "MB" | "KB", size: number): number => {
+import { makeNewImageFileName } from "./formatter/name";
+import { extractS3ImageKey } from "./image";
+
+interface GetFileSizeProps {
+  size: number;
+  type: "MB" | "KB";
+}
+
+export const getFileSize = ({ type, size }: GetFileSizeProps): number => {
   switch (type) {
     case "KB":
       return +(size / 1024).toFixed(2);
@@ -9,10 +19,15 @@ export const getFileSize = (type: "MB" | "KB", size: number): number => {
   }
 };
 
-export const getS3FileFormData = (
-  s3Info: S3PresignedServerModel,
-  file: File,
-): FormData => {
+interface GetS3FileFormDataProps {
+  file: File;
+  s3Info: S3PresignedServerModel;
+}
+
+export const getS3FileFormData = ({
+  s3Info,
+  file,
+}: GetS3FileFormDataProps): FormData => {
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(s3Info.data.fields)) {
@@ -24,27 +39,36 @@ export const getS3FileFormData = (
   return formData;
 };
 
-export const checkFileExtension = (
-  acceptableFileExtensions: string[],
-  currentFileExtension: string,
-): boolean => acceptableFileExtensions.includes(currentFileExtension);
-
-interface CheckImageDimensionsProps {
-  file: File;
-  limitWidth: number;
-  limitHeight: number;
+interface CheckFileExtensionProps {
+  acceptableFileExtensions: readonly string[];
+  currentFileExtension: string;
 }
 
-export const checkImageDimensions = ({
+export const checkFileExtension = ({
+  acceptableFileExtensions,
+  currentFileExtension,
+}: CheckFileExtensionProps): boolean =>
+  acceptableFileExtensions.includes(currentFileExtension);
+
+interface UploadFileToS3AndReturnFileKeyProps {
+  file: File | string;
+  urlPrefix: string;
+  onCreateS3PresignedUrlAPI: (
+    key: string,
+    file: File,
+  ) => Promise<AxiosResponse<unknown, unknown>>;
+}
+
+export const uploadFileToS3AndReturnFileKey = async ({
+  urlPrefix,
   file,
-  limitWidth,
-  limitHeight,
-}: CheckImageDimensionsProps): Promise<boolean> =>
-  new Promise((resolve) => {
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      const { width, height } = img;
-      resolve(width === limitWidth && height === limitHeight);
-    };
-  });
+  onCreateS3PresignedUrlAPI,
+}: UploadFileToS3AndReturnFileKeyProps): Promise<string> => {
+  if (typeof file === "string") return extractS3ImageKey(file);
+
+  const photoUid = makeNewImageFileName(file);
+  const fileKey = `${urlPrefix}/${photoUid}`;
+  const s3ResInfos = await onCreateS3PresignedUrlAPI(fileKey, file);
+
+  return s3ResInfos.status === 204 ? fileKey : "";
+};

@@ -1,11 +1,13 @@
+import type { ChangeEvent } from "react";
 import React from "react";
 
 import { useFormContext } from "react-hook-form";
 
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import { useTimerStore } from "@repo/stores/timer";
-import { useVerifyAccountStore } from "@repo/stores/verifyAccount";
-import type { VerificationType } from "@repo/types";
+import type { FormResetPassword } from "@repo/types";
+import { numericOnly } from "@repo/utils/formatter/number";
 
 import * as S from "./VerificationForm.styled";
 import AccountInput from "../../../../input/accountInput/AccountInput";
@@ -13,8 +15,8 @@ import ErrorMessage from "../../../../message/ErrorMessage";
 import Timer from "../../../../timer/Timer";
 
 interface VerificationFormProps {
-  initTime?: number;
-  handleVerificationCheck: () => void;
+  initTime: number;
+  handleVerificationCheck: (data: FormResetPassword) => void;
 }
 
 const VerificationForm = ({
@@ -24,34 +26,40 @@ const VerificationForm = ({
   const { defaultLanguage } = useDefaultLanguage();
 
   const isTimeOut = useTimerStore((state) => state.isTimeOut);
-  const verifyAccountInfo = useVerifyAccountStore((state) => state.verifyInfo);
 
   const {
-    control,
-    formState: { errors },
-    trigger,
-  } = useFormContext<VerificationType>();
+    formState: { errors, isDirty },
+    getValues,
+    handleSubmit,
+    register,
+    setValue,
+  } = useFormContext<FormResetPassword>();
 
   return (
-    <S.VerificationForm onSubmit={handleVerificationCheck}>
-      {verifyAccountInfo.isEmailVerifyDone && (
+    <S.VerificationSection>
+      {getValues("verify.isAuthCodeSend") && (
         <>
-          <S.HideSubmitButton disabled />
+          <S.HideSubmitButton disabled type="button" />
           <AccountInput
             id="verificationCode"
+            disabled={false}
+            hasError={!!errors.verify?.verificationCode?.message}
+            isDirty={!!isDirty}
+            label={LANGUAGE_LABEL.VERIFICATION_CODE}
             maxLength={6}
-            control={control}
-            name="verificationCode"
-            label="Verification code"
             type="text"
-            hasTrim={false}
-            trigger={trigger}
-            hasError={!!errors.verificationCode?.message}
+            register={register("verify.verificationCode", {
+              onChange: (e: ChangeEvent<HTMLInputElement>): void =>
+                setValue(
+                  "verify.verificationCode",
+                  numericOnly(e.target.value),
+                ),
+            })}
           />
-          {errors.verificationCode?.message && (
+          {errors.verify?.verificationCode?.message && (
             <ErrorMessage
               css={S.alertMessage}
-              message={errors.verificationCode.message}
+              message={errors.verify.verificationCode.message}
             />
           )}
           <Timer css={S.timer} initTime={initTime} />
@@ -60,13 +68,15 @@ const VerificationForm = ({
       <S.NextStepButton
         disabled={
           isTimeOut ||
-          !verifyAccountInfo.isEmailVerifyDone ||
-          !!errors.verificationCode?.message
+          !getValues("verify.isAuthCodeSend") ||
+          !!errors.verify?.verificationCode?.message
         }
+        type="submit"
+        onClick={handleSubmit(handleVerificationCheck)}
       >
-        {defaultLanguage("Next")}
+        {defaultLanguage(LANGUAGE_LABEL.NEXT)}
       </S.NextStepButton>
-    </S.VerificationForm>
+    </S.VerificationSection>
   );
 };
 

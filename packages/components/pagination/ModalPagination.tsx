@@ -5,7 +5,7 @@ import {
   INIT_PAGE_INFO,
 } from "@repo/constants/pagination";
 import useModalPagination from "@repo/hooks/pagination/useModalPagination";
-import type { PageInfo } from "@repo/types";
+import type { PageInfoType } from "@repo/types";
 
 import Pagination from "./Pagination";
 
@@ -13,9 +13,9 @@ interface ModalPaginationProps {
   className?: string;
   hasDoubleButton?: boolean;
   currentPage: number;
-  pageInfo?: PageInfo;
   maxPageCount?: number;
-  movePage: (page: number) => void;
+  pageInfo?: PageInfoType;
+  handlePageMove: (page: number) => void;
 }
 
 const ModalPagination = ({
@@ -24,7 +24,7 @@ const ModalPagination = ({
   currentPage,
   pageInfo = INIT_PAGE_INFO,
   maxPageCount = INIT_MAX_PAGE_COUNT,
-  movePage,
+  handlePageMove,
 }: ModalPaginationProps) => {
   const { totalPages } = pageInfo;
 
@@ -34,20 +34,25 @@ const ModalPagination = ({
     handleNextPageClick,
     handleLastPageClick,
     handleNumberClick,
-  } = useModalPagination(currentPage, maxPageCount, totalPages, movePage);
+  } = useModalPagination({
+    currentPage,
+    maxPageCount,
+    totalPages,
+    handlePageMove,
+  });
 
   return (
     <Pagination
       className={className}
       hasDoubleButton={hasDoubleButton}
       currentPage={currentPage}
-      totalPages={totalPages}
       maxPageCount={maxPageCount}
-      handlePreviousPageClick={handlePreviousPageClick}
+      totalPages={totalPages}
       handleFirstPageClick={handleFirstPageClick}
-      handleNextPageClick={handleNextPageClick}
       handleLastPageClick={handleLastPageClick}
+      handleNextPageClick={handleNextPageClick}
       handleNumberClick={handleNumberClick}
+      handlePreviousPageClick={handlePreviousPageClick}
     />
   );
 };

@@ -18,10 +18,10 @@ const SummaryCardSkeleton = ({ className, titles }: SummaryCardProps) => {
       {titles.map((title) => (
         <SummaryCard key={title} title={title}>
           <S.Title>
-            <Skeleton width={150} height="100%" borderRadius={6} />
+            <Skeleton height="100%" width={150} borderRadius={6} />
           </S.Title>
           <S.Content>
-            <Skeleton width={80} height="100%" borderRadius={6} />
+            <Skeleton height="100%" width={80} borderRadius={6} />
           </S.Content>
         </SummaryCard>
       ))}

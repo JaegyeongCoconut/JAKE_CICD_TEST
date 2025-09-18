@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const PageNotFound = styled.section`
@@ -30,7 +31,7 @@ export const Title = styled.h1`
   ${({ theme }) => css`
     ${theme.font.bold_18};
     margin-bottom: 6px;
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
     text-align: center;
   `}
 `;

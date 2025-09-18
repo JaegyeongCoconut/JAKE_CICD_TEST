@@ -21,12 +21,12 @@ export const Label = styled.label<LabelProps>`
     display: flex;
     align-items: ${hasSubLabel ? "flex-start" : "center"};
     column-gap: 8px;
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
     z-index: ${theme.zIndex.CHECKBOX};
 
     & > span {
       width: max-content;
-      color: ${disabled ? theme.color.gray_50 : theme.color.black};
+      color: ${disabled ? theme.color.gray_50 : theme.color.gray_90};
     }
 
     & > input[type="checkbox"] {
@@ -37,15 +37,15 @@ export const Label = styled.label<LabelProps>`
       cursor: ${disabled ? "not-allowed" : "pointer"};
 
       input[type="checkbox"]:enabled + label {
-        border: 1px solid ${theme.color.blue_10};
+        border: 1px solid ${theme.color.blue_60};
         cursor: pointer;
       }
     }
 
     input[type="checkbox"]:checked + label {
-      border: 1px solid ${theme.color.blue_10};
-      background: ${theme.color.blue_10} no-repeat center;
-      background-image: url(${fillCheckboxSVG(theme.color.blue_10)});
+      border: 1px solid ${theme.color.blue_60};
+      background: ${theme.color.blue_60} no-repeat center;
+      background-image: url(${fillCheckboxSVG(theme.color.blue_60)});
     }
 
     input[type="checkbox"]:disabled + label {
@@ -61,8 +61,8 @@ export const Label = styled.label<LabelProps>`
 
     input[type="checkbox"]:checked:disabled + label {
       border: 1px solid ${theme.color.gray_30};
-      background-color: ${theme.color.gray_10};
       background: no-repeat center;
+      background-color: ${theme.color.gray_10};
       background-image: url(${fillCheckboxSVG(theme.color.gray_40)});
     }
   `}

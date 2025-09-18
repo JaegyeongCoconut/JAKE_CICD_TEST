@@ -4,10 +4,10 @@ import "@repo/utils/dayjsSetup";
 import type { CalendarType, FormatCalendar } from "@repo/types";
 
 interface useDateProps {
+  calendar: FormatCalendar["useDate"];
   date: dayjs.Dayjs;
   type: CalendarType;
-  calendar: FormatCalendar["useDate"];
-  changeMonth: () => void;
+  handleMonthChange: () => void;
 }
 
 const useDate = ({
@@ -16,11 +16,11 @@ const useDate = ({
   calendar: {
     currentDates,
     hoveredDate,
-    changeHoveredDate,
-    resetHoveredDate,
+    onChangeHoveredDate,
+    onResetHoveredDate,
     handleDateClick,
   },
-  changeMonth,
+  handleMonthChange,
 }: useDateProps) => {
   const isArrayCurrentDates = Array.isArray(currentDates);
 
@@ -68,20 +68,20 @@ const useDate = ({
 
     if (isSelectedSameSingleDate) {
       handleDateClick([])();
-      resetHoveredDate();
+      onResetHoveredDate();
     } else if (isSelectedSameFreeDate) {
       if (!filteredDates) return;
 
       handleDateClick(
         Array.isArray(filteredDates) ? filteredDates : [filteredDates],
       )();
-      changeHoveredDate(date);
+      onChangeHoveredDate(date);
     } else if (!isArrayCurrentDates && !!currentDates) {
       handleDateClick([currentDates, date])();
-      changeHoveredDate(isArrayCurrentDates ? currentDates[0] : currentDates);
+      onChangeHoveredDate(isArrayCurrentDates ? currentDates[0] : currentDates);
     } else if (!isAlreadySelectedDates || !currentDates) {
       handleDateClick([date])();
-      changeHoveredDate(date);
+      onChangeHoveredDate(date);
     }
   };
 
@@ -92,13 +92,13 @@ const useDate = ({
       handleDateClick([date])();
     }
 
-    changeMonth();
+    handleMonthChange();
   };
 
   const handleMouseOver = (date: dayjs.Dayjs) => (): void => {
     !isArrayCurrentDates && !!currentDates
-      ? changeHoveredDate(date)
-      : resetHoveredDate();
+      ? onChangeHoveredDate(date)
+      : onResetHoveredDate();
   };
 
   return {

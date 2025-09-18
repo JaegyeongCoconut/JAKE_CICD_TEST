@@ -1,3 +1,4 @@
+import { css, type Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const Button = styled.button`
@@ -5,7 +6,11 @@ export const Button = styled.button`
   align-items: center;
 `;
 
-export const WhatsappImg = styled.img`
+export const whatAppIcon = (theme: Theme) => css`
   width: 16px;
   height: 16px;
+
+  & > path {
+    fill: ${theme.color.green_40};
+  }
 `;

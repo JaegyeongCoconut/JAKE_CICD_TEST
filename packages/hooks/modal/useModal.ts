@@ -1,45 +1,41 @@
-import React, { useRef, useCallback } from "react";
+import type { ReactNode, MouseEvent } from "react";
+import { useCallback, useState } from "react";
 
 import { useModalStore } from "@repo/stores/modal";
 
 import useKeyTrap from "./useKeyTrap";
 
 const useModal = () => {
-  const modalRef = useRef<HTMLDialogElement>(null);
+  const [modalElement, setModalElement] = useState<HTMLDialogElement | null>(
+    null,
+  );
 
-  const modals = useModalStore((state) => state.modals);
-  const addModal = useModalStore((state) => state.addModal);
-  const removeModal = useModalStore((state) => state.removeModal);
-  const clearModals = useModalStore((state) => state.clearModals);
-
-  const openModalComponent = useCallback((compo: React.ReactNode): void => {
-    document.body.style.cssText = "overflow-y: hidden";
-    addModal(compo);
+  const modalRef = useCallback((element: HTMLDialogElement | null) => {
+    setModalElement(element);
   }, []);
 
+  const handleModalAdd = useModalStore((state) => state.handleModalAdd);
+  const handleModalRemove = useModalStore((state) => state.handleModalRemove);
+  const handleModalClear = useModalStore((state) => state.handleModalClear);
+
   const handleModalOpen = useCallback(
-    (compo: React.ReactNode) =>
-      (e?: React.MouseEvent): void => {
+    (compo: ReactNode) =>
+      (e?: MouseEvent<Element>): void => {
         e?.stopPropagation();
-        openModalComponent(compo);
+        handleModalAdd(compo);
       },
     [],
   );
 
   const handleModalClose = (): void => {
-    removeModal();
-
-    if (modals.length <= 1) {
-      document.body.style.cssText = "overflow: auto";
-    }
+    handleModalRemove();
   };
 
   const handleModalAllClose = useCallback((): void => {
-    clearModals();
-    document.body.style.cssText = "overflow: auto";
+    handleModalClear();
   }, []);
 
-  useKeyTrap(modalRef, handleModalClose);
+  useKeyTrap(modalElement, handleModalClose);
 
   return {
     modalRef,

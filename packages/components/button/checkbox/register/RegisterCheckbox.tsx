@@ -2,14 +2,12 @@ import React, { useId } from "react";
 
 import type { UseFormRegisterReturn } from "react-hook-form";
 
-import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-
 import * as S from "../Checkbox.styled";
 
 interface RegisterCheckboxProps {
   className?: string;
-  isChecked?: boolean;
   disabled?: boolean;
+  isChecked?: boolean;
   label: string;
   register: UseFormRegisterReturn<string>;
 }
@@ -22,17 +20,16 @@ const RegisterCheckbox = ({
   label,
 }: RegisterCheckboxProps) => {
   const uuid = useId();
-  const { defaultLanguage } = useDefaultLanguage();
 
   return (
     <S.Wrapper className={className}>
       <S.Label disabled={disabled} hasSubLabel={false}>
         <input
-          type="checkbox"
           id={uuid}
-          disabled={disabled}
           checked={isChecked}
+          disabled={disabled}
           readOnly
+          type="checkbox"
           {...register}
         />
         <S.Checkbox htmlFor={uuid} tabIndex={0} />

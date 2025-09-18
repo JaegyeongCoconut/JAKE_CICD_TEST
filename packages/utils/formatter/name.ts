@@ -1,9 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
 
-export const formatFullName = (
-  firstName?: string | null,
-  lastName?: string | null,
-): string | null => {
+interface FormatFullNameProps {
+  firstName: string | undefined | null;
+  lastName: string | undefined | null;
+}
+
+export const formatFullName = ({
+  firstName,
+  lastName,
+}: FormatFullNameProps): string | null => {
   if (!firstName && !lastName) return null;
   return `${firstName || ""} ${lastName || ""}`.trim();
 };

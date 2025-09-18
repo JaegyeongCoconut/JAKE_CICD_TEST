@@ -1,44 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
-import { ErrorIcon, SuccessIcon } from "@repo/assets/icon";
+import { ReactComponent as CheckCircleIcon } from "@repo/assets/icon/ic_check_circle.svg";
+import { ReactComponent as WarningIcon } from "@repo/assets/icon/ic_warning.svg";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import useToast from "@repo/hooks/useToast";
-import type { Toast } from "@repo/types";
+import useToastItem from "@repo/hooks/useToastItem";
+import type { ToastType } from "@repo/types";
 
 import * as S from "./ToastItem.styled";
 
-interface ToastItemProps extends Toast {
-  id: string;
-}
+interface ToastItemProps extends ToastType {}
 
 const TRANSITION_DURATION = 1000;
 const TOAST_DURATION = 3000;
 
 const ToastItem = ({ type, id, content }: ToastItemProps) => {
   const { defaultLanguage } = useDefaultLanguage();
-
-  const [isClosing, setIsClosing] = useState(false);
-  const { removeToast } = useToast();
-
-  useEffect(() => {
-    const existTimeout = setTimeout(() => {
-      setIsClosing(true);
-    }, TOAST_DURATION);
-
-    const expireToastTimeout = setTimeout(() => {
-      removeToast(id);
-    }, TOAST_DURATION + TRANSITION_DURATION);
-
-    return () => {
-      clearTimeout(existTimeout);
-      clearTimeout(expireToastTimeout);
-    };
-  }, []);
+  const { isClosing } = useToastItem({
+    id,
+    toastDuration: TOAST_DURATION,
+    transitionDuration: TRANSITION_DURATION,
+  });
 
   return (
     <S.ToastItem isClosing={isClosing}>
       <S.Item data-type={type} toastType={type}>
-        <div>{type === "success" ? <SuccessIcon /> : <ErrorIcon />}</div>
+        <div>{type === "success" ? <CheckCircleIcon /> : <WarningIcon />}</div>
         <p>{defaultLanguage(content)}</p>
       </S.Item>
     </S.ToastItem>

@@ -1,13 +1,14 @@
+import type { ChangeEvent } from "react";
 import React, { useId } from "react";
 
 import * as S from "./Checkbox.styled";
 
 interface CheckboxProps {
   className?: string;
-  label?: string;
   disabled?: boolean;
   isChecked?: boolean;
-  handleCheck?: () => void;
+  label?: string;
+  handleCheck?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Checkbox = ({
@@ -23,14 +24,15 @@ const Checkbox = ({
     <S.Wrapper className={className}>
       <S.Label disabled={disabled} hasSubLabel={false}>
         <input
-          type="checkbox"
           id={uuid}
-          disabled={disabled}
           checked={isChecked}
+          disabled={disabled}
           readOnly
+          type="checkbox"
           onChange={handleCheck}
         />
         <S.Checkbox htmlFor={uuid} tabIndex={0} />
+        {/* TODO: label이 없을 경우 span 비가시화 처리 조건 필요 */}
         <span>{label}</span>
       </S.Label>
     </S.Wrapper>

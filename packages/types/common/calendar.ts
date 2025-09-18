@@ -1,21 +1,21 @@
 import type { Dayjs } from "dayjs";
 
 export interface MonthYear {
-  value: Dayjs;
-  month: string;
-  year: string;
-  date: string;
-  currentMonth: string;
-  currentYear: string;
   isCurrentMonthYear: boolean;
-  startDate: Dayjs;
+  value: Dayjs;
+  currentMonth: string;
   currentStartDate: Dayjs;
-  prevMonthStartDate: Dayjs;
-  nextMonthStartDate: Dayjs;
+  currentYear: string;
+  date: string;
   firstDOW: number;
-  lastDate: number;
-  prevMonthLastDate: number;
   firstWeekPrevMonthDate: Dayjs;
+  lastDate: number;
+  month: string;
+  nextMonthStartDate: Dayjs;
+  prevMonthLastDate: number;
+  prevMonthStartDate: Dayjs;
+  startDate: Dayjs;
+  year: string;
 }
 
 export type CalendarModalSelectDate = (Dayjs | null)[];
@@ -26,25 +26,25 @@ export type CurrentDatesType = [Dayjs, Dayjs] | Dayjs | null;
 
 export interface DatePicker {
   monthYear: MonthYear;
-  handlePrevYearChange: () => void;
+  handleNextMonthChange: () => void;
   handleNextYearChange: () => void;
   handlePrevMonthChange: () => void;
-  handleNextMonthChange: () => void;
+  handlePrevYearChange: () => void;
 }
 
 export interface Calendar {
-  currentDates: CurrentDatesType;
-  hoveredDate: Dayjs | null;
   isDisabledApplyButton: boolean;
   isOpenMonthDialog: boolean;
+  currentDates: CurrentDatesType;
+  hoveredDate: Dayjs | null;
   handleApply: () => void;
+  handleDateClick: (date: Dayjs[]) => () => void;
+  handleMonthClick: (month: number) => () => void;
   handleMonthDialog: () => void;
   handleMoveToday: () => void;
   handleReset: () => void;
-  resetHoveredDate: () => void;
-  changeHoveredDate: (date: Dayjs) => void;
-  handleDateClick: (date: Dayjs[]) => () => void;
-  handleMonthClick: (month: number) => () => void;
+  onChangeHoveredDate: (date: Dayjs) => void;
+  onResetHoveredDate: () => void;
 }
 
 export interface FormatCalendar {
@@ -57,8 +57,8 @@ export interface FormatCalendar {
     Calendar,
     | "currentDates"
     | "hoveredDate"
-    | "changeHoveredDate"
-    | "resetHoveredDate"
+    | "onChangeHoveredDate"
+    | "onResetHoveredDate"
     | "handleDateClick"
     | "handleMoveToday"
   >;
@@ -71,8 +71,8 @@ export interface FormatCalendar {
     Calendar,
     | "currentDates"
     | "hoveredDate"
-    | "changeHoveredDate"
-    | "resetHoveredDate"
+    | "onChangeHoveredDate"
+    | "onResetHoveredDate"
     | "handleDateClick"
   >;
 }

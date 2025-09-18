@@ -1,10 +1,11 @@
 import React, { useRef, lazy, Suspense } from "react";
 
-import { Controller, Control } from "react-hook-form";
+import type { Control } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import "suneditor/dist/css/suneditor.min.css";
 import type SunEditorCore from "suneditor/src/lib/core";
 
-import { ADMIN_ERROR_MESSAGE } from "@repo/constants/error/message";
+import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 
@@ -12,11 +13,11 @@ const SunEditor = lazy(() => import("suneditor-react"));
 
 interface EditorProps {
   name: string;
-  placeholder: Languages;
   defaultValue: string;
+  placeholder: Languages;
   control: Control<any>;
-  handleIsEmpty: (count: number) => void;
   handleClearError: (data: string) => void;
+  handleIsEmpty: (count: number) => void;
 }
 
 const Editor = ({
@@ -38,9 +39,9 @@ const Editor = ({
   return (
     <Controller
       name={name}
-      control={control}
       defaultValue={defaultValue}
-      rules={{ required: ADMIN_ERROR_MESSAGE.FIELD }}
+      rules={{ required: COMMON_ERROR_MESSAGE.FIELD }}
+      control={control}
       render={({ field: { onChange, onBlur, value, name } }) => {
         const handleEditorChange = (data: string): void => {
           onChange(data);
@@ -63,11 +64,12 @@ const Editor = ({
           <Suspense fallback={<div>Loading Editor...</div>}>
             <SunEditor
               name={name}
-              width="100%"
-              height="394"
-              placeholder={defaultLanguage(placeholder)!}
               defaultValue={defaultValue}
+              height="394"
+              width="100%"
               getSunEditorInstance={getSunEditorInstance}
+              placeholder={defaultLanguage(placeholder)!}
+              setContents={value}
               setDefaultStyle={"font-size: 14px;"}
               setOptions={{
                 charCounter: true,
@@ -91,9 +93,8 @@ const Editor = ({
                   ],
                 ],
               }}
-              setContents={value}
-              onChange={handleEditorChange}
               onBlur={handleEditorBlur}
+              onChange={handleEditorChange}
             />
           </Suspense>
         );

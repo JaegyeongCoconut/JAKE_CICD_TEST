@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const Header = styled.header`
@@ -10,7 +11,7 @@ export const Header = styled.header`
     align-items: center;
     height: 100%;
     padding-bottom: 12px;
-    background-color: ${theme.color.white};
+    background-color: ${theme.color.white_00};
     z-index: ${theme.zIndex.STICKY};
   `}
 `;
@@ -24,7 +25,7 @@ export const LeftContent = styled.div`
     & > h2 {
       ${theme.font.medium_18};
       margin-right: 12px;
-      color: ${theme.color.black};
+      color: ${theme.color.gray_90};
     }
   `}
 `;

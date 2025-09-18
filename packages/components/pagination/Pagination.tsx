@@ -1,6 +1,7 @@
 import React from "react";
 
-import { ChevronDoubleLeftIcon, ChevronDownIcon } from "@repo/assets/icon";
+import { ReactComponent as DownIcon } from "@repo/assets/icon/ic_down.svg";
+import { ReactComponent as LeftDoubleIcon } from "@repo/assets/icon/ic_left_double.svg";
 import usePagination from "@repo/hooks/pagination/usePagination";
 
 import * as S from "./Pagination.styled";
@@ -9,13 +10,13 @@ interface PaginationProps {
   className?: string;
   hasDoubleButton?: boolean;
   currentPage: number;
-  totalPages: number;
   maxPageCount: number;
-  handlePreviousPageClick: () => void;
+  totalPages: number;
   handleFirstPageClick: () => void;
-  handleNextPageClick: () => void;
   handleLastPageClick: () => void;
+  handleNextPageClick: () => void;
   handleNumberClick: (idx: number) => () => void;
+  handlePreviousPageClick: () => void;
 }
 
 const Pagination = ({
@@ -31,60 +32,60 @@ const Pagination = ({
   handleNumberClick,
 }: PaginationProps) => {
   const { isPreviousNumberDisabled, isNextNumberDisabled, pageNumbers } =
-    usePagination(currentPage, maxPageCount, totalPages);
+    usePagination({ currentPage, maxPageCount, totalPages });
 
   return (
     <S.Pagination className={className}>
       <S.Wrapper>
         {hasDoubleButton && (
           <S.ArrowButton
-            type="button"
             disabled={isPreviousNumberDisabled}
+            type="button"
             onClick={handleFirstPageClick}
           >
-            <ChevronDoubleLeftIcon />
+            <LeftDoubleIcon />
           </S.ArrowButton>
         )}
 
         <S.ArrowButton
-          type="button"
           disabled={isPreviousNumberDisabled}
+          type="button"
           onClick={handlePreviousPageClick}
         >
-          <ChevronDownIcon css={S.chevronLeftIcon} />
+          <DownIcon css={S.chevronLeftIcon} />
         </S.ArrowButton>
         <S.NumberWrapper>
           {pageNumbers.length ? (
             pageNumbers.map((number) => (
               <S.NumberButton
                 key={number}
-                type="button"
                 isCurrentPage={currentPage === number}
+                type="button"
                 onClick={handleNumberClick(number)}
               >
                 {number}
               </S.NumberButton>
             ))
           ) : (
-            <S.NumberButton type="button" isCurrentPage={false} disabled>
+            <S.NumberButton disabled isCurrentPage={false} type="button">
               1
             </S.NumberButton>
           )}
         </S.NumberWrapper>
         <S.ArrowButton
-          type="button"
           disabled={isNextNumberDisabled}
+          type="button"
           onClick={handleNextPageClick}
         >
-          <ChevronDownIcon css={S.chevronRightIcon} />
+          <DownIcon css={S.chevronRightIcon} />
         </S.ArrowButton>
         {hasDoubleButton && (
           <S.ArrowButton
-            type="button"
             disabled={isNextNumberDisabled}
+            type="button"
             onClick={handleLastPageClick}
           >
-            <ChevronDoubleLeftIcon css={S.chevronDoubleRightIcon} />
+            <LeftDoubleIcon css={S.chevronDoubleRightIcon} />
           </S.ArrowButton>
         )}
       </S.Wrapper>

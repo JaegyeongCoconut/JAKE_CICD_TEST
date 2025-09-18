@@ -1,7 +1,12 @@
 import type { Languages } from "./language";
 
-export interface Toast {
+export type ToastType = {
   id: string;
-  type?: "success" | "warning";
   content: Languages;
-}
+  type: "success" | "warning";
+};
+
+export type ToastMessage<T extends Languages> = {
+  SUCCESS: { [key: string]: { content: T; type: "success" } };
+  WARNING: { [key: string]: { content: T; type: "warning" } };
+};

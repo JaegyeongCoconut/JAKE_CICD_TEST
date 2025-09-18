@@ -1,13 +1,13 @@
 import React from "react";
 
-import { button } from "@repo/styles/themes";
+import type { button } from "@repo/styles/themes";
 
 import * as S from "./ExternalLinkButton.styled";
 
 interface ExternalLinkButtonProps {
   className?: string;
-  variant: keyof typeof button;
   href: string;
+  variant: keyof typeof button;
   children: React.ReactNode;
 }
 
@@ -20,10 +20,10 @@ const ExternalLinkButton = ({
   return (
     <S.ExternalLinkButton
       className={className}
-      variant={variant}
       href={href}
-      target="_blank"
+      variant={variant}
       rel="noopener noreferrer"
+      target="_blank"
     >
       {children}
     </S.ExternalLinkButton>

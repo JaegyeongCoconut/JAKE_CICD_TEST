@@ -1,14 +1,14 @@
 import React, { useId } from "react";
 
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import { Languages } from "@repo/types";
+import type { Languages } from "@repo/types";
 
 import * as S from "../Checkbox.styled";
 
 interface ControlCheckboxProps {
   className?: string;
-  isChecked?: boolean;
   disabled?: boolean;
+  isChecked?: boolean;
   label: Languages;
   subLabel?: string; // NOTE: 브랜치 code의 string을 받기 위해 Languages 타입이 아닌 string 지정
   onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -31,13 +31,13 @@ const ControlCheckbox = ({
     <S.Wrapper className={className}>
       <S.Label disabled={disabled} hasSubLabel={!!subLabel}>
         <input
-          type="checkbox"
           id={uuid}
-          disabled={disabled}
           checked={isChecked}
+          disabled={disabled}
           readOnly
-          onChange={onChange}
+          type="checkbox"
           onBlur={onBlur}
+          onChange={onChange}
         />
         <S.Checkbox htmlFor={uuid} tabIndex={0} />
         <S.CheckboxLabelWrapper>

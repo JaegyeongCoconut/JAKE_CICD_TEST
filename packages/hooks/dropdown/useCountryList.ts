@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { DEFAULT_COUNTRY_CODE_INFO } from "@repo/assets/static/phone";
 import type { Country, GetCountriesClientModel } from "@repo/types";
-
-const INIT_COUNTRY_DATA: Country = {
-  code: "LA",
-  name: "Laos",
-  dial: "856",
-};
 
 interface UseCountryListProps {
   countryCode?: keyof GetCountriesClientModel;
@@ -15,7 +10,7 @@ interface UseCountryListProps {
 
 const useCountryList = ({ countryCode, data }: UseCountryListProps) => {
   const [selectedCountry, setSelectedCountry] = useState<Country>(
-    !countryCode ? INIT_COUNTRY_DATA : { code: "", name: "", dial: "" },
+    !countryCode ? DEFAULT_COUNTRY_CODE_INFO : { code: "", name: "", dial: "" },
   );
 
   const handleCountryWithCodeSelect = useCallback(

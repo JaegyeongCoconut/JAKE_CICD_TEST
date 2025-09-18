@@ -1,25 +1,9 @@
 import type { AxiosError } from "axios";
 
-import {
-  COMMON_ERROR_CODE,
-  LOGISTICS_ERROR_CODE,
-} from "../../constants/error/code";
-import {
-  ADMIN_ERROR_MESSAGE,
-  COMMON_ERROR_MESSAGE,
-  IOT_ERROR_MESSAGE,
-} from "../../constants/error/message";
-
-export type ApiErrorType = AxiosError<{
-  message:
-    | keyof typeof ADMIN_ERROR_MESSAGE
-    | keyof typeof LOGISTICS_ERROR_CODE
-    | keyof typeof IOT_ERROR_MESSAGE;
-}>;
+import type { COMMON_ERROR_CODE } from "../../constants/error/code";
 
 export type CommonApiErrorType = AxiosError<{
-  message: keyof typeof COMMON_ERROR_MESSAGE;
-  statusCode: keyof typeof COMMON_ERROR_CODE;
+  message: keyof typeof COMMON_ERROR_CODE;
 }>;
 
 export interface ChangeAccountPasswordQueryModel {
@@ -28,3 +12,18 @@ export interface ChangeAccountPasswordQueryModel {
     newPassword: string;
   };
 }
+
+export type RecursiveUndefined<T> =
+  // NOTE: 내부 타입을 추론할 수 있도록 infer 사용
+  T extends Array<infer U>
+    ? Array<RecursiveUndefined<U>> | undefined
+    : T extends object
+      ? { [K in keyof T]: RecursiveUndefined<T[K]> } | undefined
+      : T | undefined;
+
+export type RecursiveDefined<T> =
+  T extends Array<infer U>
+    ? Array<RecursiveDefined<NonNullable<U>>>
+    : T extends object
+      ? { [K in keyof T]: RecursiveDefined<NonNullable<T[K]>> }
+      : NonNullable<T>;

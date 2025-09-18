@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { useState } from "react";
 
-const useStateSearchInput = (
-  updateValue: (input: string) => void,
-  resetValue?: () => void,
-  accessibleInputType?: RegExp,
-) => {
+interface useStateSearchInputProps {
+  accessibleInputType: RegExp | undefined;
+  handleReset: () => void;
+  handleUpdate: (input: string) => void;
+}
+
+const useStateSearchInput = ({
+  accessibleInputType,
+  handleUpdate,
+  handleReset,
+}: useStateSearchInputProps) => {
   const [stateInput, setStateInput] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     let value = e.target.value;
     value = accessibleInputType
       ? value.replaceAll(accessibleInputType, "")
@@ -17,14 +24,14 @@ const useStateSearchInput = (
 
   const handleInputReset = (): void => {
     setStateInput("");
-    updateValue("");
-    resetValue && resetValue();
+    handleUpdate("");
+    handleReset && handleReset();
   };
 
-  const handleSearch = (e: React.FormEvent): void => {
+  const handleSearch = (e: FormEvent): void => {
     e.preventDefault();
 
-    updateValue(stateInput);
+    handleUpdate(stateInput);
   };
 
   return { stateInput, handleInputChange, handleInputReset, handleSearch };

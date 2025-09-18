@@ -1,15 +1,18 @@
-import { css, type Theme } from "@emotion/react";
-import styled from "@emotion/styled";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 
-export const PasswordInput = styled.input<{ hasError?: boolean }>`
-  ${({ theme, hasError }) => css`
-    ${theme.input.default(hasError)};
-    width: 100%;
-    padding-right: calc(24px + 16px);
-  `}
+export const headlessPasswordInput = css`
+  position: relative;
+  width: 100%;
 `;
 
-export const PasswordShowButton = styled.button`
+export const passwordInput = (hasError: boolean) => (theme: Theme) => css`
+  ${theme.input.default(hasError)};
+  width: 100%;
+  padding-right: calc(20px + 12px);
+`;
+
+export const passwordButton = css`
   position: absolute;
   top: 50%;
   right: 12px;
@@ -22,6 +25,6 @@ export const eyeIcon = (isShow: boolean) => (theme: Theme) => css`
   width: 20px;
 
   & > path {
-    fill: ${isShow ? theme.color.blue_10 : theme.color.gray_40};
+    fill: ${isShow ? theme.color.blue_60 : theme.color.gray_40};
   }
 `;

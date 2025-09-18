@@ -7,9 +7,9 @@ export const layout = {
     display: flex;
     flex-direction: column;
     min-width: 528px;
-    padding: 64px;
     border: 1px solid ${color.gray_20};
-    background-color: ${color.white};
+    padding: 64px;
+    background-color: ${color.white_00};
   `,
 } as const;
 

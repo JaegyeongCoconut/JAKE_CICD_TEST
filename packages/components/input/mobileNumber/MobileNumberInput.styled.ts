@@ -11,7 +11,7 @@ export const Dial = styled.span`
     position: absolute;
     top: 50%;
     left: 11px;
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
     transform: translateY(-50%);
     user-select: none;
   `}

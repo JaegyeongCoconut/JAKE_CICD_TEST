@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import { fillCheckboxSVG } from "@repo/utils/fill";
@@ -25,9 +26,9 @@ export const SubjectWrapper = styled(SubjectComponentWrapper)`
 
 export const Row = styled.div<{
   variant?: LabelContentType;
-  partition: number;
-  marginTop?: number;
   hasError?: boolean;
+  marginTop?: number;
+  partition: number;
 }>`
   ${({ theme, variant, partition, marginTop, hasError }) => css`
     display: grid;
@@ -35,7 +36,7 @@ export const Row = styled.div<{
     margin-top: ${marginTop && `${marginTop}px`};
     border: ${variant === "bg" && `1px solid ${theme.color.gray_20}`};
     border-bottom: ${hasError
-      ? `1px solid ${theme.color.red_20}`
+      ? `1px solid ${theme.color.red_50}`
       : variant === "underline" && `1px solid ${theme.color.gray_20}`};
 
     :not(:first-of-type) {
@@ -74,15 +75,15 @@ const mixin_name =
     padding: ${variant === "bg"
       ? "12px 20px"
       : variant === "underline" && "12px 16px 12px 0"};
-    background-color: ${hasError
-      ? theme.color.red_10
-      : variant === "bg" && theme.color.gray_10};
     color: ${hasError
-      ? theme.color.red_20
+      ? theme.color.red_50
       : variant === "empty" || variant === "underline"
-        ? theme.color.black
+        ? theme.color.gray_90
         : theme.color.gray_60};
     word-break: break-all;
+    background-color: ${hasError
+      ? theme.color.red_20
+      : variant === "bg" && theme.color.gray_10};
   `;
 
 export const Name = styled.span<{
@@ -96,8 +97,8 @@ export const Name = styled.span<{
 
 export const CheckboxLabel = styled.label<{
   variant?: LabelContentType;
-  hasError?: boolean;
   disabled?: boolean;
+  hasError?: boolean;
 }>`
   ${({ theme, variant, hasError, disabled }) => css`
     ${mixin_name(variant, hasError)(theme)};
@@ -110,15 +111,15 @@ export const CheckboxLabel = styled.label<{
       cursor: ${disabled ? "not-allowed" : "pointer"};
 
       input[type="checkbox"]:enabled + label {
-        border: 1px solid ${theme.color.blue_10};
+        border: 1px solid ${theme.color.blue_60};
         cursor: pointer;
       }
     }
 
     input[type="checkbox"]:checked + label {
-      border: 1px solid ${theme.color.blue_10};
-      background: ${theme.color.blue_10} no-repeat center;
-      background-image: url(${fillCheckboxSVG(theme.color.blue_10)});
+      border: 1px solid ${theme.color.blue_60};
+      background: ${theme.color.blue_60} no-repeat center;
+      background-image: url(${fillCheckboxSVG(theme.color.blue_60)});
     }
 
     input[type="checkbox"]:disabled + label {
@@ -134,8 +135,8 @@ export const CheckboxLabel = styled.label<{
 
     input[type="checkbox"]:checked:disabled + label {
       border: 1px solid ${theme.color.gray_30};
-      background-color: ${theme.color.gray_10};
       background: no-repeat center;
+      background-color: ${theme.color.gray_10};
       background-image: url(${fillCheckboxSVG(theme.color.gray_40)});
     }
   `}
@@ -156,7 +157,7 @@ export const Required = styled.span`
   ${({ theme }) => css`
     ${theme.font.medium_14};
     margin-left: 4px;
-    color: ${theme.color.red_20};
+    color: ${theme.color.red_50};
   `}
 `;
 
@@ -169,12 +170,12 @@ export const Content = styled.div<{ variant?: LabelContentType }>`
     display: flex;
     align-items: center;
     padding: ${variant === "bg" ? "12px 20px" : "12px 0"};
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
   `}
 `;
 
 export const SkeletonWrapper = styled.div`
   width: 50%;
-  max-width: 100px;
   height: 100%;
+  max-width: 100px;
 `;

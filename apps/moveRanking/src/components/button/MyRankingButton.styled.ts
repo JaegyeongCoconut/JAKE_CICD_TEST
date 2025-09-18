@@ -10,15 +10,15 @@ export const MyRankingButton = styled.button`
     height: 70px;
     border-radius: 10px;
     padding: 16px 10px;
-    background-color: ${theme.color.orange_30};
-    color: ${theme.color.white};
+    color: ${theme.color.white_00};
+    background-color: ${theme.color.orange_50};
   `}
 `;
 
 export const MyRankingButtonContentWrapper = styled.div`
   display: grid;
-  align-items: center;
   grid-template-columns: 32px 1fr;
+  align-items: center;
   column-gap: 5px;
 `;
 
@@ -26,15 +26,15 @@ export const MyRanking = styled.span`
   ${({ theme }) => css`
     ${theme.font.medium_16};
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    text-overflow: ellipsis;
   `}
 `;
 
 export const MyRankginButtonNameAndOrderWrapper = styled.div`
   display: grid;
-  align-items: center;
   grid-template-columns: 1fr 108px;
+  align-items: center;
 `;
 
 export const MyName = styled.span`
@@ -54,8 +54,8 @@ export const MyOrder = styled.p`
   ${({ theme }) => css`
     ${theme.font.regular_15};
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    text-overflow: ellipsis;
   `}
 `;
 
@@ -63,8 +63,8 @@ export const MyPrice = styled.p`
   ${({ theme }) => css`
     ${theme.font.bold_15};
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    text-overflow: ellipsis;
   `}
 `;
 

@@ -1,6 +1,5 @@
+import type { ChangeEvent, FocusEvent } from "react";
 import React from "react";
-
-import type { UseFormRegisterReturn } from "react-hook-form";
 
 import type { Languages } from "@repo/types";
 
@@ -9,11 +8,12 @@ import Input from "../Input";
 
 interface LengthInputProps {
   className?: string;
-  hasError?: boolean;
+  hasError: boolean;
+  value: string | undefined;
   maxLength: number;
   placeholder: Languages;
-  valueLength: number;
-  register: UseFormRegisterReturn<string>;
+  handleBlur: (e: FocusEvent<HTMLInputElement>) => void;
+  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const LengthInput = ({
@@ -21,18 +21,22 @@ const LengthInput = ({
   hasError,
   maxLength,
   placeholder,
-  valueLength,
-  register,
+  value,
+  handleChange,
+  handleBlur,
 }: LengthInputProps) => {
   return (
     <S.Wrapper className={className}>
       <Input
+        disabled={false}
         hasError={hasError}
+        value={value ?? ""}
         maxLength={maxLength}
         placeholder={placeholder}
-        register={register}
+        handleBlur={handleBlur}
+        handleChange={handleChange}
       />
-      <label>{`${valueLength ?? 0}/${maxLength}`}</label>
+      <label>{`${value?.length ?? 0}/${maxLength}`}</label>
     </S.Wrapper>
   );
 };

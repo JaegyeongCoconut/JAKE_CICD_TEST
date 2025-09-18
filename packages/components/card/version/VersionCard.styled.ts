@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const Wrapper = styled.div`
@@ -66,15 +67,15 @@ export const link = (theme: Theme) => css`
 
   &:not(:disabled):hover {
     & > span {
-      color: ${theme.color.blue_30};
+      color: ${theme.color.blue_90};
 
       &::before {
-        background-color: ${theme.color.blue_30};
+        background-color: ${theme.color.blue_90};
       }
     }
 
     & > svg > path {
-      fill: ${theme.color.blue_30};
+      fill: ${theme.color.blue_90};
     }
   }
 `;
@@ -85,7 +86,7 @@ export const icon = (theme: Theme) => css`
   transform: rotate(-90deg);
 
   & > path {
-    fill: ${theme.color.blue_10};
+    fill: ${theme.color.blue_60};
   }
 `;
 

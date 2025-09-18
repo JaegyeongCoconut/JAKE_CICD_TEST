@@ -1,7 +1,6 @@
 import React from "react";
 
 import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { TableHeaderInfo } from "@repo/types";
@@ -12,8 +11,8 @@ import Checkbox from "../../button/checkbox/Checkbox";
 
 interface CheckTableSkeletonProps {
   className?: string;
-  tableHeaderInfos: TableHeaderInfo;
   rowCount?: number;
+  tableHeaderInfos: TableHeaderInfo;
 }
 
 const CheckTableSkeleton = ({

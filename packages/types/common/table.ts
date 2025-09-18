@@ -1,9 +1,4 @@
 import type { Languages } from "./language";
-import type { TooltipPosition } from "./tooltip";
-
-export type ColumnTooltip = {
-  [key: string]: { position: TooltipPosition; message: Languages };
-};
 
 export type DefaultTableColumn<T extends string = string> = {
   readonly key: T;
@@ -23,7 +18,6 @@ export type DefaultTableHeaderInfo<
   U extends Languages = Languages,
 > = {
   readonly key: T;
-  readonly label: U;
   /*
     NOTE: DobuleHeader 의 경우 부모 헤더는 빈 string, 자식 요소 값을 넣어주어야 함
     예:
@@ -33,6 +27,7 @@ export type DefaultTableHeaderInfo<
     }
   */
   readonly columnWidth: string | string[];
+  readonly label: U;
 };
 
 type DoubleHeadTableHeaderInfo<

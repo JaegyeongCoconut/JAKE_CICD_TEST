@@ -5,15 +5,15 @@ import {
   INIT_PAGE_INFO,
 } from "@repo/constants/pagination";
 import useQueryPagination from "@repo/hooks/pagination/useQueryPagination";
-import type { PageInfo } from "@repo/types";
+import type { PageInfoType } from "@repo/types";
 
 import Pagination from "./Pagination";
 
 interface QueryPaginationProps {
   className?: string;
   hasDoubleButton?: boolean;
-  pageInfo?: PageInfo;
   maxPageCount?: number;
+  pageInfo?: PageInfoType;
 }
 
 const QueryPagination = ({
@@ -31,20 +31,20 @@ const QueryPagination = ({
     handleNextPageClick,
     handleLastPageClick,
     handleNumberClick,
-  } = useQueryPagination(maxPageCount, totalPages);
+  } = useQueryPagination({ maxPageCount, totalPages });
 
   return (
     <Pagination
       className={className}
       hasDoubleButton={hasDoubleButton}
       currentPage={currentPage}
-      totalPages={totalPages}
       maxPageCount={maxPageCount}
-      handlePreviousPageClick={handlePreviousPageClick}
+      totalPages={totalPages}
       handleFirstPageClick={handleFirstPageClick}
-      handleNextPageClick={handleNextPageClick}
       handleLastPageClick={handleLastPageClick}
+      handleNextPageClick={handleNextPageClick}
       handleNumberClick={handleNumberClick}
+      handlePreviousPageClick={handlePreviousPageClick}
     />
   );
 };

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import type { FocusEvent } from "react";
+import { useEffect, useState } from "react";
 
 import dayjs from "dayjs";
 import { isNil } from "lodash-es";
@@ -12,8 +13,8 @@ const useCalendar = (
   selectedDate: string[],
   handleChange: (date: dayjs.Dayjs[]) => void,
   handleDialogClose?: () => void,
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void,
-  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void,
+  handleConditionFocus?: (e?: FocusEvent<HTMLInputElement>) => void,
+  handleConditionBlur?: (e?: FocusEvent<HTMLInputElement>) => void,
 ) => {
   const {
     monthYear,
@@ -24,7 +25,7 @@ const useCalendar = (
     handlePrevYearChange,
     handleNextYearChange,
     handleResetMonthYear,
-  } = useDatePicker(selectedDate, handleChange);
+  } = useDatePicker({ initDate: selectedDate, handleChange });
 
   const initSelectedDate: CurrentDatesType =
     selectedDate.length === 2
@@ -49,11 +50,11 @@ const useCalendar = (
     setIsOpenMonthDialog(!isOpenMonthDialog);
   };
 
-  const changeHoveredDate = (date: dayjs.Dayjs): void => {
+  const onChangeHoveredDate = (date: dayjs.Dayjs): void => {
     setHoveredDate(date);
   };
 
-  const resetHoveredDate = (): void => {
+  const onResetHoveredDate = (): void => {
     hoveredDate && setHoveredDate(null);
   };
 
@@ -105,18 +106,18 @@ const useCalendar = (
 
   return {
     calendar: {
-      changeHoveredDate,
+      isDisabledApplyButton,
+      isOpenMonthDialog,
       currentDates,
+      hoveredDate,
       handleApply,
       handleDateClick,
       handleMonthClick,
       handleMonthDialog,
       handleMoveToday,
       handleReset,
-      hoveredDate,
-      isDisabledApplyButton,
-      isOpenMonthDialog,
-      resetHoveredDate,
+      onResetHoveredDate,
+      onChangeHoveredDate,
     },
     datePicker: {
       monthYear,

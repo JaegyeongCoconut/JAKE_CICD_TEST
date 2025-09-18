@@ -25,15 +25,15 @@ export const button = {
   primary: css`
     ${mixinDefaultButton};
     ${font.medium_14};
-    color: ${color.white};
-    background-color: ${color.blue_10};
+    color: ${color.white_00};
+    background-color: ${color.blue_60};
 
     &:not(:disabled):hover {
-      background-color: ${color.blue_20};
+      background-color: ${color.blue_90};
     }
 
     &:disabled {
-      background-color: ${color.blue_10_40};
+      background-color: ${color.blue_60_40};
     }
   `,
 
@@ -58,18 +58,18 @@ export const button = {
     ${mixinDefaultButton};
     ${font.medium_14};
     border: 1px solid ${color.gray_20};
-    color: ${color.blue_10};
+    color: ${color.blue_60};
     background-color: ${color.gray_10};
 
     &:not(:disabled):hover {
-      background-color: ${color.gray_20};
       border: 1px solid ${color.gray_30};
+      background-color: ${color.gray_20};
     }
 
     &:disabled {
-      opacity: 0.4;
-      background-color: ${color.gray_10};
       border: 1px solid ${color.gray_20};
+      background-color: ${color.gray_10};
+      opacity: 0.4;
     }
   `,
 
@@ -78,7 +78,7 @@ export const button = {
     ${font.medium_13};
     border: 1px solid ${color.gray_30};
     color: ${color.gray_70};
-    background-color: ${color.white};
+    background-color: ${color.white_00};
 
     &:not(:disabled):hover {
       border: 1px solid ${color.gray_30};
@@ -86,34 +86,34 @@ export const button = {
     }
 
     &:disabled {
+      background-color: ${color.white_00};
       opacity: 0.4;
-      background-color: ${color.white};
     }
   `,
   error: css`
     ${mixinDefaultButton};
     ${font.medium_14};
-    color: ${color.red_20};
-    background-color: ${color.gray_10};
     border: 1px solid ${color.gray_20};
+    color: ${color.red_50};
+    background-color: ${color.gray_10};
 
     &:not(:disabled):hover {
-      background-color: ${color.red_30};
-      background-color: ${color.gray_20};
       border: 1px solid ${color.gray_30};
+      background-color: ${color.red_50};
+      background-color: ${color.gray_20};
     }
 
     &:disabled {
-      opacity: 0.4;
-      background-color: ${color.gray_10};
       border: 1px solid ${color.gray_20};
+      background-color: ${color.gray_10};
+      opacity: 0.4;
     }
   `,
 
   filled_gray_blue: css`
     ${mixinOutlineButton};
     ${font.medium_13};
-    color: ${color.blue_10};
+    color: ${color.blue_60};
     background-color: ${color.gray_10};
 
     &:not(:disabled):hover {
@@ -121,8 +121,8 @@ export const button = {
     }
 
     &:disabled {
-      opacity: 0.4;
       background-color: ${color.gray_10};
+      opacity: 0.4;
     }
   `,
 
@@ -152,20 +152,20 @@ export const button = {
     ${font.regular_14};
     position: relative;
     padding: 0;
-    color: ${color.blue_10};
+    color: ${color.blue_60};
     text-decoration: underline;
     text-decoration-skip-ink: none;
 
     &:not(:disabled):hover {
-      color: ${color.blue_30};
+      color: ${color.blue_90};
 
       svg > path {
-        fill: ${color.blue_30};
+        fill: ${color.blue_90};
       }
     }
 
     &:disabled {
-      color: ${color.blue_10_10};
+      color: ${color.blue_60_10};
     }
   `,
 
@@ -173,20 +173,20 @@ export const button = {
     ${font.regular_14};
     position: relative;
     padding: 0;
-    color: ${color.red_20};
+    color: ${color.red_50};
     text-decoration: underline;
     text-decoration-skip-ink: none;
 
     &:not(:disabled):hover {
-      color: ${color.red_30};
+      color: ${color.red_50};
 
       svg > path {
-        fill: ${color.red_30};
+        fill: ${color.red_50};
       }
     }
 
     &:disabled {
-      color: ${color.red_10};
+      color: ${color.red_20};
     }
   `,
 
@@ -238,24 +238,24 @@ export const button = {
     ${font.medium_15};
     position: relative;
     padding: 0;
-    color: ${color.blue_10};
+    color: ${color.blue_60};
 
     &:not(:disabled):hover {
       svg > path {
-        fill: ${color.blue_30};
+        fill: ${color.blue_90};
       }
-      color: ${color.blue_30};
+      color: ${color.blue_90};
 
       &::before {
-        background-color: ${color.blue_30};
+        background-color: ${color.blue_90};
       }
     }
 
     &:disabled {
-      color: ${color.blue_10_10};
+      color: ${color.blue_60_10};
 
       &::before {
-        background-color: ${color.blue_10_10};
+        background-color: ${color.blue_60_10};
       }
     }
   `,
@@ -264,24 +264,24 @@ export const button = {
     ${font.medium_15};
     position: relative;
     padding: 0;
-    color: ${color.red_20};
+    color: ${color.red_50};
 
     &:not(:disabled):hover {
       svg > path {
-        fill: ${color.red_30};
+        fill: ${color.red_50};
       }
-      color: ${color.red_30};
+      color: ${color.red_50};
 
       &::before {
-        background-color: ${color.red_30};
+        background-color: ${color.red_50};
       }
     }
 
     &:disabled {
-      color: ${color.red_10};
+      color: ${color.red_20};
 
       &::before {
-        background-color: ${color.red_10};
+        background-color: ${color.red_20};
       }
     }
   `,

@@ -1,8 +1,8 @@
 import axios from "axios";
 
-import { SERVICE_INFO } from "@repo/assets/static";
+import { SERVICE_INFO } from "@repo/assets/static/serviceInfo";
 import { AUTH_ALERT_MESSAGE } from "@repo/constants/error/alert";
-import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
+import { COMMON_ERROR_CODE } from "@repo/constants/error/code";
 
 import { renewAccessTokenAPI } from "../apis/auth";
 
@@ -13,13 +13,13 @@ interface Fn {
 interface TokenServiceProps {
   accessToken: string | undefined;
   refreshToken: string | undefined;
-  changeAccessToken: (accessToken: string) => void;
-  signOut: () => void;
+  onChangeAccessToken: (accessToken: string) => void;
+  onSignOut: () => void;
 }
 
 interface InstanceProps {
-  objectName: keyof typeof SERVICE_INFO;
   auth: TokenServiceProps;
+  objectName: keyof typeof SERVICE_INFO;
 }
 
 export class TokenService {
@@ -66,16 +66,17 @@ export class TokenService {
             return await Promise.reject(error);
           }
 
-          this.auth.changeAccessToken(tokens.accessToken);
+          this.auth.onChangeAccessToken(tokens.accessToken);
 
           this.onAccessTokenFetched(tokens.accessToken);
         } catch (error: any) {
           const { response: errorResponse } = error;
 
           const authErrorCode = [
-            COMMON_ERROR_MESSAGE.INVALID_REFRESH_TOKEN,
-            COMMON_ERROR_MESSAGE.DUPLICATED_SIGNIN_DETECTED, // TODO: move admin, iot 서버 반영 및 웹에 배포 완료 후 삭제 필요
-            COMMON_ERROR_MESSAGE.DUPLICATE_SIGNIN_DETECTED,
+            COMMON_ERROR_CODE.INVALID_REFRESH_TOKEN,
+            COMMON_ERROR_CODE.INVALID_TOKEN,
+            COMMON_ERROR_CODE.DUPLICATED_SIGNIN_DETECTED, // TODO: move admin, iot 서버 반영 및 웹에 배포 완료 후 삭제 필요
+            COMMON_ERROR_CODE.DUPLICATE_SIGNIN_DETECTED,
           ];
 
           if (authErrorCode.includes(errorResponse?.data.message)) {
@@ -107,6 +108,6 @@ export class TokenService {
 
   expireSession(errorMessage: keyof typeof AUTH_ALERT_MESSAGE) {
     this.auth.refreshToken && alert(AUTH_ALERT_MESSAGE[errorMessage]);
-    this.auth.signOut();
+    this.auth.onSignOut();
   }
 }

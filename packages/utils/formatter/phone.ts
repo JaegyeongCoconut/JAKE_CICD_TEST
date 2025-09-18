@@ -1,9 +1,14 @@
 import { numericOnly } from "./number";
 
-export const formatCountryMobile = (
-  countryDial?: string | null,
-  phone?: string | null,
-): string | null => {
+interface FormatCountryMobileProps {
+  countryDial: string | undefined | null;
+  phone: string | undefined | null;
+}
+
+export const formatCountryMobile = ({
+  countryDial,
+  phone,
+}: FormatCountryMobileProps): string | null => {
   if (!countryDial || !phone) return null;
 
   const dialPrefix = "+";

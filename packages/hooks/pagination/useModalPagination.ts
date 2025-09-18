@@ -3,46 +3,56 @@ import {
   getNextPageNumber,
 } from "@repo/utils/pagination";
 
-const useModalPagination = (
-  currentPage: number,
-  maxPageCount: number,
-  totalPages: number,
-  movePage: (page: number) => void,
-) => {
+interface UseModalPaginationProps {
+  currentPage: number;
+  maxPageCount: number;
+  totalPages: number;
+  handlePageMove: (page: number) => void;
+}
+
+const useModalPagination = ({
+  currentPage,
+  maxPageCount,
+  totalPages,
+  handlePageMove,
+}: UseModalPaginationProps) => {
   const handlePreviousPageClick = (): void => {
     if (currentPage === 1) return;
 
-    const previousPageNumber = getPreviousPageNumber(currentPage, maxPageCount);
+    const previousPageNumber = getPreviousPageNumber({
+      currentPage,
+      maxPageCount,
+    });
 
-    movePage(previousPageNumber);
+    handlePageMove(previousPageNumber);
   };
 
   const handleFirstPageClick = (): void => {
     if (currentPage === 1) return;
 
-    movePage(1);
+    handlePageMove(1);
   };
 
   const handleNextPageClick = (): void => {
     if (currentPage === totalPages) return;
 
-    const nextPageNumber = getNextPageNumber(
+    const nextPageNumber = getNextPageNumber({
       currentPage,
       maxPageCount,
       totalPages,
-    );
+    });
 
-    movePage(nextPageNumber);
+    handlePageMove(nextPageNumber);
   };
 
   const handleLastPageClick = (): void => {
     if (currentPage === totalPages) return;
 
-    movePage(totalPages);
+    handlePageMove(totalPages);
   };
 
   const handleNumberClick = (index: number) => (): void => {
-    movePage(index);
+    handlePageMove(index);
   };
 
   return {

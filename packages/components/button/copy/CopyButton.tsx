@@ -1,43 +1,64 @@
 import React from "react";
 
-import { CopyIcon } from "@repo/assets/icon";
+import { ReactComponent as CopyIcon } from "@repo/assets/icon/ic_copy.svg";
 import { COMMON_TOAST_MESSAGE } from "@repo/constants/toast";
 import useToast from "@repo/hooks/useToast";
 
 import * as S from "./CopyButton.styled";
 import Button from "../Button";
 
+const serviceType = {
+  CAR: "car",
+  KOKKOK_SUPPORT: "kokkok_support",
+  KOKKOK_FOOD: "kokkok_food",
+  KOKKOK_MART: "kokkok_mart",
+  MOVE: "move",
+  PASSWORD: "password",
+} as const;
+
 interface CopyButtonProps {
   className?: string;
   copyText: string;
-  callbackFunction?: () => void;
+  serviceType: (typeof serviceType)[keyof typeof serviceType];
 }
 
-const CopyButton = ({
-  className,
-  copyText,
-  callbackFunction,
-}: CopyButtonProps) => {
+const CopyButton = ({ className, copyText, serviceType }: CopyButtonProps) => {
   const { addToast } = useToast();
 
   const handleTextCopy =
     (copyText: string) =>
     async (e: React.MouseEvent): Promise<void> => {
       e.stopPropagation();
-      callbackFunction && callbackFunction();
 
       try {
         await navigator.clipboard.writeText(copyText);
-        addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_DRIVER_MOBILE);
+        switch (serviceType) {
+          case "car":
+          case "move":
+            addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_DRIVER_MOBILE);
+            break;
+          case "kokkok_support":
+            addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_LINK);
+            break;
+          case "kokkok_food":
+          case "kokkok_mart":
+            addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_MOBILE);
+            break;
+          case "password":
+            addToast(COMMON_TOAST_MESSAGE.SUCCESS.PASSWORD_COPIED);
+            break;
+        }
       } catch {
-        addToast(COMMON_TOAST_MESSAGE.WARNING.COPY_DRIVER_MOBILE_FAIL);
+        if (serviceType === "car" || serviceType == "move") {
+          addToast(COMMON_TOAST_MESSAGE.WARNING.COPY_DRIVER_MOBILE_FAIL);
+        }
       }
     };
 
   return (
     <Button
-      className={className}
       css={S.copyButton}
+      className={className}
       variant="iconOnly"
       disabled={false}
       Icon={CopyIcon}

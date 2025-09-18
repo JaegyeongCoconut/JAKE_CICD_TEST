@@ -11,9 +11,9 @@ import CalendarSelectedInput from "./container/calendarSelectedInput/CalendarSel
 import CalendarWeek from "./container/calendarWeek/CalendarWeek";
 
 interface CalendarBodyProps {
-  type: CalendarType;
-  datePicker: FormatDatePicker["calendarBody"];
   calendar: FormatCalendar["calendarBody"];
+  datePicker: FormatDatePicker["calendarBody"];
+  type: CalendarType;
 }
 
 const CalendarBody = ({ type, calendar, datePicker }: CalendarBodyProps) => {
@@ -24,11 +24,11 @@ const CalendarBody = ({ type, calendar, datePicker }: CalendarBodyProps) => {
       ) : (
         <>
           <CalendarWeek
-            type={type}
             calendar={calendar}
             datePicker={datePicker}
+            type={type}
           />
-          <CalendarSelectedInput type={type} calendar={calendar} />
+          <CalendarSelectedInput calendar={calendar} type={type} />
         </>
       )}
     </>

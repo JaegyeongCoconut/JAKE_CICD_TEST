@@ -1,18 +1,18 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import type { ReactNode } from "react";
+import React, { createContext, useContext } from "react";
 
-import { isUndefined } from "lodash-es";
 import { Link } from "react-router-dom";
 
+import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import useTab from "@repo/hooks/useTab";
-import { useFilterStore } from "@repo/stores/filter";
 import type { Languages, TabType } from "@repo/types";
 
 import * as S from "./Tab.styled";
 
 const TabContentContext = createContext<{
-  tabs: readonly TabType<Languages>[];
   selectedTab: string;
+  tabs: readonly TabType<Languages>[];
 }>({
   tabs: [],
   selectedTab: "",
@@ -33,68 +33,58 @@ const Tab = ({ className, tabs, children }: TabProps) => {
   );
 };
 
-interface TabListProps {
+interface TabHeaderProps {
   className?: string;
-  tabCount?: { [key: string]: number };
 }
 
-Tab.TabList = function TablList({ className, tabCount }: TabListProps) {
+const TabHeader = ({ className }: TabHeaderProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   const { tabs, selectedTab } = useContext(TabContentContext);
-  const isInitFilter = useFilterStore((state) => state.isInitFilter);
-  const setIsInitFilter = useFilterStore((state) => state.setIsInitFilter);
+  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
 
-  const handleTabClick = () => {
-    if (isInitFilter) return;
+  const handleTabClick = (): void => {
+    if (isInitQueryFilter) return;
 
-    setIsInitFilter(true);
+    setIsInitQueryFilter(true);
   };
 
   return (
-    <S.TabList role="tablist" className={className}>
+    <S.TabHeader className={className} role="tablist">
       {tabs.map(({ key, label }) => (
         <S.Tab key={key} role="tab" ariaSelected={selectedTab === key}>
           <Link
             css={S.link(selectedTab === key)}
             id={key}
             role="tab"
-            aria-controls={label}
-            to={`?tab=${key}`}
             replace
+            to={`?tab=${key}`}
             onClick={handleTabClick}
           >
             <span>{defaultLanguage(label)}</span>
-            {tabCount && (
-              <span>
-                {!isUndefined(tabCount[key]) ? `(${tabCount[key]})` : ""}
-              </span>
-            )}
           </Link>
         </S.Tab>
       ))}
-    </S.TabList>
+    </S.TabHeader>
   );
 };
 
 interface TabPanelProps {
-  render: { [key: string]: ReactNode };
   className?: string;
+  tabPanelRender: Record<string, ReactNode>;
 }
 
-Tab.TabPanel = function TabPanel({ render, className }: TabPanelProps) {
+const TabPanel = ({ className, tabPanelRender }: TabPanelProps) => {
   const { selectedTab } = useContext(TabContentContext);
 
   return (
-    <div
-      id={selectedTab}
-      role="tabpanel"
-      aria-labelledby={selectedTab}
-      className={className}
-    >
-      {render[selectedTab]}
+    <div className={className} id={selectedTab} role="tabpanel">
+      {tabPanelRender[selectedTab]}
     </div>
   );
 };
+
+Tab.TabHeader = TabHeader;
+Tab.TabPanel = TabPanel;
 
 export default Tab;

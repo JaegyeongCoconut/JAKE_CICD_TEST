@@ -5,17 +5,26 @@ import type { UseFormRegisterReturn } from "react-hook-form";
 import type { Languages } from "@repo/types";
 
 import * as S from "./MobileNumberInput.styled";
-import Input from "../Input";
+import DisabledInput from "../disabled/DisabledInput";
+import FormInput from "../form/FormInput";
 
-export interface MobileNumberInputProps {
+interface BaseMobileNumberInputProps {
   className?: string;
-  disabled?: boolean;
-  hasError?: boolean;
   dial: string;
   placeholder: Languages;
-  maxLength?: number;
-  // TODO: 추후 모두 필수로 변경할 것
-  value?: string;
+}
+
+interface DisabledMobileNumberInputProps extends BaseMobileNumberInputProps {
+  disabled: true;
+  hasError?: never;
+  maxLength?: never;
+  register?: never;
+}
+
+interface AbledMobileNumberInputProps extends BaseMobileNumberInputProps {
+  disabled: false;
+  hasError: boolean;
+  maxLength: number;
   register: UseFormRegisterReturn<string>;
 }
 
@@ -25,22 +34,28 @@ function MobileNumberInput({
   hasError,
   dial,
   placeholder,
-  value,
-  maxLength = 15,
+  maxLength,
   register,
-}: MobileNumberInputProps) {
+}: DisabledMobileNumberInputProps | AbledMobileNumberInputProps) {
   return (
     <S.MobileNumberInputWrapper className={className}>
       <S.Dial>+{dial}</S.Dial>
-      <Input
-        css={S.mobileNumberInput}
-        value={value}
-        hasError={hasError}
-        disabled={disabled}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        register={register}
-      />
+      {disabled ? (
+        <DisabledInput
+          css={S.mobileNumberInput}
+          value=""
+          placeholder={placeholder}
+        />
+      ) : (
+        <FormInput
+          css={S.mobileNumberInput}
+          disabled={disabled}
+          hasError={hasError}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          register={register}
+        />
+      )}
     </S.MobileNumberInputWrapper>
   );
 }

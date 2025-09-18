@@ -1,6 +1,6 @@
 import React from "react";
 
-import { TooltipIcon } from "@repo/assets/icon";
+import { ReactComponent as QuestionCircleIcon } from "@repo/assets/icon/ic_question_circle.svg";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages, TooltipPosition } from "@repo/types";
 
@@ -17,7 +17,7 @@ const Tooltip = ({ className, position, message }: TooltipProps) => {
 
   return (
     <S.Tooltip className={className} aria-describedby="tip">
-      <TooltipIcon css={S.tooltipIcon} />
+      <QuestionCircleIcon css={S.tooltipIcon} />
       <S.Container position={position}>
         <S.Message id="tip" role="tooltip">
           {defaultLanguage(message)}

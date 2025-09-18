@@ -1,11 +1,12 @@
-import { ReactNode, memo } from "react";
+import type { ReactNode } from "react";
+import { memo } from "react";
 
 import { createPortal } from "react-dom";
 
 interface PortalProps {
-  children: ReactNode;
   container: string;
   mounted: boolean;
+  children: ReactNode;
 }
 
 const Portal = ({ children, container, mounted }: PortalProps) => {

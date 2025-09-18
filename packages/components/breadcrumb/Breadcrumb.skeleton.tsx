@@ -14,7 +14,7 @@ const BreadcrumbSkeleton = ({ className, length }: BreadcrumbSkeletonProps) => {
     <S.PageLayoutBreadcrumb className={className}>
       {Array.from({ length }, (_, i) => (
         <S.PageLayoutBreadcrumbLi key={i} hasEllipsis={false} content="">
-          <Skeleton key={i} width={80} height={20} />
+          <Skeleton key={i} height={20} width={80} />
         </S.PageLayoutBreadcrumbLi>
       ))}
     </S.PageLayoutBreadcrumb>

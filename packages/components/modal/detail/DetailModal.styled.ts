@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const baseModal = css`
@@ -41,22 +42,18 @@ export const DetailFooter = styled.div`
   `}
 `;
 
-interface DetailInfoFooterProps {
-  isButtonFloat?: boolean;
-}
-
-export const DetailInfoFooter = styled.div<DetailInfoFooterProps>`
-  ${({ theme, isButtonFloat }) => css`
+export const DetailInfoFooter = styled.div`
+  ${({ theme }) => css`
     ${theme.font.regular_13};
-    position: ${isButtonFloat && "sticky"};
-    left: ${isButtonFloat && "0"};
-    bottom: ${isButtonFloat && "-32px"};
+    position: sticky;
+    bottom: -32px;
+    left: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: ${isButtonFloat && "100%"};
-    background-color: ${isButtonFloat && theme.color.white};
-    z-index: ${isButtonFloat && theme.zIndex.MODAL + 1};
+    width: 100%;
+    background-color: ${theme.color.white_00};
+    z-index: ${theme.zIndex.MODAL + 1};
 
     & > div {
       display: flex;

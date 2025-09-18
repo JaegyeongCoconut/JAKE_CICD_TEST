@@ -1,16 +1,16 @@
 import Cookies from "js-cookie";
 
-import { SERVICE_INFO } from "@repo/assets/static";
+import { SERVICE_INFO } from "@repo/assets/static/serviceInfo";
 
 interface AuthUser {
-  refreshToken: string;
   accessToken: string;
+  refreshToken: string;
 }
 
 export type UserCB<T> = (user: T | null, error: any) => void;
 
 export class Auth<T extends AuthUser> {
-  protected key: string;
+  protected key: (typeof SERVICE_INFO)[keyof typeof SERVICE_INFO]["cookieName"];
   public user: T | null = null;
   protected cb: UserCB<T> | null = null;
   protected objectName: keyof typeof SERVICE_INFO;
@@ -44,7 +44,7 @@ export class Auth<T extends AuthUser> {
     return this;
   }
 
-  signOut() {
+  onSignOut() {
     Cookies.remove(this.key);
     this.onUserChange(null, null);
     this.user = null;
@@ -54,7 +54,7 @@ export class Auth<T extends AuthUser> {
 
   protected onUserChange(user: T | null, error?: any): void {}
 
-  protected changeAccessToken(token: string): void {}
+  protected onChangeAccessToken(token: string): void {}
 
   protected onAuthStateChanged(cb: UserCB<T>): void {}
 

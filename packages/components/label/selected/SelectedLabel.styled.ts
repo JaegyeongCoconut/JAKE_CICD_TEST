@@ -1,15 +1,16 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const SearchLabel = styled.li`
   ${({ theme }) => css`
     position: relative;
-    max-width: 330px;
     height: 32px;
+    max-width: 330px;
     padding: 5px 32px 5px 12px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    text-overflow: ellipsis;
     background-color: ${theme.color.gray_10};
   `}
 `;

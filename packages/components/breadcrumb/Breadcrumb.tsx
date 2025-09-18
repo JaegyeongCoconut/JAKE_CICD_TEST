@@ -2,16 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { Link } from "react-router-dom";
 
+import {
+  BREADCRUMB_DROPDOWN_TRIGGER_THRESHOLD,
+  BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD,
+  BREADCRUMB_MAX_LENGTH,
+} from "@repo/constants/breadcrumb";
+import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import { useFilterStore } from "@repo/stores/filter";
-import type { Languages } from "@repo/types";
+import type { BreadcrumbItemType } from "@repo/types";
 
 import * as S from "./Breadcrumb.styled";
 import BreadcrumbDropdown from "./containers/dropdown/BreadcrumbDropdown";
 
 interface BreadcrumbProps {
   className?: string;
-  breadcrumbs: { name: Languages; path?: string }[];
+  breadcrumbs: BreadcrumbItemType[];
 }
 
 const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
@@ -20,21 +25,23 @@ const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
   const breadcrumbRefs = useRef<(HTMLLIElement | null)[]>([]);
   const [hasDropdown, setHasDropdown] = useState(false);
 
-  const isInitFilter = useFilterStore((state) => state.isInitFilter);
-  const setIsInitFilter = useFilterStore((state) => state.setIsInitFilter);
-
-  const MAX_BREADCRUMB_LENGTH = 648 as const;
+  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
 
   const lastIndex = breadcrumbs.length - 1;
 
+  const translatedBreadcrumbs = (breadcrumb: BreadcrumbItemType): string =>
+    breadcrumb.isTranslated
+      ? defaultLanguage(breadcrumb.name)
+      : breadcrumb.name;
+
   const handleBreadcrumbClick =
-    (breadcrumb: { name: Languages; path?: string }, i: number) => (): void => {
+    (breadcrumb: BreadcrumbItemType, i: number) => (): void => {
       const isLastPath = lastIndex === i;
       if (isLastPath) return;
       if (!breadcrumb.path) return;
 
-      if (isInitFilter) return;
-      setIsInitFilter(true);
+      if (isInitQueryFilter) return;
+      setIsInitQueryFilter(true);
     };
 
   useEffect(() => {
@@ -45,7 +52,10 @@ const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
       return sum;
     }, 0);
 
-    if (totalLength >= MAX_BREADCRUMB_LENGTH && breadcrumbs.length >= 3) {
+    if (
+      totalLength >= BREADCRUMB_MAX_LENGTH &&
+      breadcrumbs.length >= BREADCRUMB_DROPDOWN_TRIGGER_THRESHOLD
+    ) {
       setHasDropdown(true);
     } else {
       setHasDropdown(false);
@@ -58,16 +68,19 @@ const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
         <>
           <S.PageLayoutBreadcrumbLi
             key={breadcrumbs[0].name}
-            content={defaultLanguage(breadcrumbs[0].name)}
-            hasEllipsis={breadcrumbs[0].name.length >= 52}
+            hasEllipsis={
+              translatedBreadcrumbs(breadcrumbs[0]).length >=
+              BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD
+            }
+            content={translatedBreadcrumbs(breadcrumbs[0])}
           >
             <Link
-              css={S.breadcrumb(!!breadcrumbs[0]?.path)}
-              to={breadcrumbs[0].path ?? ""}
+              css={S.breadcrumb(!!breadcrumbs[0].path)}
               tabIndex={0}
+              to={breadcrumbs[0].path}
               onClick={handleBreadcrumbClick(breadcrumbs[0], 0)}
             >
-              {defaultLanguage(breadcrumbs[0].name)}
+              {translatedBreadcrumbs(breadcrumbs[0])}
             </Link>
           </S.PageLayoutBreadcrumbLi>
           <S.PageLayoutBreadcrumbLi hasEllipsis={false} content={""}>
@@ -75,11 +88,19 @@ const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
           </S.PageLayoutBreadcrumbLi>
           <S.PageLayoutBreadcrumbLi
             key={breadcrumbs[lastIndex].name}
-            content={defaultLanguage(breadcrumbs[lastIndex].name)}
-            hasEllipsis={breadcrumbs[lastIndex].name.length >= 52}
+            hasEllipsis={
+              translatedBreadcrumbs(breadcrumbs[lastIndex]).length >=
+              BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD
+            }
+            content={translatedBreadcrumbs(breadcrumbs[lastIndex])}
           >
-            <S.LastSpan hasEllipsis={breadcrumbs[lastIndex].name.length >= 52}>
-              {defaultLanguage(breadcrumbs[lastIndex].name)}
+            <S.LastSpan
+              hasEllipsis={
+                translatedBreadcrumbs(breadcrumbs[lastIndex]).length >=
+                BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD
+              }
+            >
+              {translatedBreadcrumbs(breadcrumbs[lastIndex])}
             </S.LastSpan>
           </S.PageLayoutBreadcrumbLi>
         </>
@@ -88,21 +109,29 @@ const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
           <S.PageLayoutBreadcrumbLi
             key={breadcrumb.name + i}
             ref={(el) => (breadcrumbRefs.current[i] = el)}
-            content={defaultLanguage(breadcrumb.name)}
-            hasEllipsis={breadcrumb.name.length >= 52}
+            hasEllipsis={
+              translatedBreadcrumbs(breadcrumb).length >=
+              BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD
+            }
+            content={translatedBreadcrumbs(breadcrumb)}
           >
             {i === lastIndex ? (
-              <S.LastSpan hasEllipsis={breadcrumb.name.length >= 52}>
-                {defaultLanguage(breadcrumb.name)}
+              <S.LastSpan
+                hasEllipsis={
+                  translatedBreadcrumbs(breadcrumb).length >=
+                  BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD
+                }
+              >
+                {translatedBreadcrumbs(breadcrumb)}
               </S.LastSpan>
             ) : (
               <Link
-                css={S.breadcrumb(!!breadcrumb?.path)}
-                to={breadcrumb.path ?? ""}
+                css={S.breadcrumb(!!breadcrumb.path)}
                 tabIndex={i === lastIndex ? -1 : 0}
+                to={breadcrumb.path}
                 onClick={handleBreadcrumbClick(breadcrumb, i)}
               >
-                {defaultLanguage(breadcrumb.name)}
+                {translatedBreadcrumbs(breadcrumb)}
               </Link>
             )}
           </S.PageLayoutBreadcrumbLi>

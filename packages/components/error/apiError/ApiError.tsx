@@ -2,39 +2,43 @@ import React, { useEffect } from "react";
 
 import { useLocation } from "react-router-dom";
 
-import { ErrorIcon } from "@repo/assets/icon";
+import { ReactComponent as WarningIcon } from "@repo/assets/icon/ic_warning.svg";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 
 import * as S from "./ApiError.styled";
 import InternalLinkButton from "../../button/link/internalLinkButton/InternalLinkButton";
 
 interface ApiErrorProps {
-  path: string;
   errorMessage: string;
-  resetErrorState: () => void;
+  path: string;
+  onResetErrorState: () => void;
 }
 
-const ApiError = ({ path, errorMessage, resetErrorState }: ApiErrorProps) => {
+const ApiError = ({ path, errorMessage, onResetErrorState }: ApiErrorProps) => {
   const location = useLocation();
 
   useEffect(() => {
     return () => {
-      resetErrorState && resetErrorState();
+      onResetErrorState && onResetErrorState();
     };
   }, [location.pathname]);
 
   return (
     <S.ApiError>
       <S.Container>
-        <ErrorIcon css={S.icon} />
+        <WarningIcon css={S.icon} />
         <S.Title>{errorMessage}</S.Title>
         <S.Desc>
           An error has occurred while processing your request.
           <br />
           Please try again later.
         </S.Desc>
-        <InternalLinkButton variant="secondary" to={path}>
-          Go home
-        </InternalLinkButton>
+        <InternalLinkButton
+          variant="secondary"
+          hasBoth={false}
+          label={LANGUAGE_LABEL.GO_HOME}
+          to={path}
+        />
       </S.Container>
     </S.ApiError>
   );

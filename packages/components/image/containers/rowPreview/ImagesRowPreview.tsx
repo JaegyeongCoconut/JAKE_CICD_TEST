@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 
-import { TrashIcon } from "@repo/assets/icon";
+import Skeleton from "react-loading-skeleton";
+
+import { ReactComponent as BinIcon } from "@repo/assets/icon/ic_bin.svg";
 import type { PreviewImageFileType } from "@repo/types";
 
 import * as S from "./ImagesRowPreview.styled";
 import Button from "../../../button/Button";
-import LoadingSpinner from "../../../loadingSpinner/LoadingSpinner";
+import HeadlessImage from "../../HeadlessImage";
 
 interface ImagesRowPreviewProps extends PreviewImageFileType {
   index: number;
@@ -28,11 +30,12 @@ const ImagesRowPreview = ({
     <S.PreviewRow>
       <span>{index + 1}</span>
       <S.PreviewImgWrapper>
-        {isLoading && <LoadingSpinner css={S.loadingSpinner} />}
-        <S.PreviewImg
-          isLoading={isLoading}
+        {isLoading && <Skeleton height={60} width={106} />}
+        <HeadlessImage
+          css={S.image(isLoading)}
+          alt="image"
           src={src as string}
-          onLoad={handleImageLoad}
+          handleImageLoad={handleImageLoad}
         />
         <S.ProviewImageName>{name}</S.ProviewImageName>
       </S.PreviewImgWrapper>
@@ -40,7 +43,7 @@ const ImagesRowPreview = ({
         css={S.trashButton}
         variant="iconOnly"
         disabled={false}
-        Icon={TrashIcon}
+        Icon={BinIcon}
         handleButtonClick={handleImageRemove}
       />
     </S.PreviewRow>

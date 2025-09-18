@@ -1,50 +1,48 @@
-import React, { useState } from "react";
+import React from "react";
 
 import type { UseFormRegisterReturn } from "react-hook-form";
 
-import { EyeAbledIcon, EyeDisabledIcon } from "@repo/assets/icon";
-import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
+import { ReactComponent as EyeIcon } from "@repo/assets/icon/ic_eye.svg";
+import { ReactComponent as EyeOffIcon } from "@repo/assets/icon/ic_eye_off.svg";
 import type { Languages } from "@repo/types";
 
+import HeadlessPasswordInput from "./HeadlessPasswordInput";
 import * as S from "./PasswordInput.styled";
 
 interface PasswordInputProps {
-  hasError?: boolean;
+  hasError: boolean;
+  autoComplete: "on" | "off" | "new-password";
   placeholder: Languages;
   register: UseFormRegisterReturn<string>;
 }
 
 const PasswordInput = ({
   hasError,
+  autoComplete,
   placeholder,
   register,
 }: PasswordInputProps) => {
-  const { defaultLanguage } = useDefaultLanguage();
-
-  const [isShow, setIsShow] = useState(false);
-
-  const handleClick = (): void => {
-    setIsShow(!isShow);
+  const renderIcon = (isShow: boolean): React.ReactNode => {
+    return isShow ? (
+      <EyeIcon css={S.eyeIcon(isShow)} />
+    ) : (
+      <EyeOffIcon css={S.eyeIcon(isShow)} />
+    );
   };
 
   return (
-    <>
-      <S.PasswordInput
-        // NOTE: translation 결과 타입에 'null' 이 잡혀서 에러 발생
-        placeholder={defaultLanguage(placeholder)!}
-        maxLength={20}
-        type={isShow ? "text" : "password"}
-        hasError={hasError}
-        {...register}
+    <HeadlessPasswordInput css={S.headlessPasswordInput}>
+      <HeadlessPasswordInput.Input
+        css={S.passwordInput(hasError)}
+        autoComplete={autoComplete ?? "on"}
+        placeholder={placeholder}
+        register={register}
       />
-      <S.PasswordShowButton type="button" onClick={handleClick}>
-        {isShow ? (
-          <EyeAbledIcon css={S.eyeIcon(isShow)} />
-        ) : (
-          <EyeDisabledIcon css={S.eyeIcon(isShow)} />
-        )}
-      </S.PasswordShowButton>
-    </>
+      <HeadlessPasswordInput.Button
+        css={S.passwordButton}
+        renderIcon={renderIcon}
+      />
+    </HeadlessPasswordInput>
   );
 };
 

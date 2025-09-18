@@ -1,7 +1,9 @@
 import React from "react";
 
-import { CheckIcon, PhotoIcon } from "@repo/assets/icon";
+import { ReactComponent as CheckIcon } from "@repo/assets/icon/ic_check.svg";
+import { ReactComponent as PhotoIcon } from "@repo/assets/icon/ic_photo.svg";
 import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 
@@ -11,9 +13,9 @@ import ErrorMessage from "../../message/ErrorMessage";
 
 interface UploadImageButtonProps {
   className?: string;
+  hasError: boolean;
   isLoading: boolean;
   isMaxImages: boolean;
-  hasError: boolean;
   uploadCompletedLabel: Languages;
   handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -32,26 +34,24 @@ const UploadImageButton = ({
     <>
       {!isMaxImages ? (
         <>
-          <S.Label className={className} htmlFor="photo" hasError={hasError}>
+          <S.Label className={className} hasError={hasError} htmlFor="photo">
             {isLoading ? (
               <LoadingSpinner css={S.loadingSpinner} />
             ) : (
               <>
                 <PhotoIcon css={S.photoIcon} />
-                <span>{defaultLanguage("Upload photo")}</span>
+                <span>{defaultLanguage(LANGUAGE_LABEL.UPLOAD_PHOTO)}</span>
                 <input
-                  type="file"
-                  accept="image/jpg, image/jpeg, image/png"
                   id="photo"
+                  accept="image/jpg, image/jpeg, image/png"
                   multiple
+                  type="file"
                   onChange={handleImageChange}
                 />
               </>
             )}
           </S.Label>
-          {hasError && (
-            <ErrorMessage message={COMMON_ERROR_MESSAGE.FILE_UPLOAD} />
-          )}
+          {hasError && <ErrorMessage message={COMMON_ERROR_MESSAGE.FIELD} />}
         </>
       ) : (
         <S.CompletedUploadLabel hasError={hasError}>

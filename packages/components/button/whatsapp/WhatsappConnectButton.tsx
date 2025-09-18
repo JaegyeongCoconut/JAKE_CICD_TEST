@@ -1,30 +1,33 @@
 import React from "react";
 
-import { WhatsappImg } from "@repo/assets/image";
+import { ReactComponent as WhatsappIcon } from "@repo/assets/icon/ic_whatsapp.svg";
 
 import * as S from "./WhatsappConnectButton.styled";
 
 interface WhatsappConnectButtonProps {
+  className?: string;
   mobile: string;
-  callbackFunction?: () => void;
 }
 
 const WhatsappConnectButton = ({
+  className,
   mobile,
-  callbackFunction,
 }: WhatsappConnectButtonProps) => {
   const handleWhatsappConnect =
     (mobile: string) =>
     (e: React.MouseEvent): void => {
       e.stopPropagation();
-      callbackFunction && callbackFunction();
 
-      window.open(`whatsapp://send?phone=${mobile}`);
+      window.open(`https://wa.me/${mobile}`);
     };
 
   return (
-    <S.Button type="button" onClick={handleWhatsappConnect(mobile)}>
-      <S.WhatsappImg src={WhatsappImg} alt="whatsapp icon" />
+    <S.Button
+      className={className}
+      type="button"
+      onClick={handleWhatsappConnect(mobile)}
+    >
+      <WhatsappIcon css={S.whatAppIcon} />
     </S.Button>
   );
 };

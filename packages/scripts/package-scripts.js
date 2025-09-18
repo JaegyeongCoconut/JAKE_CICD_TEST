@@ -1,73 +1,34 @@
-import concurrently from "concurrently";
+import { ANSI } from "../assets/static/ansi.js";
 
-import { createI18nextDeclare } from "./create-i18next-declare.js";
-import { SERVICE_INFO } from "../assets/static/serviceName.js";
+import { exec } from "child_process";
 
-import { execSync } from "child_process";
-import fs from "fs";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const runScript = (command) => {
-  execSync(command, { stdio: "inherit" });
-};
-
-const runConcurrently = (tasks) => {
-  concurrently(tasks, { prefix: "none", restartTries: 3 })
-    .result.then()
-    .catch((error) => {
-      console.error("❌ \x1b[31m스크립트 실행이 실패하였습니다.\x1b[0m", error);
-    });
-};
-
-const getServices = () => {
-  const packagesDir = path.join(__dirname, "../../", "apps");
-
-  return fs
-    .readdirSync(packagesDir)
-    .filter((file) => file !== "common" && file !== ".DS_Store");
-};
-
-const createTasks = (command, services) =>
-  services.map((service) => ({
-    command: `cd apps/${service} && pnpm run ${command}`,
-    name: `${command}-${service}`,
-  }));
-
-const packageRun = () => {
-  const argv = process.env.npm_lifecycle_event;
-  let [command, scriptServiceName] = argv.split(":");
-
-  command = command.replace(/-i18n$/, "");
-
-  if (scriptServiceName) {
-    const serviceInfo = Object.values(SERVICE_INFO).find(
-      (service) => service.serviceName === scriptServiceName,
-    );
-
-    const scriptCommand = command.includes("preview")
-      ? `cd apps/${scriptServiceName} && pnpm run ${command}`
-      : `turbo ${command} --filter=${serviceInfo.packageName}`;
-    createI18nextDeclare(serviceInfo);
-    runScript(scriptCommand);
-  } else {
-    if (command.includes("preview")) {
-      const services = getServices();
-      const tasks = createTasks(command, services);
-      console.log("🚀 \x1b[32m모든 서비스가 실행되었습니다.\x1b[0m");
-      runConcurrently(tasks);
-    } else {
-      if (command.includes("dev")) {
-        Object.values(SERVICE_INFO).forEach((serviceInfo) => {
-          createI18nextDeclare(serviceInfo);
-        });
+const runScript = (script) => {
+  return new Promise((resolve, reject) => {
+    console.log(`Running script: ${script}`);
+    exec(script, (error, stdout) => {
+      if (error) {
+        console.error(`Error running script: ${script}`);
+        return reject(error);
       }
-      runScript(`turbo ${command}`);
-    }
-  }
+      console.log(stdout); // NOTE: scripts 에 있는 console.log cli 에 출력
+      resolve();
+    });
+  });
 };
 
-packageRun();
+const scripts = [
+  "node ../../packages/scripts/create-robots.js",
+  "node src/scripts/check-env-values.js",
+];
+
+Promise.all(scripts.map(runScript))
+  .then(() => {
+    console.log(`🚀 ${ANSI.GREEN}스크립트 실행이 성공했습니다.${ANSI.RESET}`);
+  })
+  .catch((error) => {
+    console.error(
+      `❌ ${ANSI.RED}스크립트 실행이 실패했습니다.${ANSI.RESET}`,
+      error,
+    );
+    process.exit(1);
+  });

@@ -9,31 +9,31 @@ import LabelContentTable from "./LabelContentTable";
 import * as S from "./LabelContentTable.styled";
 
 type LabelContentType = "bg" | "underline" | "empty";
-type InfoPiece = { key: string; heading: Languages; isRequired?: boolean };
+type InfoPiece = { key: string; isRequired?: boolean; heading: Languages };
 
 interface LabelContentSkeletonProps {
   className?: string;
   variant: LabelContentType;
   marginBottom?: number;
-  info?: ReadonlyOverlappingArray<InfoPiece>;
+  info: ReadonlyOverlappingArray<InfoPiece>;
+  labelWidth?: number; // TODO: 임시 Optional 처리 추후 필수값으로 변경 필요
   subject?: Languages | React.ReactNode;
-  children?: React.ReactNode;
 }
 
 const LabelContentTableSkeleton = ({
   className,
   marginBottom,
-  info,
+  info: infos,
   subject,
   variant,
-  children,
+  labelWidth,
 }: LabelContentSkeletonProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   return (
     <LabelContentTable
-      variant={variant}
       className={className}
+      variant={variant}
       marginBottom={marginBottom}
     >
       {subject &&
@@ -44,27 +44,29 @@ const LabelContentTableSkeleton = ({
         ) : (
           <S.SubjectComponentWrapper>{subject}</S.SubjectComponentWrapper>
         ))}
-      {info &&
-        info.map((item, i) => (
-          <LabelContentTable.Row partition={item.length} key={i}>
-            {item.map(({ key, heading, isRequired }) => (
-              <LabelContentTable.Content
-                key={key}
-                label={heading}
-                isRequired={isRequired}
-              >
-                <S.SkeletonWrapper>
-                  {key === "profile" ? (
-                    <Skeleton circle width="56px" height="56px" />
-                  ) : (
-                    <Skeleton />
-                  )}
-                </S.SkeletonWrapper>
-              </LabelContentTable.Content>
-            ))}
-          </LabelContentTable.Row>
-        ))}
-      {children && children}
+      {infos.map(
+        (info, i) =>
+          info.length !== 0 && (
+            <LabelContentTable.Row key={i} partition={info.length}>
+              {info.map(({ key, heading, isRequired }) => (
+                <LabelContentTable.Content
+                  key={key}
+                  isRequired={isRequired}
+                  label={heading}
+                  labelWidth={labelWidth}
+                >
+                  <S.SkeletonWrapper>
+                    {key === "profile" ? (
+                      <Skeleton height="56px" width="56px" circle />
+                    ) : (
+                      <Skeleton />
+                    )}
+                  </S.SkeletonWrapper>
+                </LabelContentTable.Content>
+              ))}
+            </LabelContentTable.Row>
+          ),
+      )}
     </LabelContentTable>
   );
 };

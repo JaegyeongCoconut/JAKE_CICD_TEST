@@ -9,9 +9,9 @@ import type {
 import Date from "./date/Date";
 
 interface DatesProps {
-  type: CalendarType;
-  datePicker: FormatDatePicker["calendarDates"];
   calendar: FormatCalendar["calendarDates"];
+  datePicker: FormatDatePicker["calendarDates"];
+  type: CalendarType;
 }
 
 const Dates = ({ type, datePicker, calendar }: DatesProps) => {
@@ -20,7 +20,7 @@ const Dates = ({ type, datePicker, calendar }: DatesProps) => {
   const firstDayOfMonthAsNumber = startDate.day();
   const lastDateOfThisMonth = startDate.endOf("month").date();
 
-  const changeMonth = (index: number) => (): void => {
+  const handleMonthChange = (index: number) => (): void => {
     const isSelectNextMonth = index >= firstDayOfMonthAsNumber;
     const isSelectPrevMonth =
       index < firstDayOfMonthAsNumber + lastDateOfThisMonth;
@@ -36,11 +36,11 @@ const Dates = ({ type, datePicker, calendar }: DatesProps) => {
       ).map((date, i) => (
         <Date
           key={i}
-          type={type}
           isThisMonth={date.isSame(startDate, "month")}
-          date={date}
           calendar={calendar}
-          changeMonth={changeMonth(i)}
+          date={date}
+          type={type}
+          handleMonthChange={handleMonthChange(i)}
         />
       ))}
     </>

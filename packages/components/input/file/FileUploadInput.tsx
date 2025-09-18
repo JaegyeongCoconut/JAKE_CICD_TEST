@@ -1,73 +1,79 @@
-import React, { MutableRefObject } from "react";
+import type { MutableRefObject } from "react";
+import React from "react";
 
-import { TrashIcon, UploadIcon } from "@repo/assets/icon";
+import { ReactComponent as BinIcon } from "@repo/assets/icon/ic_bin.svg";
+import { ReactComponent as UploadIcon } from "@repo/assets/icon/ic_upload.svg";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 
 import * as S from "./FileUploadInput.styled";
 import ErrorMessage from "../../message/ErrorMessage";
 
-interface FileInputProps {
-  id?: string;
+interface FileUploadInputProps {
   className?: string;
   acceptFileExtension: string;
-  error?: string;
-  fileInputRef: MutableRefObject<null>;
   fileInputInfo: Languages;
-  hasError?: boolean;
-  disabled: boolean;
-  isFileAttached?: boolean;
+  fileInputRef: MutableRefObject<null>;
   placeholder: string;
+}
+
+interface DisabledFileUploadInputProps extends FileUploadInputProps {
+  disabled: true;
+  isFileAttached?: never;
+  errorMessage?: never;
+  handleFileDelete?: never;
+  handleFileUpload?: never;
+}
+
+interface EnabledFileUploadInputProps extends FileUploadInputProps {
+  disabled: boolean;
+  isFileAttached: boolean;
+  errorMessage: string | undefined;
+  handleFileDelete: () => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleFileDelete?: () => void;
 }
 
 const FileUploadInput = ({
   className,
-  id,
-  acceptFileExtension,
-  error,
-  fileInputRef,
-  fileInputInfo,
-  hasError,
   disabled,
   isFileAttached,
+  acceptFileExtension,
+  errorMessage,
+  fileInputInfo,
+  fileInputRef,
   placeholder,
-  handleFileUpload,
   handleFileDelete,
-}: FileInputProps) => {
+  handleFileUpload,
+}: DisabledFileUploadInputProps | EnabledFileUploadInputProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   return (
     <S.FileInputWrapper className={className}>
-      <S.FileInput hasError={hasError ?? false} disabled={disabled}>
+      <S.FileInput disabled={disabled} hasError={!!errorMessage}>
         <S.FileInputPlaceholder isFileAttached={isFileAttached ?? false}>
           {placeholder}
         </S.FileInputPlaceholder>
         <S.FileButtonWrapper>
           {isFileAttached ? (
             <S.DeleteButton onClick={handleFileDelete}>
-              <TrashIcon css={S.trashIcon} />
+              <BinIcon css={S.trashIcon} />
             </S.DeleteButton>
           ) : (
-            <>
-              <S.FileUploadButton htmlFor={id ?? "file-upload"}>
-                <UploadIcon css={S.uploadIcon} />
-                <input
-                  id={id ?? "file-upload"}
-                  ref={fileInputRef}
-                  type="file"
-                  accept={acceptFileExtension}
-                  disabled={disabled}
-                  onChange={handleFileUpload}
-                />
-              </S.FileUploadButton>
-            </>
+            <S.FileUploadButton>
+              <UploadIcon css={S.uploadIcon} />
+              <input
+                ref={fileInputRef}
+                disabled={disabled}
+                accept={acceptFileExtension}
+                type="file"
+                onChange={handleFileUpload}
+              />
+            </S.FileUploadButton>
           )}
         </S.FileButtonWrapper>
       </S.FileInput>
       <S.FileInputInfo>{defaultLanguage(fileInputInfo)}</S.FileInputInfo>
-      {error && <ErrorMessage message={error} />}
+      {errorMessage && <ErrorMessage message={errorMessage} />}
     </S.FileInputWrapper>
   );
 };

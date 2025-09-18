@@ -1,41 +1,41 @@
-import React, { useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
-const useKeyTrap = (
-  ref: React.RefObject<HTMLDialogElement> | null,
-  handleClose: () => void,
-) => {
-  const handleKeyTrap = useCallback((e: KeyboardEvent) => {
-    if (!ref || !ref?.current) return;
+const useKeyTrap = (element: HTMLElement | null, handleClose: () => void) => {
+  const handleKeyTrap = useCallback(
+    (e: KeyboardEvent) => {
+      if (!element) return;
 
-    const focusableNodeList = ref.current.querySelectorAll(
-      "[href], [tabIndex], button, input:not([disabled]), textarea, select",
-    );
+      const focusableNodeList = element.querySelectorAll(
+        "[href], [tabIndex], button, input:not([disabled]), textarea, select",
+      );
 
-    const firstFocusableNode = focusableNodeList[0] as HTMLElement;
-    const lastFocusableNode = focusableNodeList[
-      focusableNodeList.length - 1
-    ] as HTMLElement;
-    const isFirstFocusableNode = Object.is(e.target, firstFocusableNode);
-    const isLastFocusableNode = Object.is(e.target, lastFocusableNode);
+      const firstFocusableNode = focusableNodeList[0] as HTMLElement;
+      const lastFocusableNode = focusableNodeList[
+        focusableNodeList.length - 1
+      ] as HTMLElement;
+      const isFirstFocusableNode = Object.is(e.target, firstFocusableNode);
+      const isLastFocusableNode = Object.is(e.target, lastFocusableNode);
 
-    if (e.shiftKey && ref.current !== e.target) {
-      lastFocusableNode.focus();
-    }
+      if (e.shiftKey && element !== e.target) {
+        lastFocusableNode.focus();
+      }
 
-    if (e.shiftKey && isFirstFocusableNode) {
-      e.preventDefault();
-      lastFocusableNode.focus();
-    }
+      if (e.shiftKey && isFirstFocusableNode) {
+        e.preventDefault();
+        lastFocusableNode.focus();
+      }
 
-    if (!e.shiftKey && isLastFocusableNode) {
-      e.preventDefault();
-      firstFocusableNode.focus();
-    }
-  }, []);
+      if (!e.shiftKey && isLastFocusableNode) {
+        e.preventDefault();
+        firstFocusableNode.focus();
+      }
+    },
+    [element],
+  );
 
   useEffect(() => {
-    if (!ref?.current) return;
-    ref.current.focus();
+    if (!element) return;
+    element.focus();
 
     const keyListenerMap = new Map([
       ["Escape", handleClose],
@@ -52,7 +52,7 @@ const useKeyTrap = (
     return () => {
       window.removeEventListener("keydown", handleKeyListener);
     };
-  }, [handleClose]);
+  }, [element, handleClose, handleKeyTrap]);
 };
 
 export default useKeyTrap;

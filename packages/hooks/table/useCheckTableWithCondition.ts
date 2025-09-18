@@ -2,23 +2,31 @@ import { useEffect, useState, useMemo } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
+interface UseCheckTableWithConditionProps<
+  T extends { id: string; isSelected: boolean },
+> {
+  tableDatas: T[];
+}
+
 const useCheckTableWithCondition = <
   T extends { id: string; isSelected: boolean },
->(
-  tableDatas: T[] = [],
-  condition?: (tableRowData: T) => boolean,
-  isCheckableTable = false,
-) => {
+>({
+  tableDatas,
+}: UseCheckTableWithConditionProps<T>) => {
   const [searchParams] = useSearchParams();
 
-  const [isCheckTable, setIsCheckTable] = useState(isCheckableTable);
+  const [isCheckTable, setIsCheckTable] = useState(false);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const isChecked = (id: string): boolean => checkedIds.includes(id);
+
+  const isChecked = (id: string | undefined): boolean => {
+    if (!id) return false;
+
+    return checkedIds.includes(id);
+  };
 
   const checkableIds = useMemo(() => {
-    const data = condition ? tableDatas.filter(condition) : tableDatas;
-    return data.map((tableData) => tableData.id);
-  }, [tableDatas, condition]);
+    return tableDatas.map((tableData) => tableData.id);
+  }, [tableDatas]);
 
   const isCheckable = (id: string): boolean => checkableIds.includes(id);
 
@@ -28,11 +36,13 @@ const useCheckTableWithCondition = <
     return checkableIds.length === checkedIds.length;
   };
 
-  const handleCheck = (id: string) => (): void =>
-    checkedIds.includes(id)
+  const handleCheck = (id: string | undefined) => (): void => {
+    if (!id) return;
+
+    return checkedIds.includes(id)
       ? setCheckedIds(checkedIds.filter((checkId) => checkId !== id))
       : setCheckedIds([...checkedIds, id]);
-
+  };
   const handleAllCheck = (): void =>
     isAllChecked() ? setCheckedIds([]) : setCheckedIds(checkableIds);
 

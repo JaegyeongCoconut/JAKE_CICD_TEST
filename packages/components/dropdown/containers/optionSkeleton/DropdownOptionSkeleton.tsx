@@ -7,7 +7,7 @@ import * as S from "./DropdownOptionSkeleton.styled";
 const DropdownOptionSkeleton = () => {
   return (
     <S.DropdownOptionSkeleton>
-      <Skeleton width={400} height={22} />
+      <Skeleton height={22} width={400} />
     </S.DropdownOptionSkeleton>
   );
 };

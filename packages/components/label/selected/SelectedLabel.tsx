@@ -1,24 +1,29 @@
 import React from "react";
 
-import { CloseIcon } from "@repo/assets/icon";
+import { ReactComponent as CloseIcon } from "@repo/assets/icon/ic_close.svg";
 
 import * as S from "./SelectedLabel.styled";
 import Button from "../../button/Button";
 
 interface SelectedLabelProps {
-  children: React.ReactNode;
+  className?: string;
   handleLabelDelete: () => void;
+  children: React.ReactNode;
 }
 
-const SelectedLabel = ({ children, handleLabelDelete }: SelectedLabelProps) => {
+const SelectedLabel = ({
+  className,
+  children,
+  handleLabelDelete,
+}: SelectedLabelProps) => {
   return (
-    <S.SearchLabel>
+    <S.SearchLabel css={className}>
       {children}
       <Button
         css={S.closeButton}
-        Icon={CloseIcon}
         variant="iconOnly"
         disabled={false}
+        Icon={CloseIcon}
         handleButtonClick={handleLabelDelete}
       />
     </S.SearchLabel>

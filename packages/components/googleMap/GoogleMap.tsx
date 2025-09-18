@@ -11,7 +11,7 @@ interface GoogleMapProps {
 const GoogleMap = ({ className }: GoogleMapProps) => {
   const { ref } = useGoogleMap();
 
-  return <S.GoogleMap ref={ref} className={className} />;
+  return <S.GoogleMap className={className} ref={ref} />;
 };
 
 export default GoogleMap;

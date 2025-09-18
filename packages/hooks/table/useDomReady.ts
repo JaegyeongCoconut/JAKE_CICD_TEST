@@ -7,7 +7,7 @@ const useDomReady = () => {
     setDomReady(true);
   }, []);
 
-  return domReady;
+  return { domReady };
 };
 
 export default useDomReady;

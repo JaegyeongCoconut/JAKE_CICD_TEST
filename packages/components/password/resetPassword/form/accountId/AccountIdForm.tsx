@@ -1,57 +1,67 @@
+import type { ChangeEvent } from "react";
 import React from "react";
 
 import { useFormContext } from "react-hook-form";
 
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import { useVerifyAccountStore } from "@repo/stores/verifyAccount";
-import type { GetVerifyCodeQueryModel } from "@repo/types";
+import type { FormResetPassword } from "@repo/types";
 
 import * as S from "./AccountIdForm.styled";
 import AccountInput from "../../../../input/accountInput/AccountInput";
 import ErrorMessage from "../../../../message/ErrorMessage";
 
 interface AccountIdFormProps {
-  handleEmailSend: () => void;
+  isTimeStart: boolean;
+  handleEmailSend: (data: FormResetPassword) => void;
 }
 
-const AccountIdForm = ({ handleEmailSend }: AccountIdFormProps) => {
+const AccountIdForm = ({
+  isTimeStart,
+  handleEmailSend,
+}: AccountIdFormProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
-  const verifyAccountInfo = useVerifyAccountStore((state) => state.verifyInfo);
-
   const {
-    control,
-    formState: { errors },
-    trigger,
-  } = useFormContext<GetVerifyCodeQueryModel>();
+    formState: { errors, isDirty },
+    getValues,
+    handleSubmit,
+    register,
+    setValue,
+  } = useFormContext<FormResetPassword>();
 
   return (
-    <S.AccountIdForm isVerifyDone={verifyAccountInfo.isEmailVerifyDone}>
-      <S.HideSubmitButton disabled />
+    <S.AccountIdSection isVerifyDone={getValues("verify.isAuthCodeSend")}>
+      <S.HideSubmitButton disabled type="button" />
       <S.AccountInputWrapper>
         <AccountInput
           id="email"
-          disabled={verifyAccountInfo.isEmailVerifyDone}
-          control={control}
-          name="email"
-          label="Email"
-          type="text"
-          hasTrim={false}
-          trigger={trigger}
-          hasError={!!errors.email?.message}
+          disabled={getValues("verify.isAuthCodeSend")}
+          hasError={!!errors.verify?.email?.message}
+          isDirty={!!isDirty}
+          label={LANGUAGE_LABEL.EMAIL}
+          maxLength={100}
+          type="email"
+          register={register("verify.email", {
+            onChange: (e: ChangeEvent<HTMLInputElement>): void =>
+              setValue("verify.email", e.target.value.trim()),
+          })}
         />
         <S.EmailVerifyButton
+          disabled={!!errors.verify?.email?.message || isTimeStart || !isDirty}
           type="button"
-          disabled={!!errors.email?.message}
-          onClick={handleEmailSend}
+          onClick={handleSubmit(handleEmailSend)}
         >
-          {defaultLanguage("Verify")}
+          {defaultLanguage(LANGUAGE_LABEL.VERIFY)}
         </S.EmailVerifyButton>
       </S.AccountInputWrapper>
-      {errors.email?.message && (
-        <ErrorMessage css={S.alertMessage} message={errors.email.message} />
+      {errors.verify?.email?.message && (
+        <ErrorMessage
+          css={S.alertMessage}
+          message={errors.verify?.email.message}
+        />
       )}
-    </S.AccountIdForm>
+    </S.AccountIdSection>
   );
 };
 

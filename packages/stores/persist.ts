@@ -4,27 +4,27 @@ import { immer } from "zustand/middleware/immer";
 
 interface RecentSearchState {
   countryCodes: string[];
-  addCountryCode: (code: string) => void;
-  initializeCountryCodes: (countryCode: string) => void;
-  clearCountryCodes: () => void;
+  onAddCountryCode: (code: string) => void;
+  onClearCountryCodes: () => void;
+  onInitializeCountryCodes: (countryCode: string) => void;
 }
 
 const useRecentSearchStore = create<RecentSearchState>()(
   persist(
     immer((set) => ({
       countryCodes: [],
-      addCountryCode: (code): void =>
+      onAddCountryCode: (code): void =>
         set((state) => {
           const newCodes = [code, ...state.countryCodes];
           state.countryCodes = [...new Set(newCodes)];
         }),
-      initializeCountryCodes: (countryCode): void =>
+      onInitializeCountryCodes: (countryCode): void =>
         set((state) => {
           if (!state.countryCodes.includes(countryCode)) {
             state.countryCodes = [countryCode, ...state.countryCodes];
           }
         }),
-      clearCountryCodes: (): void => {
+      onClearCountryCodes: (): void => {
         set((state) => {
           state.countryCodes = [];
         });

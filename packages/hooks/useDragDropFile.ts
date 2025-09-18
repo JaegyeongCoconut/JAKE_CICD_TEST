@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import type { DragEvent as ReactDragEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UseDragDropFileProps {
   uploadImageFile: (file: File) => void;
@@ -29,12 +30,12 @@ const useDragDropFile = ({ uploadImageFile }: UseDragDropFileProps) => {
   };
 
   const handleDragOver = (
-    e: React.DragEvent<HTMLDivElement> | DragEvent,
+    e: ReactDragEvent<HTMLDivElement> | DragEvent,
   ): void => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement> | DragEvent): void => {
+  const handleDrop = (e: ReactDragEvent<HTMLDivElement> | DragEvent): void => {
     e.preventDefault();
     e.stopPropagation();
 

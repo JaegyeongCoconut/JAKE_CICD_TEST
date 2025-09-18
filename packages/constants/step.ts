@@ -1,0 +1,4 @@
+export const RESET_PASSWORD_STEP = {
+  IDENTITY_VERIFICATION: 0,
+  CREATE_NEW_PASSWORD: 1,
+} as const;

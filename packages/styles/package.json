@@ -4,8 +4,9 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./globalStyles":"./globalStyles.ts",
-    "./themes":"./themes/index.ts"
+    "./globalStyles": "./globalStyles.ts",
+    "./themes": "./themes/index.ts",
+    "./iconBarrel": "./stories/icon.barrel.ts"
   },
   "dependencies": {
     "@repo/assets": "workspace:*"

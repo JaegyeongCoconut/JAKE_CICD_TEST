@@ -5,9 +5,9 @@ import type {
 } from "@repo/types";
 
 interface calcTableWidthProps {
+  nextGrid?: string[];
   prevGrid?: string[];
   tableHeaderInfos: TableHeaderInfo;
-  nextGrid?: string[];
 }
 
 export const calcTableWidth = ({

@@ -16,11 +16,11 @@ import * as S from "./LabelContentTable.styled";
 export type LabelContentType = "bg" | "underline" | "empty";
 
 interface LabelContentTableProps {
-  children: React.ReactNode;
   className?: string;
   variant: LabelContentType;
   marginBottom?: number;
   subject?: Languages | React.ReactNode;
+  children: React.ReactNode;
 }
 
 const Context = createContext<{ variant?: LabelContentType }>({});
@@ -56,18 +56,18 @@ const LabelContentTable = ({
 
 interface RowProps {
   className?: string;
-  partition?: number;
   hasError?: boolean;
   marginTop?: number;
-  children: React.ReactNode;
   draggable?: boolean;
-  handleDragStart?: () => void;
+  partition?: number;
   handleDragEnd?: () => void;
   handleDragEnter?: () => void;
+  handleDragOver?: (e: React.DragEvent<HTMLElement>) => void;
+  handleDragStart?: () => void;
+  handleDrop?: (e: React.DragEvent<HTMLElement>) => void;
   handleMouseDown?: () => void;
   handleMouseUp?: () => void;
-  handleDragOver?: (e: React.DragEvent<HTMLElement>) => void;
-  handleDrop?: (e: React.DragEvent<HTMLElement>) => void;
+  children: React.ReactNode;
 }
 
 LabelContentTable.Row = function Row({
@@ -91,17 +91,17 @@ LabelContentTable.Row = function Row({
     <S.Row
       className={className}
       variant={variant}
-      marginTop={marginTop}
       hasError={hasError}
-      partition={partition}
+      marginTop={marginTop}
       draggable={draggable}
-      onDragStart={handleDragStart}
+      partition={partition}
       onDragEnd={handleDragEnd}
       onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragStart={handleDragStart}
+      onDrop={handleDrop}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
     >
       {children}
     </S.Row>
@@ -110,10 +110,10 @@ LabelContentTable.Row = function Row({
 
 interface ContentProps {
   className?: string;
+  hasError?: boolean;
+  isRequired?: boolean;
   label: Languages;
   labelWidth?: number;
-  isRequired?: boolean;
-  hasError?: boolean;
   tooltip?: React.ReactNode;
   children: jsx.JSX.Element;
 }
@@ -181,15 +181,15 @@ LabelContentTable.CheckBoxContent = function CheckBoxContent({
       <S.NameWrapper>
         <S.CheckboxLabel
           variant={variant}
-          hasError={hasError}
           disabled={disabled}
+          hasError={hasError}
         >
           <input
-            type="checkbox"
             id={uuid}
             checked={isChecked}
             disabled={disabled}
             readOnly
+            type="checkbox"
             onChange={handleCheck}
           />
           <S.Checkbox htmlFor={uuid} tabIndex={0} />

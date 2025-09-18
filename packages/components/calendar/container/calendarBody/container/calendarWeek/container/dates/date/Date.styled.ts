@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 const mixinCircle = css`
@@ -15,25 +16,25 @@ const mixinRightCircle = css`
 
 const mixinSelectDate = (theme: Theme) => css`
   border-radius: 22px;
-  background-color: ${theme.color.blue_10};
+  background-color: ${theme.color.blue_60};
 
   > button {
-    color: ${theme.color.white};
+    color: ${theme.color.white_00};
   }
 `;
 
 const mixinHoverDate = (theme: Theme) => css`
-  background-color: ${theme.color.blue_10_10};
+  background-color: ${theme.color.blue_60_10};
 `;
 
 interface RootProps {
-  isToday: boolean;
-  isThisMonth: boolean;
-  isSelectedDate: boolean;
   isHoverLength: boolean;
   isLeftCircleCases: boolean;
   isRightCircleCases: boolean;
   isSelected: boolean;
+  isSelectedDate: boolean;
+  isThisMonth: boolean;
+  isToday: boolean;
 }
 
 export const Root = styled.li<RootProps>`
@@ -54,7 +55,7 @@ export const Root = styled.li<RootProps>`
     align-items: center;
     width: 36px;
     height: 36px;
-    border: ${isToday && `1px solid ${theme.color.black}`};
+    border: ${isToday && `1px solid ${theme.color.gray_90}`};
     border-radius: ${(isToday || isSelected) && "50%"};
 
     & > button {
@@ -84,7 +85,7 @@ export const Button = styled.button`
     ${theme.font.regular_14};
     width: 100%;
     height: 100%;
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
     z-index: ${theme.zIndex.CALENDAR};
 
     &:disabled {

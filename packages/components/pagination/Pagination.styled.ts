@@ -80,12 +80,12 @@ export const NumberButton = styled.button<NumberButtonProps>`
     justify-content: center;
     align-items: center;
     min-width: 32px;
-    padding: 5px;
     border-radius: 2px;
-    color: ${isCurrentPage ? theme.color.black : theme.color.gray_50};
+    padding: 5px;
+    color: ${isCurrentPage ? theme.color.gray_90 : theme.color.gray_50};
     background-color: ${isCurrentPage
       ? theme.color.gray_10
-      : theme.color.white};
+      : theme.color.white_00};
 
     :hover:not([disabled]) {
       background-color: ${theme.color.gray_30};

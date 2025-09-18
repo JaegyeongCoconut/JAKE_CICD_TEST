@@ -1,9 +1,7 @@
-import * as yup from "yup";
+import type { TestContext } from "yup";
+import { ref } from "yup";
 
-import {
-  CAR_ADMIN_ERROR_MESSAGE,
-  COMMON_ERROR_MESSAGE,
-} from "@repo/constants/error/message";
+import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
 
 import {
   checkEmailValidation,
@@ -13,30 +11,20 @@ import {
 } from "../validation";
 
 export const TEST = {
-  DROPDOWN: {
-    name: "requiredDropdown",
-    message: COMMON_ERROR_MESSAGE.FIELD,
-    test: ({ key, label }: { key: string | number; label: string }) => {
-      if (typeof key === "number") key = `${key}`;
-
-      return !!(key && label);
-    },
-  },
   EMAIL: {
     name: "emailValidation",
     message: COMMON_ERROR_MESSAGE.EMAIL_VALID,
     test: checkEmailValidation,
   },
-  // NOTE: 추후 FILE, FILE_STRING 코드 통합 필요
-  FILE: {
-    name: "emptyFileValidation",
-    message: COMMON_ERROR_MESSAGE.FIELD,
-    test: (file: File | null) => !!file,
-  },
-  FILE_STRING: {
+  FILE_STRING_NULLABLE: {
     name: "emptyFileStringValidation",
     message: COMMON_ERROR_MESSAGE.FIELD,
-    test: (file: File | string) => !!file,
+    test: (file: File | string | null) => !!file,
+  },
+  MOBILE_NUMBER_PREFIX: {
+    name: "mobileNumberPrefixValidation",
+    message: COMMON_ERROR_MESSAGE.MOBILE_VALID, // NOTE: 추후 문구 변경 될 수 있음
+    test: (value: string) => value.startsWith("20"),
   },
   PASSWORD: {
     LENGTH: {
@@ -52,41 +40,43 @@ export const TEST = {
     NEW: {
       name: "passwordNewValidation",
       message: COMMON_ERROR_MESSAGE.CANNOT_UPDATE_PASSWORD,
-      test: (value: string, contexts: yup.TestContext) => {
-        return value !== contexts.resolve(yup.ref("currentPassword"));
+      test: (value: string, contexts: TestContext) => {
+        return value !== contexts.resolve(ref("currentPassword"));
       },
     },
     CONFIRM: {
       name: "passwordConfirmValidation",
       message: COMMON_ERROR_MESSAGE.PASSWORD_CONFIRM,
-      test: (value: string, contexts: yup.TestContext) => {
-        return value === contexts.resolve(yup.ref("newPassword"));
+      test: (value: string, contexts: TestContext) => {
+        return value === contexts.resolve(ref("newPassword"));
       },
     },
   },
-  TRIM: {
+  TRIM: (message?: string) => ({
     name: "trimValidation",
-    message: COMMON_ERROR_MESSAGE.FIELD,
-    test: (value: string) => !!value.trim(),
-  },
-  RETURN_TRUE: {
-    name: "onlyTrue",
-    message: COMMON_ERROR_MESSAGE.REQUIRED_SELECT_ONE_MORE,
-    test: (value: boolean) => value === true,
-  },
+    message: message || COMMON_ERROR_MESSAGE.FIELD,
+    test: (value: string | null) => !!value?.trim(),
+  }),
   URL: {
     name: "urlValidation",
     message: COMMON_ERROR_MESSAGE.URL_INCORRECT,
     test: (value: string) => checkUrl(value) === true,
   },
   LENGTH: (length: number) => ({
-    name: "sixChar",
+    //NOTE: 네이밍 변경 예정 ->SAME_LENGTH
+    name: "sameLength",
     message: () => COMMON_ERROR_MESSAGE.FIELD,
-    test: (value: string) => value.length === length,
+    test: (value: string | (string | File)[] | null) =>
+      (value?.length || 0) === length,
   }),
-  RADIO_EMPTY_CHECK: {
+  MIN_LENGTH: <T extends string | File>(length: number) => ({
+    name: "minLength",
+    message: COMMON_ERROR_MESSAGE.FIELD,
+    test: (value: T[] | null) => (value?.length || 0) >= length,
+  }),
+  EMPTY_NULL_CHECK: {
     name: "radioEmptyCheck",
-    message: CAR_ADMIN_ERROR_MESSAGE.REQUIRED_OPTION,
-    test: (value: string | null) => !!value,
+    message: COMMON_ERROR_MESSAGE.FIELD,
+    test: (value: string | File | string[] | null) => !!value,
   },
 };

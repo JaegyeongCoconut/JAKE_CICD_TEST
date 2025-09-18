@@ -1,26 +1,25 @@
 import React from "react";
 
-import { Navigate, Outlet } from "react-router-dom";
-
 import * as S from "./CommonPublicRoute.styled";
+import HeadlessPublicRoute from "./HeadlessPublicRoute";
 
-interface PublicRouteLayoutProps {
+interface CommonPublicRouteProps {
   hasUser: boolean;
-  navigatePath: string;
   paddingTop: string;
+  navigatePath: string;
 }
 
 const CommonPublicRoute = ({
   hasUser,
   navigatePath,
   paddingTop,
-}: PublicRouteLayoutProps) => {
-  return hasUser ? (
-    <Navigate to={navigatePath} />
-  ) : (
-    <S.PublicMain paddingTop={paddingTop}>
-      <Outlet />
-    </S.PublicMain>
+}: CommonPublicRouteProps) => {
+  return (
+    <HeadlessPublicRoute
+      css={S.commonPublicRoute(paddingTop)}
+      hasUser={hasUser}
+      navigatePath={navigatePath}
+    />
   );
 };
 

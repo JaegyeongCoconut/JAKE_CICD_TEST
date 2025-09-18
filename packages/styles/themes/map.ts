@@ -37,7 +37,7 @@ export const infoWindow = {
 
       & > span {
         ${font.medium_15};
-        color: ${color.black};
+        color: ${color.gray_90};
       }
     }
 
@@ -98,7 +98,7 @@ export const infoWindow = {
             }
             .info-value {
               ${font.regular_14};
-              color: ${color.black};
+              color: ${color.gray_90};
             }
           }
         }
@@ -143,14 +143,14 @@ export const infoWindow = {
         width: 28px;
         height: 28px;
         border-radius: 100px;
-        background-color: ${color.gray_80};
-        color: ${color.white};
+        color: ${color.white_00};
         text-align: center;
+        background-color: ${color.gray_80};
       }
 
       & > .branch-code {
         ${font.medium_15};
-        color: ${color.black};
+        color: ${color.gray_90};
       }
     }
     .gm-style-iw-c:has(.branch-info-window) {

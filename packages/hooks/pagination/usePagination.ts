@@ -2,11 +2,17 @@ import { useState, useEffect } from "react";
 
 import { createPages } from "@repo/utils/pagination";
 
-const usePagination = (
-  currentPage: number,
-  maxPageCount: number,
-  totalPages: number,
-) => {
+interface UsePaginationProps {
+  currentPage: number;
+  maxPageCount: number;
+  totalPages: number;
+}
+
+const usePagination = ({
+  currentPage,
+  maxPageCount,
+  totalPages,
+}: UsePaginationProps) => {
   const [pageNumbers, setPageNumbers] = useState<number[]>([]);
 
   const isPreviousNumberDisabled = currentPage - maxPageCount <= 0;
@@ -16,7 +22,11 @@ const usePagination = (
       Math.floor(totalPages / maxPageCount);
 
   useEffect(() => {
-    const newPageNumbers = createPages(currentPage, maxPageCount, totalPages);
+    const newPageNumbers = createPages({
+      currentPage,
+      maxPageCount,
+      totalPages,
+    });
 
     setPageNumbers(newPageNumbers);
   }, [currentPage, maxPageCount, totalPages]);

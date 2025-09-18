@@ -1,25 +1,25 @@
 import React from "react";
 
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import { Languages } from "@repo/types";
+import type { Languages } from "@repo/types";
 
 import * as S from "./LabelContent.styled";
 
 interface CommonProps {
   className?: string;
+  isRequired?: boolean;
   label: Languages;
   children: React.ReactNode;
-  isRequired?: boolean;
 }
 
 interface Horizontal extends CommonProps {
-  direction: "horizontal";
   columnWidth: number;
+  direction: "horizontal";
 }
 
 interface Vertical extends CommonProps {
-  direction: "vertical";
   columnWidth?: never;
+  direction: "vertical";
 }
 
 type LabelContentProps = Horizontal | Vertical;
@@ -37,8 +37,8 @@ const LabelContent = ({
   return (
     <S.Wrapper
       className={className}
-      direction={direction}
       columnWidth={columnWidth}
+      direction={direction}
     >
       <S.LabelWrapper>
         <S.Label isRequired={isRequired}>{defaultLanguage(label)}</S.Label>

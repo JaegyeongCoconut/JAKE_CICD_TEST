@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-export const AccountIdForm = styled.form<{ isVerifyDone: boolean }>`
+export const AccountIdSection = styled.section<{ isVerifyDone: boolean }>`
   ${({ theme, isVerifyDone }) => css`
     background-color: ${isVerifyDone && theme.color.gray_10};
   `}

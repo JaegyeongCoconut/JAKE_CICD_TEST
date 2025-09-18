@@ -1,0 +1,41 @@
+{
+  "name": "kokkok-car-inspection",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "package-scripts": "node ../../packages/scripts/package-scripts.js",
+    "env-dev": "env-cmd -f .env.development pnpm run package-scripts",
+    "env-prod": "env-cmd -f .env.production pnpm run package-scripts",
+    "dev": "pnpm run env-dev && vite --mode development",
+    "dev-i18n": "pnpm run env-dev && vite --mode development",
+    "dev-typia": "pnpm run env-dev && vite --mode development",
+    "dev-prod-typia": "pnpm run env-prod && vite --mode production",
+    "build": "pnpm run env-dev && vite build --mode development",
+    "preview": "vite preview --mode development",
+    "dev-prod": "pnpm run env-prod && vite --mode production",
+    "build-prod": "pnpm run env-prod && vite build --mode production",
+    "preview-prod": "vite preview --mode production",
+    "test": "test",
+    "eject": "eject"
+  },
+  "browserify-shim": {
+    "node-uuid": "uuid"
+  },
+  "dependencies": {
+    "@repo/apis": "workspace:*",
+    "@repo/assets": "workspace:*",
+    "@repo/components": "workspace:*",
+    "@repo/constants": "workspace:*",
+    "@repo/contexts": "workspace:*",
+    "@repo/hooks": "workspace:*",
+    "@repo/services": "workspace:*",
+    "@repo/stores": "workspace:*",
+    "@repo/styles": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

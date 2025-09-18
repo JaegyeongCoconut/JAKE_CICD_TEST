@@ -1,15 +1,6 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-
-export const PageLayout = styled.section`
-  ${({ theme }) => css`
-    position: relative;
-    min-width: ${theme.size.SECTION_MIN_WIDTH};
-    width: ${`calc(100vw - ${theme.size.NAV_WIDTH} - ${theme.size.MAIN_PADDING_SIDE} * 2)`};
-    max-width: ${theme.size.SECTION_MAX_WIDTH};
-    margin: 0 auto;
-  `}
-`;
 
 export const PageLayoutBreadcrumb = styled.ul`
   display: flex;
@@ -44,8 +35,8 @@ export const PageLayoutBreadcrumbLi = styled.li<PageLayoutBreadcrumbLiProps>`
 
     a {
       max-width: ${hasEllipsis ? "216px" : "auto"};
-      white-space: ${hasEllipsis ? "nowrap" : "normal"};
       overflow: ${hasEllipsis ? "hidden" : "visible"};
+      white-space: ${hasEllipsis ? "nowrap" : "normal"};
       text-overflow: ${hasEllipsis ? "ellipsis" : "clip"};
     }
 
@@ -59,8 +50,8 @@ export const PageLayoutBreadcrumbLi = styled.li<PageLayoutBreadcrumbLiProps>`
         left: 0;
         border-radius: 2px;
         padding: 2px 4px;
+        color: ${theme.color.white_00};
         background-color: ${theme.color.gray_80};
-        color: ${theme.color.white};
         z-index: ${theme.zIndex.DROPDOWN};
       }
     `}
@@ -82,9 +73,9 @@ export const LastSpan = styled.span<{ hasEllipsis: boolean }>`
   ${({ theme, hasEllipsis }) => css`
     ${theme.font.regular_13};
     max-width: ${hasEllipsis ? "216px" : "auto"};
+    overflow: ${hasEllipsis ? "hidden" : "visible"};
     color: ${theme.color.gray_70};
     white-space: ${hasEllipsis ? "nowrap" : "normal"};
-    overflow: ${hasEllipsis ? "hidden" : "visible"};
     text-overflow: ${hasEllipsis ? "ellipsis" : "clip"};
   `}
 `;

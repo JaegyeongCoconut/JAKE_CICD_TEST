@@ -1,1 +1,2 @@
-export * from "./domain/ranking";
+export * from "./domain/ranking/client";
+export * from "./domain/ranking/server";

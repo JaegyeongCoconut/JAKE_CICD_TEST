@@ -2,7 +2,10 @@ import React from "react";
 
 import { v4 as uuidv4 } from "uuid";
 
-import { CheckIcon, ChevronDownIcon, ErrorIcon } from "@repo/assets/icon";
+import { ReactComponent as CheckIcon } from "@repo/assets/icon/ic_check.svg";
+import { ReactComponent as DownIcon } from "@repo/assets/icon/ic_down.svg";
+import { ReactComponent as WarningIcon } from "@repo/assets/icon/ic_warning.svg";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDropdown from "@repo/hooks/dropdown/useDropdown";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { DropdownOptionType, Languages } from "@repo/types";
@@ -12,16 +15,16 @@ import DropdownOptionSkeleton from "./containers/optionSkeleton/DropdownOptionSk
 
 interface DropdownProps {
   className?: string;
-  isLoading?: boolean;
   disabled?: boolean;
   hasError?: boolean;
+  isLoading?: boolean;
+  Icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   options: readonly DropdownOptionType<Languages>[];
   placeholder?: Languages;
   selectedOption: DropdownOptionType<Languages>;
-  Icon?: React.FC<React.SVGProps<SVGSVGElement>>;
-  handleSelect?: (value: string) => void;
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
   handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleSelect?: (value: string) => void;
 }
 
 const Dropdown = ({
@@ -32,7 +35,7 @@ const Dropdown = ({
   options,
   placeholder,
   selectedOption,
-  Icon = ChevronDownIcon,
+  Icon = DownIcon,
   handleSelect,
   handleConditionFocus,
   handleConditionBlur,
@@ -41,20 +44,20 @@ const Dropdown = ({
   const { defaultLanguage } = useDefaultLanguage();
 
   const { dropdownRef, optionsRef, isOpen, handleOpener, handleOptionClick } =
-    useDropdown(
-      selectedOption.key,
+    useDropdown({
+      tagValue: selectedOption.key,
       handleSelect,
       handleConditionFocus,
       handleConditionBlur,
-    );
+    });
 
   return (
-    <S.Dropdown ref={dropdownRef} className={className}>
+    <S.Dropdown className={className} ref={dropdownRef}>
       <S.DropdownButton
         aria-controls={id}
         aria-expanded={isOpen}
-        hasError={hasError}
         disabled={disabled}
+        hasError={hasError}
         type="button"
         onClick={handleOpener}
       >
@@ -78,9 +81,9 @@ const Dropdown = ({
           ))
         ) : options.length === 0 ? (
           <S.NoOptionData>
-            <ErrorIcon css={S.noOptionIcon} />
+            <WarningIcon css={S.noOptionIcon} />
             <S.noOptionDataMessage>
-              {defaultLanguage("No history")}
+              {defaultLanguage(LANGUAGE_LABEL.NO_HISTORY)}
             </S.noOptionDataMessage>
           </S.NoOptionData>
         ) : (
@@ -90,9 +93,9 @@ const Dropdown = ({
             return (
               <S.Option key={key + i}>
                 <S.OptionButton
+                  isSelected={isSelected}
                   type="button"
                   onClick={handleOptionClick(key)}
-                  isSelected={isSelected}
                 >
                   <span>
                     {label === "English" ? label : defaultLanguage(label)}

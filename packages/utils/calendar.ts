@@ -1,23 +1,24 @@
-import dayjs, { Dayjs } from "dayjs";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
 import type { MonthYear } from "@repo/types";
 
 interface GetMonthYearReturnType {
-  value: Dayjs;
-  month: string;
-  year: string;
-  date: string;
-  currentMonth: string;
-  currentYear: string;
   isCurrentMonthYear: boolean;
-  startDate: Dayjs;
+  value: Dayjs;
+  currentMonth: string;
   currentStartDate: Dayjs;
-  prevMonthStartDate: Dayjs;
-  nextMonthStartDate: Dayjs;
+  currentYear: string;
+  date: string;
   firstDOW: number;
-  lastDate: number;
-  prevMonthLastDate: number;
   firstWeekPrevMonthDate: Dayjs;
+  lastDate: number;
+  month: string;
+  nextMonthStartDate: Dayjs;
+  prevMonthLastDate: number;
+  prevMonthStartDate: Dayjs;
+  startDate: Dayjs;
+  year: string;
 }
 
 export const getMonthYear = (initDate: Dayjs): GetMonthYearReturnType => {
@@ -61,34 +62,57 @@ export const getMonthYear = (initDate: Dayjs): GetMonthYearReturnType => {
   };
 };
 
-export const getUpdatedMonthYear = (
-  monthYear: MonthYear,
-  monthIncrement: number,
-): Dayjs => {
+interface GetUpdatedMonthYearProps {
+  monthIncrement: number;
+  monthYear: MonthYear;
+}
+
+const getUpdatedMonthYear = ({
+  monthYear,
+  monthIncrement,
+}: GetUpdatedMonthYearProps): Dayjs => {
   return monthYear.startDate.clone().add(monthIncrement, "month");
 };
 
-export const getNewMonth = (
-  prevDate: MonthYear,
-  monthIncrement: number,
-): GetMonthYearReturnType => {
-  const newMonthYear = getUpdatedMonthYear(prevDate, monthIncrement);
+interface GetNewMonthProps {
+  monthIncrement: number;
+  prevDate: MonthYear;
+}
+
+export const getNewMonth = ({
+  prevDate,
+  monthIncrement,
+}: GetNewMonthProps): GetMonthYearReturnType => {
+  const newMonthYear = getUpdatedMonthYear({
+    monthYear: prevDate,
+    monthIncrement,
+  });
 
   return getMonthYear(newMonthYear);
 };
 
-export const getUpdatedYear = (
-  monthYear: MonthYear,
-  yearIncrement: number,
-): Dayjs => {
+interface GetUpdatedYearProps {
+  monthYear: MonthYear;
+  yearIncrement: number;
+}
+
+const getUpdatedYear = ({
+  monthYear,
+  yearIncrement,
+}: GetUpdatedYearProps): Dayjs => {
   return monthYear.startDate.clone().add(yearIncrement, "year");
 };
 
-export const getNewYear = (
-  prevDate: MonthYear,
-  yearIncrement: number,
-): GetMonthYearReturnType => {
-  const newMonthYear = getUpdatedYear(prevDate, yearIncrement);
+interface GetNewYearProps {
+  prevDate: MonthYear;
+  yearIncrement: number;
+}
+
+export const getNewYear = ({
+  prevDate,
+  yearIncrement,
+}: GetNewYearProps): GetMonthYearReturnType => {
+  const newMonthYear = getUpdatedYear({ monthYear: prevDate, yearIncrement });
 
   return getMonthYear(newMonthYear);
 };

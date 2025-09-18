@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { isEmpty } from "lodash-es";
 
-import { CloseIcon, ErrorIcon, NoneSearchIcon } from "@repo/assets/icon";
+import { ReactComponent as CloseIcon } from "@repo/assets/icon/ic_close.svg";
+import { ReactComponent as WarningIcon } from "@repo/assets/icon/ic_warning.svg";
+import { ReactComponent as WebSearchIcon } from "@repo/assets/icon/ic_web_search.svg";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
+import useDomReady from "@repo/hooks/table/useDomReady";
 import useTableScrollTop from "@repo/hooks/table/useTableScrollTop";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { TableHeaderInfo } from "@repo/types";
@@ -14,34 +18,34 @@ import Portal from "../../portal/Portal";
 
 interface CheckTableProps {
   className?: string;
-  tableHeaderInfos: TableHeaderInfo;
-  children: React.ReactNode;
-  isLoading?: boolean;
-  isInitFilter?: boolean;
-  toolButtons?: React.ReactNode;
-  title?: string;
-  selectedCount?: number;
   isAllChecked: boolean;
+  isInitQueryFilter?: boolean;
+  isLoading?: boolean;
+  selectedCount?: number;
+  tableHeaderInfos: TableHeaderInfo;
+  title?: string;
+  toolButtons?: React.ReactNode;
   handleAllCheck?: () => void;
   handleAllUnCheck?: () => void;
+  children: React.ReactNode;
 }
 
 interface RowProps {
   className?: string;
-  children: React.ReactNode;
-  handleMouseOver?: React.MouseEventHandler<HTMLElement>;
   handleMouseLeave?: React.MouseEventHandler<HTMLElement>;
+  handleMouseOver?: React.MouseEventHandler<HTMLElement>;
+  children: React.ReactNode;
 }
 
 interface SelectRowProps extends RowProps {
   id: string;
   isSelected?: boolean;
-  selectFn: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  handleSelect: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 interface SelectRowMovePageProps extends RowProps {
-  id: string;
-  path: string;
+  id: string | undefined;
+  path: string | undefined;
 }
 
 interface TdProps {
@@ -54,7 +58,7 @@ const CheckTable = ({
   tableHeaderInfos,
   children,
   isLoading,
-  isInitFilter,
+  isInitQueryFilter,
   toolButtons,
   title,
   selectedCount,
@@ -76,13 +80,13 @@ const CheckTable = ({
         <S.ToolBoxWrapper ref={toolBoxRef}>
           <S.ToolBox>
             <S.SelectedCount>
-              {selectedCount} {defaultLanguage("Selected")}
+              {selectedCount} {defaultLanguage(LANGUAGE_LABEL.SELECTED)}
             </S.SelectedCount>
             {toolButtons && toolButtons}
           </S.ToolBox>
           <button
-            type="button"
             aria-label="close checked info"
+            type="button"
             onClick={handleAllUnCheck}
           >
             <CloseIcon css={S.closeIcon} />
@@ -91,14 +95,19 @@ const CheckTable = ({
       )}
       <S.Table
         className={className}
-        gridTemplateColumns={gridTemplateColumns}
         ref={tableRef}
+        gridTemplateColumns={gridTemplateColumns}
       >
         <caption className="a11y">{title}</caption>
         <thead>
           <S.HeadRow>
             <S.CheckTh>
-              <Checkbox isChecked={isAllChecked} handleCheck={handleAllCheck} />
+              {handleAllCheck && (
+                <Checkbox
+                  isChecked={isAllChecked}
+                  handleCheck={handleAllCheck}
+                />
+              )}
             </S.CheckTh>
             {tableHeaderInfos.map(({ key, label }, i) => (
               <S.Th key={i} title={key}>
@@ -108,7 +117,7 @@ const CheckTable = ({
           </S.HeadRow>
         </thead>
         <S.Tbody>
-          {isInitFilter ? (
+          {isInitQueryFilter ? (
             <CheckTable.InitData />
           ) : isEmpty(children) && !isLoading ? (
             <CheckTable.NoData />
@@ -143,19 +152,20 @@ CheckTable.SelectRow = function SelectRow({
   children,
   id,
   isSelected = false,
-  selectFn: selectCb,
+  handleSelect: selectCb,
 }: SelectRowProps) {
-  const [domReady, setDomReady] = useState(false);
+  const { domReady } = useDomReady();
 
   const rowId = `table-row-${id}`;
 
-  useEffect(() => {
-    setDomReady(true);
-  }, []);
-
   return (
     <>
-      <S.SelectRow className={className} id={rowId} isSelected={isSelected}>
+      <S.SelectRow
+        className={className}
+        id={rowId}
+        hasId={!!id}
+        isSelected={isSelected}
+      >
         {children}
       </S.SelectRow>
       <Portal container={`#${rowId}`} mounted={domReady}>
@@ -175,26 +185,24 @@ CheckTable.SelectRowMovePage = function SelectRowMovePage({
   id,
   path,
 }: SelectRowMovePageProps) {
-  const [domReady, setDomReady] = useState(false);
+  const { domReady } = useDomReady();
 
   const rowId = `table-row-${id}`;
 
-  useEffect(() => {
-    setDomReady(true);
-  }, []);
-
   return (
     <>
-      <S.SelectRow className={className} id={rowId}>
+      <S.SelectRow className={className} id={rowId} hasId={!!id}>
         {children}
       </S.SelectRow>
-      <Portal container={`#${rowId}`} mounted={domReady}>
-        <td>
-          <S.RowLink to={path}>
-            <span className="a11y">select row</span>
-          </S.RowLink>
-        </td>
-      </Portal>
+      {id && path && (
+        <Portal container={`#${rowId}`} mounted={domReady}>
+          <td>
+            <S.RowLink to={path}>
+              <span className="a11y">select row</span>
+            </S.RowLink>
+          </td>
+        </Portal>
+      )}
     </>
   );
 };
@@ -213,8 +221,8 @@ CheckTable.NoData = function NoData() {
   return (
     <S.NoData>
       <td>
-        <ErrorIcon css={S.noneSearchIcon} />
-        {defaultLanguage("No results found")}
+        <WarningIcon css={S.noneSearchIcon} />
+        {defaultLanguage(LANGUAGE_LABEL.NO_RESULTS_FOUND)}
       </td>
     </S.NoData>
   );
@@ -226,8 +234,8 @@ CheckTable.InitData = function InitData() {
   return (
     <S.NoData>
       <td>
-        <NoneSearchIcon css={S.noneSearchIcon} />
-        {defaultLanguage("Please apply the filter to search")}
+        <WebSearchIcon css={S.noneSearchIcon} />
+        {defaultLanguage(LANGUAGE_LABEL.PLEASE_APPLY_THE_FILTER_TO_SEARCH)}
       </td>
     </S.NoData>
   );

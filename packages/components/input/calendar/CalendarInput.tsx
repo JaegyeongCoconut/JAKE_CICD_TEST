@@ -1,30 +1,42 @@
 import React, { memo } from "react";
 
-import dayjs from "dayjs";
-import type { UseFormRegisterReturn } from "react-hook-form";
+import type { Dayjs } from "dayjs";
 
-import { CalendarIcon } from "@repo/assets/icon";
+import { ReactComponent as CalendarIcon } from "@repo/assets/icon/ic_calendar.svg";
 import type { CalendarType, Languages } from "@repo/types";
 
 import * as S from "./CalendarInput.styled";
 import CalendarButton from "../../button/calendar/CalendarButton";
 import Calendar from "../../calendar/Calendar";
-import Input from "../Input";
+import DisabledInput from "../disabled/DisabledInput";
 
-interface CalendarInputProps {
+interface BaseCalendarInputProps {
   className?: string;
-  dialogPosition: "up" | "down";
-  hasError?: boolean;
-  hasTime?: boolean;
-  disabled?: boolean;
-  placeholder?: Languages;
+  placeholder: Languages;
+}
+
+interface DisabledCalendarInputProps extends BaseCalendarInputProps {
+  disabled: true;
+  hasError?: never;
+  value: "";
+  dialogPosition?: never;
+  selectedDate?: never;
+  type?: never;
+  handleConditionBlur?: never;
+  handleConditionFocus?: never;
+  handleDateChange?: never;
+}
+
+interface AbledCalendarInputProps extends BaseCalendarInputProps {
+  disabled: false;
+  hasError: boolean;
+  value: string;
+  dialogPosition: "up" | "down" | "center";
   selectedDate: string[];
   type: CalendarType;
-  value: string;
-  register?: UseFormRegisterReturn<string>;
-  handleDateChange: (date: dayjs.Dayjs[] | []) => void;
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
-  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleConditionBlur: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleConditionFocus: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleDateChange: (date: Dayjs[] | []) => void;
 }
 
 const CalendarInput = ({
@@ -33,41 +45,41 @@ const CalendarInput = ({
   hasError,
   disabled,
   selectedDate,
-  placeholder = "Select the date",
+  placeholder,
   type,
   value,
-  register,
   handleDateChange,
   handleConditionFocus,
   handleConditionBlur,
-}: CalendarInputProps) => {
+}: AbledCalendarInputProps | DisabledCalendarInputProps) => {
   return (
     <S.Root className={className}>
-      <Input
-        css={S.calendarInput(disabled)}
-        placeholder={placeholder}
+      <DisabledInput
+        css={S.calendarInput({ disabled, hasError: !!hasError })}
         value={value}
-        disabled
-        hasError={hasError}
-        register={register}
+        placeholder={placeholder}
       />
       <CalendarButton
         css={S.calendarDialogButton(disabled)}
         disabled={disabled}
-        popup={(dialogRef, isDialogOpen, handleDialogClose) => (
-          <Calendar
-            ref={dialogRef}
-            dialogPosition={dialogPosition}
-            isDialogOpen={isDialogOpen}
-            as="dialog"
-            type={type}
-            selectedDate={selectedDate}
-            handleDateChange={handleDateChange}
-            handleDialogClose={handleDialogClose}
-            handleConditionFocus={handleConditionFocus}
-            handleConditionBlur={handleConditionBlur}
-          />
-        )}
+        onPopup={
+          !disabled
+            ? (dialogRef, isDialogOpen, handleDialogClose) => (
+                <Calendar
+                  ref={dialogRef}
+                  as="dialog"
+                  isDialogOpen={isDialogOpen}
+                  dialogPosition={dialogPosition}
+                  selectedDate={selectedDate}
+                  type={type}
+                  handleConditionBlur={handleConditionBlur}
+                  handleConditionFocus={handleConditionFocus}
+                  handleDateChange={handleDateChange}
+                  handleDialogClose={handleDialogClose}
+                />
+              )
+            : () => {}
+        }
       >
         <CalendarIcon css={S.calendarIcon} />
       </CalendarButton>

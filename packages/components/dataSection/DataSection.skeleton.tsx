@@ -9,10 +9,10 @@ import * as S from "./DataSection.styled";
 
 interface DataSectionSkeletonProps {
   className?: string;
-  children: React.ReactNode;
+  hasHeader?: boolean;
   buttonCount?: number;
   title?: Languages;
-  hasHeader?: boolean;
+  children: React.ReactNode;
 }
 
 const DataSectionSkeleton = ({
@@ -33,7 +33,7 @@ const DataSectionSkeleton = ({
           </S.LeftContent>
           <S.ActiveWrapper>
             {[...Array(buttonCount)].map((_, i) => (
-              <Skeleton key={i} width={130} height={40} />
+              <Skeleton key={i} height={40} width={130} />
             ))}
           </S.ActiveWrapper>
         </S.Header>

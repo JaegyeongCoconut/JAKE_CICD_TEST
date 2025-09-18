@@ -1,6 +1,9 @@
 import React from "react";
 
-import { RankIcon, TranslateIcon, TriangleIcon } from "@repo/assets/icon";
+import { ReactComponent as GlobalIcon } from "@repo/assets/icon/ic_global.svg";
+import { ReactComponent as PolygonDownIcon } from "@repo/assets/icon/ic_polygon_down.svg";
+import { ReactComponent as RankIcon } from "@repo/assets/icon/ic_rank.svg";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { DropdownOptionType, Languages } from "@repo/types";
 
@@ -13,8 +16,8 @@ interface MainHeaderProps {
   className?: string;
   icon: React.ReactNode;
   iconWidth: string;
-  children?: React.ReactNode;
   handleLogout: () => void;
+  children?: React.ReactNode;
 }
 
 const MainHeader = ({
@@ -32,7 +35,7 @@ const MainHeader = ({
         <GhostButton
           css={S.logoutButton}
           variant="ghost"
-          label="Sign out"
+          label={LANGUAGE_LABEL.SIGN_OUT}
           handleButtonClick={handleLogout}
         />
       </S.ControlWrapper>
@@ -53,12 +56,12 @@ MainHeader.LanguageDropdown = function LanguageDropdown({
 }: LanguageDropdownProps) {
   return (
     <S.LanguageWrapper>
-      <TranslateIcon css={S.translateIcon} />
+      <GlobalIcon css={S.translateIcon} />
       <Dropdown
         css={S.dropdown}
+        Icon={PolygonDownIcon}
         options={options}
         selectedOption={selectedOption}
-        Icon={TriangleIcon}
         handleSelect={handleSelect}
       />
     </S.LanguageWrapper>
@@ -77,11 +80,11 @@ MainHeader.RankingLinkButton = function RankingLinkButton({
   return (
     <ExternalLinkButton
       css={S.externalLinkButton}
-      variant="alert_gray"
       href={href}
+      variant="alert_gray"
     >
       <RankIcon />
-      {defaultLanguage("Rank")}
+      {defaultLanguage(LANGUAGE_LABEL.RANK)}
     </ExternalLinkButton>
   );
 };

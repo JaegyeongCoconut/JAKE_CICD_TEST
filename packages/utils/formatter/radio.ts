@@ -1,8 +1,8 @@
 import type { Languages } from "@repo/types";
 
 interface FilterRadioExceptCurrentState<T, U extends Languages> {
+  initData: T | null | undefined;
   radios: readonly { key: T; label: U }[];
-  initData: T | null;
 }
 
 export const filterRadioExceptInitData = <T, U extends Languages>({

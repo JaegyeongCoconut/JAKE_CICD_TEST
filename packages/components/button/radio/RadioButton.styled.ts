@@ -1,9 +1,17 @@
+import type { Theme } from "@emotion/react";
 import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 
-export const RadioWrapper = styled.div`
+export const radioButton = css`
   display: flex;
   column-gap: 20px;
+`;
+
+export const label = (theme: Theme) => css`
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid ${theme.color.gray_30};
+  border-radius: 50%;
 `;
 
 const fillRadioSVG = (color: string) => {
@@ -15,72 +23,51 @@ const fillRadioSVG = (color: string) => {
   return '"' + svgPrefix + colorWithoutHash + svgSuffix + '"';
 };
 
-interface LabelProps {
-  disabled?: boolean;
-}
+export const content = (disabled?: boolean) => (theme: Theme) => css`
+  ${theme.font.regular_14};
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  color: ${theme.color.gray_90};
 
-export const Label = styled.label<LabelProps>`
-  ${({ theme, disabled }) => css`
-    ${theme.font.regular_14};
-    display: flex;
-    align-items: center;
-    column-gap: 8px;
-    color: ${theme.color.black};
+  & > input[type="radio"] {
+    display: none;
+  }
 
-    & > input[type="radio"] {
-      display: none;
+  :hover {
+    cursor: ${disabled ? "not-allowed" : "pointer"};
+
+    input[type="radio"]:enabled + label {
+      border: 1px solid ${theme.color.blue_60};
+      cursor: pointer;
     }
+  }
 
-    :hover {
-      cursor: ${disabled ? "not-allowed" : "pointer"};
-
-      input[type="radio"]:enabled + label {
-        border: 1px solid ${theme.color.blue_10};
-        cursor: pointer;
-      }
-    }
-
-    input[type="radio"]:checked + label {
-      border: 1px solid ${theme.color.gray_30};
-      background: ${theme.color.blue_10} no-repeat center;
-      background-image: url(${fillRadioSVG(theme.color.blue_10)});
-    }
-
-    input[type="radio"]:disabled + label {
-      :hover {
-        cursor: not-allowed;
-      }
-    }
-
-    input[type="radio"]:disabled + label {
-      border: 1px solid ${theme.color.gray_30};
-      background-color: ${theme.color.gray_10};
-    }
-
-    input[type="radio"]:checked:disabled + label {
-      border: 1px solid ${theme.color.gray_30};
-      background-color: ${theme.color.gray_10};
-      background: no-repeat center;
-      background-image: url(${fillRadioSVG(theme.color.gray_40)});
-    }
-  `}
-`;
-
-export const RadioButton = styled.label`
-  ${({ theme }) => css`
-    display: block;
-    width: 16px;
-    height: 16px;
+  input[type="radio"]:checked + label {
     border: 1px solid ${theme.color.gray_30};
-    border-radius: 50%;
-  `}
-`;
+    background: ${theme.color.blue_60} no-repeat center;
+    background-image: url(${fillRadioSVG(theme.color.blue_60)});
+  }
 
-export const Desc = styled.span`
-  ${({ theme }) => css`
-    ${theme.font.regular_13};
-    display: inline-block;
-    margin-top: 4px;
-    color: ${theme.color.gray_60};
-  `}
+  input[type="radio"]:disabled + label {
+    :hover {
+      cursor: not-allowed;
+    }
+  }
+
+  input[type="radio"]:disabled + label {
+    border: 1px solid ${theme.color.gray_30};
+    background-color: ${theme.color.gray_10};
+  }
+
+  input[type="radio"]:checked:disabled + label {
+    border: 1px solid ${theme.color.gray_30};
+    background: no-repeat center;
+    background-color: ${theme.color.gray_10};
+    background-image: url(${fillRadioSVG(theme.color.gray_40)});
+  }
+
+  & > label {
+    ${label(theme)}
+  }
 `;

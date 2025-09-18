@@ -1,6 +1,6 @@
 import React from "react";
 
-import dayjs from "dayjs";
+import type dayjs from "dayjs";
 
 import type { CalendarType, FormatCalendar } from "@repo/types";
 
@@ -10,11 +10,11 @@ import useDate from "./hooks/useDate";
 interface DateProps {
   className?: string;
   disabled?: boolean;
-  type: CalendarType;
   isThisMonth: boolean;
-  date: dayjs.Dayjs;
   calendar: FormatCalendar["calendarDate"];
-  changeMonth: () => void;
+  date: dayjs.Dayjs;
+  type: CalendarType;
+  handleMonthChange: () => void;
 }
 
 const Date = ({
@@ -24,7 +24,7 @@ const Date = ({
   isThisMonth,
   date,
   calendar,
-  changeMonth,
+  handleMonthChange,
 }: DateProps) => {
   const {
     isToday,
@@ -37,7 +37,7 @@ const Date = ({
     weekIdx,
     handleMouseOver,
     handleClick,
-  } = useDate({ date, type, calendar, changeMonth });
+  } = useDate({ date, type, calendar, handleMonthChange });
 
   const { currentDates, hoveredDate } = calendar;
   const isSelectOneDateOfPeriod =
@@ -46,12 +46,6 @@ const Date = ({
   return (
     <S.Root
       className={className}
-      isSelected={
-        Array.isArray(currentDates) ? !!currentDates.length : !!currentDates
-      }
-      isToday={isToday}
-      isThisMonth={isThisMonth}
-      isSelectedDate={isSelectedStartDate || isSelectedEndDate}
       isHoverLength={
         type === "free" && (isSelectedFreeDates || isHoveredIncluded)
       }
@@ -67,12 +61,18 @@ const Date = ({
         (Array.isArray(currentDates) && isSelectedEndDate) ||
         (isSelectOneDateOfPeriod && !!isHoveredAfterSelectedDate)
       }
+      isSelected={
+        Array.isArray(currentDates) ? !!currentDates.length : !!currentDates
+      }
+      isSelectedDate={isSelectedStartDate || isSelectedEndDate}
+      isThisMonth={isThisMonth}
+      isToday={isToday}
     >
       <S.Button
-        type="button"
         disabled={disabled}
-        onMouseEnter={handleMouseOver(date)}
+        type="button"
         onClick={handleClick(date)}
+        onMouseEnter={handleMouseOver(date)}
       >
         {date.format("D")}
       </S.Button>

@@ -1,18 +1,25 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import useOnClickOutside from "../useOnClickOutside";
 
-const useDialog = () => {
+interface UseDialogProps {
+  disabled: boolean;
+}
+
+const useDialog = ({ disabled }: UseDialogProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [dialogOpener, setDialogOpener] = useState<Element | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  const handleDialogOpen = useCallback((e: React.MouseEvent) => {
+  const handleDialogOpen = (e: MouseEvent<Element>) => {
+    if (disabled) return;
+
     e.stopPropagation();
     setDialogOpener(document.activeElement);
     setIsDialogOpen(true);
     setTimeout(() => dialogRef.current?.focus());
-  }, []);
+  };
 
   const handleDialogClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -20,14 +27,18 @@ const useDialog = () => {
   }, [isDialogOpen, dialogOpener]);
 
   const handleToggleDialog = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent<Element>) => {
       isDialogOpen ? handleDialogClose() : handleDialogOpen(e);
     },
 
     [handleDialogOpen, handleDialogClose, isDialogOpen],
   );
 
-  useOnClickOutside(dialogRef, handleDialogClose, dialogOpener as HTMLElement);
+  useOnClickOutside({
+    ref: dialogRef,
+    handler: handleDialogClose,
+    exceptEl: dialogOpener as HTMLElement,
+  });
 
   useEffect(() => {
     const keyListenerMap = new Map([["Escape", handleDialogClose]]);

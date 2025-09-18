@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-import { button } from "@repo/styles/themes";
+import type { button } from "@repo/styles/themes";
 
 interface ExternalLinkButtonProps {
   variant: keyof typeof button;

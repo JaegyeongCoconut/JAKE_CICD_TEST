@@ -1,71 +1,54 @@
-import React, { useEffect, useState } from "react";
+import type { ReactNode, MouseEvent } from "react";
+import React from "react";
 
 import { isEmpty } from "lodash-es";
 
-import { ErrorIcon, NoneSearchIcon } from "@repo/assets/icon";
+import { ReactComponent as WarningIcon } from "@repo/assets/icon/ic_warning.svg";
+import { ReactComponent as WebSearchIcon } from "@repo/assets/icon/ic_web_search.svg";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
+import useDomReady from "@repo/hooks/table/useDomReady";
 import useTableScrollTop from "@repo/hooks/table/useTableScrollTop";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { ColumnTooltip, TableHeaderInfo } from "@repo/types";
+import type { TableHeaderInfo } from "@repo/types";
 import { calcTableWidth } from "@repo/utils/table";
 
 import * as S from "./Table.styled";
-import Checkbox from "../../button/checkbox/Checkbox";
 import NoResult from "../../noResult/NoResult";
 import Portal from "../../portal/Portal";
-import Tooltip from "../../tooltip/Tooltip";
 
-interface TableProps {
+interface BaseTableProps {
   className?: string;
+  children: ReactNode;
+}
+
+interface TableProps extends BaseTableProps {
+  isInitQueryFilter?: boolean;
   isLoading?: boolean;
-  isInitFilter?: boolean;
-  children: React.ReactNode;
-  title?: string;
-  columnTooltip?: ColumnTooltip;
-  hasCheckbox?: boolean;
-  isAllChecked?: boolean;
-  handleAllCheck?: () => void;
   tableHeaderInfos: TableHeaderInfo;
+  title?: string;
 }
 
-interface RowProps {
-  className?: string;
-  children: React.ReactNode;
-  handleMouseOver?: React.MouseEventHandler<HTMLElement>;
-  handleMouseLeave?: React.MouseEventHandler<HTMLElement>;
+interface SelectRowProps extends BaseTableProps {
+  id: string | undefined;
+  isSelected: boolean;
+  handleSelect: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-interface SelectRowProps extends RowProps {
-  id: string;
-  isSelected?: boolean;
-  selectFn: (e: React.MouseEvent<HTMLButtonElement>) => void;
-}
-
-interface SelectRowMovePageProps extends RowProps {
-  id: string;
-  isSelected?: boolean;
-  path: string;
+interface SelectRowNewTabProps extends BaseTableProps {
+  id: string | undefined;
+  path: string | undefined;
   state?: Record<string, string | null>;
-  isOpenNewTab?: boolean;
-  handleMouseOver?: React.MouseEventHandler<HTMLElement>;
-  handleMouseLeave?: React.MouseEventHandler<HTMLElement>;
 }
 
-interface TdProps {
-  className?: string;
-  children: React.ReactNode;
-}
+interface SelectRowMovePageProps extends BaseTableProps, SelectRowNewTabProps {}
 
 const Table = ({
   className,
   children,
   isLoading,
-  isInitFilter,
+  isInitQueryFilter,
   title = "",
   tableHeaderInfos,
-  columnTooltip,
-  hasCheckbox,
-  isAllChecked,
-  handleAllCheck,
 }: TableProps) => {
   const { tableRef } = useTableScrollTop();
 
@@ -74,19 +57,13 @@ const Table = ({
   return (
     <S.Table
       className={className}
-      gridTemplateColumns={gridTemplateColumns}
       ref={tableRef}
+      gridTemplateColumns={gridTemplateColumns}
     >
       <caption className="a11y">{title}</caption>
-      <Table.Header
-        tableHeaderInfos={tableHeaderInfos}
-        columnTooltip={columnTooltip}
-        hasCheckbox={hasCheckbox}
-        isAllChecked={isAllChecked}
-        handleAllCheck={handleAllCheck}
-      />
+      <Table.Header tableHeaderInfos={tableHeaderInfos} />
       <S.Tbody>
-        {isInitFilter ? (
+        {isInitQueryFilter ? (
           <Table.InitData />
         ) : isEmpty(children) && !isLoading ? (
           <Table.NoData />
@@ -100,19 +77,9 @@ const Table = ({
 
 interface HeaderProps {
   tableHeaderInfos: TableHeaderInfo;
-  columnTooltip?: ColumnTooltip;
-  hasCheckbox?: boolean;
-  isAllChecked?: boolean;
-  handleAllCheck?: () => void;
 }
 
-Table.Header = function Header({
-  tableHeaderInfos,
-  columnTooltip,
-  hasCheckbox,
-  isAllChecked,
-  handleAllCheck,
-}: HeaderProps) {
+Table.Header = function Header({ tableHeaderInfos }: HeaderProps) {
   const { defaultLanguage } = useDefaultLanguage();
 
   const hasMultiColumn = tableHeaderInfos.some(
@@ -122,11 +89,6 @@ Table.Header = function Header({
   return (
     <thead>
       <S.HeadRow hasMultiColumn={hasMultiColumn}>
-        {hasCheckbox && (
-          <th>
-            <Checkbox isChecked={isAllChecked} handleCheck={handleAllCheck} />
-          </th>
-        )}
         {tableHeaderInfos.map((columns) => {
           const { secondDepthes, ...rest } = columns;
           const filteredColumns = [rest, ...(secondDepthes || [])].filter(
@@ -140,20 +102,13 @@ Table.Header = function Header({
             return (
               <S.Th
                 key={column.label}
-                scope="col"
                 hasDepth={isFirstTh}
+                isParentHeader={isFirstTh && !hasNotDepthOfColumn}
                 columnCount={isFirstTh ? filteredColumns.length - 1 : 1}
                 rowCount={hasNotDepthOfColumn ? 3 : 1}
-                isParentHeader={isFirstTh && !hasNotDepthOfColumn}
+                scope="col"
               >
                 {defaultLanguage(column.label)}
-                {columnTooltip?.[columns.key] && (
-                  <Tooltip
-                    css={S.headerTooltip}
-                    position={columnTooltip[columns.key].position}
-                    message={columnTooltip[columns.key].message}
-                  />
-                )}
               </S.Th>
             );
           });
@@ -163,45 +118,33 @@ Table.Header = function Header({
   );
 };
 
-Table.Row = function Row({
-  className,
-  children,
-  handleMouseOver,
-  handleMouseLeave,
-}: RowProps) {
-  return (
-    <S.Row
-      className={className}
-      onMouseEnter={handleMouseOver}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-    </S.Row>
-  );
+Table.Row = function Row({ className, children }: BaseTableProps) {
+  return <S.Row className={className}>{children}</S.Row>;
 };
 
 Table.SelectRow = function SelectRow({
   className,
   children,
   id,
-  isSelected = false,
-  selectFn,
+  isSelected,
+  handleSelect,
 }: SelectRowProps) {
-  const [domReady, setDomReady] = useState(false);
+  const { domReady } = useDomReady();
 
   const rowId = `table-row-${id}`;
 
-  useEffect(() => {
-    setDomReady(true);
-  }, []);
-
   return (
     <>
-      <S.SelectRow className={className} id={rowId} isSelected={isSelected}>
+      <S.SelectRow
+        className={className}
+        id={rowId}
+        hasId={!!id}
+        isSelected={isSelected}
+      >
         {children}
       </S.SelectRow>
       <Portal container={`#${rowId} > td`} mounted={domReady}>
-        <S.RowButton type="button" onClick={selectFn}>
+        <S.RowButton type="button" onClick={handleSelect}>
           <span className="a11y">select row</span>
         </S.RowButton>
       </Portal>
@@ -213,42 +156,67 @@ Table.SelectRowMovePage = function SelectRowMovePage({
   className,
   children,
   id,
-  isSelected = false,
   path,
   state,
-  isOpenNewTab,
-  handleMouseOver,
-  handleMouseLeave,
 }: SelectRowMovePageProps) {
-  const [domReady, setDomReady] = useState(false);
+  const { domReady } = useDomReady();
 
   const rowId = `table-row-${id}`;
 
-  useEffect(() => {
-    setDomReady(true);
-  }, []);
-
   return (
     <>
-      <S.SelectRow className={className} id={rowId} isSelected={isSelected}>
+      <S.SelectRow
+        className={className}
+        id={id && rowId}
+        hasId={!!id}
+        isSelected={false}
+      >
         {children}
       </S.SelectRow>
-      <Portal container={`#${rowId} > td`} mounted={domReady}>
-        <S.RowLink
-          to={path}
-          state={state}
-          target={isOpenNewTab ? "_blank" : "_self"}
-          onMouseEnter={handleMouseOver}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span className="a11y">select row</span>
-        </S.RowLink>
-      </Portal>
+      {id && path && (
+        <Portal container={`#${rowId} > td`} mounted={domReady}>
+          <S.RowLink state={state} target="_self" to={path}>
+            <span className="a11y">select row</span>
+          </S.RowLink>
+        </Portal>
+      )}
     </>
   );
 };
 
-Table.Td = function Td({ className, children }: TdProps) {
+Table.SelectRowNewTab = function SelectRowNewTab({
+  className,
+  id,
+  path,
+  state,
+  children,
+}: SelectRowNewTabProps) {
+  const { domReady } = useDomReady();
+
+  const rowId = `table-row-${id}`;
+
+  return (
+    <>
+      <S.SelectRow
+        className={className}
+        id={id && rowId}
+        hasId={!!id}
+        isSelected={false}
+      >
+        {children}
+      </S.SelectRow>
+      {id && path && (
+        <Portal container={`#${rowId} > td`} mounted={domReady}>
+          <S.RowLink state={state} target="_blank" to={path}>
+            <span className="a11y">select row</span>
+          </S.RowLink>
+        </Portal>
+      )}
+    </>
+  );
+};
+
+Table.Td = function Td({ className, children }: BaseTableProps) {
   return <S.Td className={className}>{children}</S.Td>;
 };
 
@@ -262,8 +230,8 @@ Table.NoData = function NoData({ className }: NoDataProps) {
   return (
     <S.NoData className={className}>
       <td>
-        <ErrorIcon css={S.noResultIcon} />
-        {defaultLanguage("No results found")}
+        <WarningIcon css={S.noResultIcon} />
+        {defaultLanguage(LANGUAGE_LABEL.NO_RESULTS_FOUND)}
       </td>
     </S.NoData>
   );
@@ -275,8 +243,8 @@ Table.InitData = function InitData() {
   return (
     <S.NoData>
       <td>
-        <NoneSearchIcon css={S.noResultIcon} />
-        {defaultLanguage("Please apply the filter to search")}
+        <WebSearchIcon css={S.noResultIcon} />
+        {defaultLanguage(LANGUAGE_LABEL.PLEASE_APPLY_THE_FILTER_TO_SEARCH)}
       </td>
     </S.NoData>
   );
@@ -286,7 +254,7 @@ Table.NoResultTr = function NoResultTr() {
   return (
     <S.NoResultTr>
       <td>
-        <NoResult contents={["No results found"]} type="search" />
+        <NoResult contents={[LANGUAGE_LABEL.NO_RESULTS_FOUND]} type="search" />
       </td>
     </S.NoResultTr>
   );

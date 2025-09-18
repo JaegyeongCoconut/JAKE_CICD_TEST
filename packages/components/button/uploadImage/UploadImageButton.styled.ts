@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const Label = styled.label<{ hasError: boolean }>`
@@ -9,10 +10,10 @@ export const Label = styled.label<{ hasError: boolean }>`
     column-gap: 8px;
     width: 100%;
     margin: 10px 0;
-    border: 1px solid ${hasError ? theme.color.red_20 : theme.color.gray_20};
+    border: 1px solid ${hasError ? theme.color.red_50 : theme.color.gray_20};
     border-radius: 2px;
     padding: 8px 0;
-    color: ${theme.color.blue_10};
+    color: ${theme.color.blue_60};
     background-color: ${theme.color.gray_10};
     cursor: pointer;
 
@@ -27,7 +28,7 @@ export const photoIcon = (theme: Theme) => css`
   height: 22px;
 
   & > path {
-    fill: ${theme.color.blue_10};
+    fill: ${theme.color.blue_60};
   }
 `;
 
@@ -36,7 +37,7 @@ export const checkIcon = (theme: Theme) => css`
   height: 20px;
 
   & > path {
-    fill: ${theme.color.green_20};
+    fill: ${theme.color.green_50};
   }
 `;
 

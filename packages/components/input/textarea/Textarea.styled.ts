@@ -21,7 +21,7 @@ export const Textarea = styled.textarea<TextareaWrapperProps>`
     width: 100%;
     height: 100%;
     border: 0;
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
     resize: none;
 
     &::placeholder {

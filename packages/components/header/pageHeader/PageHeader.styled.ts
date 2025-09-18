@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const PageHeader = styled.div<{ marginBottom?: number }>`
@@ -12,5 +13,5 @@ export const PageHeader = styled.div<{ marginBottom?: number }>`
 
 export const heading = (theme: Theme) => css`
   ${theme.font.bold_24};
-  color: ${theme.color.black};
+  color: ${theme.color.gray_90};
 `;

@@ -1,3 +1,5 @@
+import type { CommonUnitType, CurrencyUnitType } from "@repo/types";
+
 export const comma = (str: string | number): string => {
   if (typeof str !== "string") str = `${str}`;
 
@@ -14,33 +16,22 @@ export const removeComma = (str: string | number): string => {
   return str.replaceAll(/,/g, "");
 };
 
-export const commaWithUnit = (
-  str: string | number,
-  unit:
-    | "km"
-    | "m"
-    | "kg"
-    | "cc"
-    | "mm"
-    | "ps(kw)/rpm"
-    | "kWh"
-    | "kW"
-    | "kgm(NM)/rpm"
-    | "km/L"
-    | "km/h"
-    | "KM"
-    | "KW",
-): string => {
-  if (typeof str !== "string") str = `${str}`;
+interface CommaWithUnitProps {
+  value: string | number;
+  unit: CommonUnitType;
+}
 
-  if (!str) return "";
+export const commaWithUnit = ({ value, unit }: CommaWithUnitProps): string => {
+  if (typeof value !== "string") value = `${value}`;
 
-  return `${comma(str)} ${unit || ""}`;
+  if (!value) return "";
+
+  return `${comma(value)} ${unit || ""}`;
 };
 
 interface CommaWithCurrencyUnitProps {
+  currencyUnit: CurrencyUnitType;
   price: string | number | null | undefined;
-  currencyUnit: "$" | "₭" | "฿" | "P";
   showPlusSign: boolean;
 }
 

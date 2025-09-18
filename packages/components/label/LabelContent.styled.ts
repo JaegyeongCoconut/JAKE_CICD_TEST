@@ -2,8 +2,8 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 export const Wrapper = styled.div<{
-  direction: "horizontal" | "vertical";
   columnWidth?: number;
+  direction: "horizontal" | "vertical";
 }>`
   ${({ direction, columnWidth }) => css`
     display: grid;
@@ -27,7 +27,7 @@ export const Label = styled.label<{ isRequired?: boolean }>`
     &::after {
       content: ${isRequired ? "'*'" : null};
       margin-left: 4px;
-      color: ${theme.color.red_20};
+      color: ${theme.color.red_50};
     }
   `}
 `;

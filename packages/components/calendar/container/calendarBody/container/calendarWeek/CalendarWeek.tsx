@@ -1,12 +1,12 @@
 import React from "react";
 
-import { WEEKS } from "@repo/assets/static";
+import { WEEKS } from "@repo/constants/date";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type {
   CalendarType,
   FormatCalendar,
   FormatDatePicker,
-  Languages,
 } from "@repo/types";
 
 import * as S from "./CalendarWeek.styled";
@@ -14,9 +14,9 @@ import Dates from "./container/dates/Dates";
 import GhostButton from "../../../../../button/ghost/GhostButton";
 
 interface CalendarWeekProps {
-  type: CalendarType;
-  datePicker: FormatDatePicker["calendarWeek"];
   calendar: FormatCalendar["calendarWeek"];
+  datePicker: FormatDatePicker["calendarWeek"];
+  type: CalendarType;
 }
 
 const CalendarWeek = ({ type, datePicker, calendar }: CalendarWeekProps) => {
@@ -27,18 +27,18 @@ const CalendarWeek = ({ type, datePicker, calendar }: CalendarWeekProps) => {
       <S.WeekRow>
         {WEEKS.map((week, i) => (
           <li key={`${week["shortenDay"]}-${i}`}>
-            {defaultLanguage(week["shortenDay"] as Languages)}
+            {defaultLanguage(week["shortenDay"])}
           </li>
         ))}
       </S.WeekRow>
-      <S.DateRow data-status={type} onMouseLeave={calendar.resetHoveredDate}>
-        <Dates type={type} datePicker={datePicker} calendar={calendar} />
+      <S.DateRow data-status={type} onMouseLeave={calendar.onResetHoveredDate}>
+        <Dates calendar={calendar} datePicker={datePicker} type={type} />
       </S.DateRow>
       <GhostButton
         css={S.todayButton}
         variant="ghost"
-        label="Today"
         icon={{ component: <S.CircleBox />, position: "left" }}
+        label={LANGUAGE_LABEL.TODAY}
         handleButtonClick={calendar.handleMoveToday}
       />
     </>

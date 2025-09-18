@@ -1,7 +1,7 @@
 import { css, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 
-import type { Toast } from "@repo/types";
+import type { ToastType } from "@repo/types";
 
 interface ToastItemProps {
   isClosing: boolean;
@@ -39,17 +39,17 @@ export const ToastItem = styled.div<ToastItemProps>`
   `}
 `;
 
-export const Item = styled.div<{ toastType: Toast["type"] }>`
+export const Item = styled.div<{ toastType: ToastType["type"] }>`
   ${({ theme, toastType }) => css`
     display: grid;
     grid-template-columns: 24px 1fr;
-    column-gap: 12px;
     align-items: center;
+    column-gap: 12px;
     width: 320px;
     border-radius: 5px;
     padding: 20px 24px;
-    background-color: ${theme.color.white};
     box-shadow: ${theme.boxShadow.shadow_medium};
+    background-color: ${theme.color.white_00};
 
     & > div {
       width: 100%;
@@ -67,8 +67,8 @@ export const Item = styled.div<{ toastType: Toast["type"] }>`
 
       & > path {
         fill: ${toastType === "success"
-          ? theme.color.green_20
-          : theme.color.red_20};
+          ? theme.color.green_50
+          : theme.color.red_50};
       }
     }
   `}

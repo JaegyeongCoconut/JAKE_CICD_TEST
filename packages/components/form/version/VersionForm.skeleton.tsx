@@ -3,7 +3,11 @@ import React from "react";
 import * as S from "./VersionForm.styled";
 import LabelContentTableSkeleton from "../../label/table/content/LabelContentTable.skeleton";
 
-const VersionFormSkeleton = () => {
+interface VersionFormSkeletonProps {
+  className?: string;
+}
+
+const VersionFormSkeleton = ({ className }: VersionFormSkeletonProps) => {
   const VERSION_FORM_INFO = [
     [{ key: "os", heading: "OS" }],
     [{ key: "platform", heading: "Platform type" }],
@@ -15,6 +19,7 @@ const VersionFormSkeleton = () => {
   return (
     <LabelContentTableSkeleton
       css={S.labelContent}
+      className={className}
       variant="empty"
       info={VERSION_FORM_INFO}
     />

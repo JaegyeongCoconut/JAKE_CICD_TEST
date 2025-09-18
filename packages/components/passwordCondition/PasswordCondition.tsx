@@ -1,50 +1,62 @@
 import React, { createContext, useContext } from "react";
 
-import { CheckIcon } from "@repo/assets/icon";
+import type { FieldErrors, FieldValues } from "react-hook-form";
+
+import { ReactComponent as CheckIcon } from "@repo/assets/icon/ic_check.svg";
 import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import { checkPasswordLength, checkPasswordType } from "@repo/utils/validation";
 
 import * as S from "./PasswordCondition.styled";
 
-interface PasswordConditionProps {
+type FormPasswordType = Partial<
+  Record<"currentPassword" | "newPassword" | "confirmPassword", string>
+>;
+
+interface PasswordConditionProps<T extends FormPasswordType> {
   className?: string;
-  children: React.ReactNode;
-  currentPassword?: string;
-  newPassword?: string;
-  confirmPassword?: string;
+  errors: FieldErrors<T | FieldValues> | undefined | null;
   touchedFields: {
+    confirmPassword?: boolean | undefined;
     currentPassword?: boolean | undefined;
     newPassword?: boolean | undefined;
-    confirmPassword?: boolean | undefined;
   };
+  watch: T;
+  children: React.ReactNode;
 }
 
-interface PasswordConditionContextType
-  extends Omit<PasswordConditionProps, "className" | "children"> {}
+interface PasswordConditionContextType<T extends FormPasswordType>
+  extends Omit<PasswordConditionProps<T>, "className" | "children" | "watch"> {}
 
-const PasswordConditionContext = createContext<PasswordConditionContextType>({
+const PasswordConditionContext = createContext<
+  PasswordConditionContextType<FormPasswordType> & FormPasswordType
+>({
+  touchedFields: {},
+  errors: null,
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
-  touchedFields: {},
 });
 
-const PasswordCondition = ({
+const PasswordCondition = <T extends FormPasswordType>({
+  watch,
   className,
   children,
-  currentPassword,
-  newPassword,
-  confirmPassword,
   touchedFields,
-}: PasswordConditionProps) => {
+  errors,
+}: PasswordConditionProps<T>) => {
+  const newPassword = watch?.newPassword;
+  const currentPassword = watch?.currentPassword;
+  const confirmPassword = watch?.confirmPassword;
+
   return (
     <PasswordConditionContext.Provider
       value={{
-        currentPassword,
         newPassword,
+        currentPassword,
         confirmPassword,
         touchedFields,
+        errors,
       }}
     >
       <S.PasswordConditionWrapper className={className}>
@@ -55,14 +67,18 @@ const PasswordCondition = ({
 };
 
 PasswordCondition.lengthCondition = function lengthCondition() {
-  const { newPassword, touchedFields } = useContext(PasswordConditionContext);
+  const { newPassword, touchedFields, errors } = useContext(
+    PasswordConditionContext,
+  );
 
   const { defaultLanguage } = useDefaultLanguage();
 
   const isLengthError =
-    !touchedFields.newPassword && !newPassword
-      ? undefined
-      : !checkPasswordLength(newPassword!);
+    errors?.newPassword?.type === "required"
+      ? true
+      : !touchedFields?.newPassword && !newPassword
+        ? undefined
+        : !checkPasswordLength(newPassword!);
 
   return (
     <S.PasswordCondition hasError={isLengthError}>
@@ -73,14 +89,18 @@ PasswordCondition.lengthCondition = function lengthCondition() {
 };
 
 PasswordCondition.textTypeCondition = function textTypeCondition() {
-  const { newPassword, touchedFields } = useContext(PasswordConditionContext);
+  const { newPassword, touchedFields, errors } = useContext(
+    PasswordConditionContext,
+  );
 
   const { defaultLanguage } = useDefaultLanguage();
 
   const isTypeError =
-    !touchedFields.newPassword && !newPassword
-      ? undefined
-      : !checkPasswordType(newPassword!);
+    errors?.newPassword?.type === "required"
+      ? true
+      : !touchedFields?.newPassword && !newPassword
+        ? undefined
+        : !checkPasswordType(newPassword!);
 
   return (
     <S.PasswordCondition hasError={isTypeError}>
@@ -91,18 +111,20 @@ PasswordCondition.textTypeCondition = function textTypeCondition() {
 };
 
 PasswordCondition.passwordCondition = function passwordCondition() {
-  const { currentPassword, newPassword, touchedFields } = useContext(
+  const { newPassword, currentPassword, touchedFields, errors } = useContext(
     PasswordConditionContext,
   );
 
   const { defaultLanguage } = useDefaultLanguage();
 
   const isSameError =
-    !touchedFields.newPassword && !newPassword
-      ? undefined
-      : !newPassword
-        ? true
-        : currentPassword === newPassword;
+    errors?.newPassword?.type === "required"
+      ? true
+      : !touchedFields?.newPassword && !newPassword
+        ? undefined
+        : !newPassword
+          ? true
+          : currentPassword === newPassword;
 
   return (
     <S.PasswordCondition hasError={isSameError}>
@@ -113,18 +135,20 @@ PasswordCondition.passwordCondition = function passwordCondition() {
 };
 
 PasswordCondition.checkConfirmPassword = function checkConfirmPassword() {
-  const { newPassword, confirmPassword, touchedFields } = useContext(
+  const { newPassword, confirmPassword, touchedFields, errors } = useContext(
     PasswordConditionContext,
   );
 
   const { defaultLanguage } = useDefaultLanguage();
 
   const hasConfirmError =
-    !touchedFields.confirmPassword && !confirmPassword
-      ? undefined
-      : !confirmPassword || confirmPassword !== newPassword
-        ? true
-        : false;
+    errors?.confirmPassword?.type === "required"
+      ? true
+      : !touchedFields?.confirmPassword && !confirmPassword
+        ? undefined
+        : !confirmPassword || confirmPassword !== newPassword
+          ? true
+          : false;
 
   return (
     <S.PasswordCondition hasError={hasConfirmError}>

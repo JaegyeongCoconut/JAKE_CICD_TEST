@@ -3,6 +3,6 @@ import styled from "@emotion/styled";
 
 export const CalendarButton = styled.button`
   ${({ theme }) => css`
-    color: ${theme.color.blue_10};
+    color: ${theme.color.blue_60};
   `}
 `;

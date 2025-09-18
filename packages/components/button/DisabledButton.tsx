@@ -1,15 +1,16 @@
-import React, { type FC, type SVGProps } from "react";
+import type { FC, SVGProps } from "react";
+import React from "react";
 
-import type { Languages } from "@repo/types";
+import type { ButtonVariant, Languages } from "@repo/types";
 
-import Button, { ButtonVariant } from "./Button";
+import Button from "./Button";
 
 interface BaseDisabledButtonProps {
   className?: string;
-  Icon?: FC<SVGProps<SVGSVGElement>>;
   variant: ButtonVariant;
-  type?: "button" | "submit" | "reset";
+  Icon?: FC<SVGProps<SVGSVGElement>>;
   label?: Languages;
+  type?: "button" | "submit" | "reset";
 }
 
 interface IconOnlyProps extends BaseDisabledButtonProps {
@@ -32,21 +33,21 @@ const DisabledButton = ({
   return variant === "iconOnly" ? (
     <Button
       className={className}
-      type={type}
       variant={variant}
-      Icon={Icon}
       disabled
+      Icon={Icon}
+      type={type}
       handleButtonClick={() => {}}
     />
   ) : (
     <Button
       className={className}
-      type={type}
       variant={variant}
       disabled
       isLoading={false}
       Icon={Icon}
       label={label}
+      type={type}
       handleButtonClick={() => {}}
     />
   );

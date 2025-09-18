@@ -1,10 +1,10 @@
 import React from "react";
 
+import type { RouteObject } from "react-router-dom";
 import {
-  Route,
+  Navigate,
   RouterProvider,
   createBrowserRouter,
-  createRoutesFromElements,
 } from "react-router-dom";
 
 import PageNotFound from "@repo/components/error/pageNotFound";
@@ -17,15 +17,20 @@ interface RouterProps {
   children: React.ReactNode;
 }
 
-const Router = ({ children }: RouterProps) => {
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route element={children}>
-        <Route path={PATH.RANKING} element={<P.Ranking />} />
-        <Route path="*" element={<PageNotFound path={PATH.RANKING} />} />
-      </Route>,
-    ),
-  );
+const Router = ({ children: inheritedChildren }: RouterProps) => {
+  const routes: RouteObject[] = [
+    {
+      path: PATH.ROOT,
+      element: inheritedChildren,
+      children: [
+        { index: true, element: <Navigate replace to={PATH.RANKING} /> },
+        { path: PATH.RANKING, element: <P.Ranking /> },
+        { path: "*", element: <PageNotFound path={PATH.RANKING} /> },
+      ],
+    },
+  ];
+
+  const router = createBrowserRouter(routes);
 
   return <RouterProvider router={router} />;
 };

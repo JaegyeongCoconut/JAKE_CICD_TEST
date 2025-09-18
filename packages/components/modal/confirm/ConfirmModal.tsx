@@ -10,23 +10,21 @@ import BaseModal from "../base/BaseModal";
 
 interface ConfirmModalProps {
   className?: string;
-  children?: React.ReactNode;
   isLoading: boolean;
-  noCloseButton?: boolean;
-  buttonType?: "active" | "alert";
-  title: Languages;
-  desc: Languages;
   activeButtonName: Languages;
+  buttonType?: "active" | "alert";
   closeButtonName?: Languages;
-  activeFn?: () => void;
-  closeFn?: () => void;
+  desc: Languages;
+  noCloseButton?: boolean;
+  title: Languages;
+  handleActiveButtonClick?: () => void;
+  handleClose?: () => void;
 }
 
 const ConfirmModal = React.forwardRef<HTMLDialogElement, ConfirmModalProps>(
   (
     {
       className,
-      children,
       isLoading,
       noCloseButton = false,
       buttonType = "active",
@@ -34,8 +32,8 @@ const ConfirmModal = React.forwardRef<HTMLDialogElement, ConfirmModalProps>(
       desc,
       activeButtonName,
       closeButtonName = "Cancel",
-      activeFn,
-      closeFn,
+      handleActiveButtonClick,
+      handleClose,
     },
     ref,
   ) => {
@@ -48,20 +46,19 @@ const ConfirmModal = React.forwardRef<HTMLDialogElement, ConfirmModalProps>(
           <S.Title>{defaultLanguage(title)}</S.Title>
           <S.Desc>{defaultLanguage(desc)}</S.Desc>
         </S.ConfirmHeader>
-        {children && children}
         <S.ConfirmFooter>
           {!noCloseButton && (
             <GhostButton
               variant="alert"
               label={closeButtonName}
-              handleButtonClick={closeFn ?? handleModalClose}
+              handleButtonClick={handleClose ?? handleModalClose}
             />
           )}
           <GhostButton
-            isLoading={isLoading}
             variant={buttonType === "active" ? "alert_blue" : "alert_red"}
+            isLoading={isLoading}
             label={activeButtonName}
-            handleButtonClick={activeFn}
+            handleButtonClick={handleActiveButtonClick}
           />
         </S.ConfirmFooter>
       </BaseModal>

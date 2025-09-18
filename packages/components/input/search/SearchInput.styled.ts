@@ -1,56 +1,40 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
+const INPUT_ASIDE_PADDING = 40;
+const ICON_ASIDE_PADDING = 12;
+
 export const Form = styled.form`
+  position: relative;
+  height: 50px;
+`;
+
+export const SearchButton = styled.button`
+  position: absolute;
+  top: 50%;
+  left: ${ICON_ASIDE_PADDING}px;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+`;
+
+export const input = (hasValue: boolean) => (theme: Theme) => css`
+  height: 100%;
+  padding-right: ${hasValue ? INPUT_ASIDE_PADDING : ICON_ASIDE_PADDING}px;
+  padding-left: ${INPUT_ASIDE_PADDING}px;
+
+  &::placeholder {
+    ${theme.font.regular_15};
+    color: ${theme.color.gray_40};
+  }
+`;
+
+export const CloseButton = styled.button`
   ${({ theme }) => css`
-    position: relative;
-    height: 50px;
-    border: 0;
-    border-bottom: 1px solid ${theme.color.gray_20};
-  `}
-`;
-
-interface IconButtonProps {
-  iconAsidePadding: number;
-}
-
-export const SearchButton = styled.button<IconButtonProps>`
-  ${({ iconAsidePadding }) => css`
     position: absolute;
     top: 50%;
-    left: ${iconAsidePadding}px;
-    width: 20px;
-    height: 20px;
-    transform: translateY(-50%);
-  `}
-`;
-
-interface InputProps {
-  hasValue: boolean;
-  inputAsidePadding: number;
-  iconAsidePadding: number;
-}
-
-export const input =
-  ({ hasValue, inputAsidePadding, iconAsidePadding }: InputProps) =>
-  (theme: Theme) => css`
-    height: 100%;
-    /* TODO: 레이아웃 쉬프트 일어남, 페이지 레이아웃 잡을 때 보더 속성 확인해야함 */
-    border: 1px solid ${theme.color.white};
-    padding-left: ${inputAsidePadding}px;
-    padding-right: ${hasValue ? inputAsidePadding : iconAsidePadding}px;
-
-    &::placeholder {
-      ${theme.font.regular_15};
-      color: ${theme.color.gray_40};
-    }
-  `;
-
-export const CloseButton = styled.button<IconButtonProps>`
-  ${({ theme, iconAsidePadding }) => css`
-    position: absolute;
-    top: 50%;
-    right: ${iconAsidePadding}px;
+    right: ${ICON_ASIDE_PADDING}px;
     width: 20px;
     height: 20px;
     transform: translateY(-50%);

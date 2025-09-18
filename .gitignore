@@ -25,14 +25,15 @@ build-dev-*
 build-prod-*
 robots.txt
 
-# language
-*-en.json
-*-lo.json
-
-
-
 node_modules
 .turbo
 
 # declare files
 i18next.d.ts
+
+# storybook log
+*storybook.log
+
+# vite
+vite.config.ts.timestamp-*
+dist

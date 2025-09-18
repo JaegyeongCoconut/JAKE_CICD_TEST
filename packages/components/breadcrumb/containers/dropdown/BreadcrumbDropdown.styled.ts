@@ -26,8 +26,8 @@ export const BreadcrumbDropdownUl = styled.ul`
     width: 134px;
     border: 1px solid ${theme.color.gray_30};
     border-bottom: 0px;
-    background-color: ${theme.color.white};
     box-shadow: ${theme.boxShadow.shadow_bold};
+    background-color: ${theme.color.white_00};
     z-index: ${theme.zIndex.DROPDOWN};
   `}
 `;
@@ -48,9 +48,9 @@ export const BreadcrumbDropdownLi = styled.li<BreadcrumbDropdownLiProps>`
 
     a {
       display: block;
+      overflow: hidden;
       color: ${theme.color.gray_60};
       white-space: nowrap;
-      overflow: hidden;
       text-overflow: ellipsis;
 
       &:hover {
@@ -67,8 +67,8 @@ export const BreadcrumbDropdownLi = styled.li<BreadcrumbDropdownLiProps>`
             margin-top: 4px;
             border-radius: 2px;
             padding: 2px 4px;
+            color: ${theme.color.white_00};
             background-color: ${theme.color.gray_80};
-            color: ${theme.color.white};
             z-index: ${theme.zIndex.DROPDOWN};
           }
         `}

@@ -7,6 +7,7 @@ import { font } from "./font";
 import { input } from "./input";
 import { layout } from "./layout";
 import { infoWindow } from "./map";
+import { mixin } from "./mixin";
 import { scrollbar } from "./scrollbar";
 import { size } from "./size";
 import { zIndex } from "./zIndex";
@@ -21,6 +22,7 @@ export const theme = {
   infoWindow,
   input,
   layout,
+  mixin,
   scrollbar,
   size,
   zIndex,

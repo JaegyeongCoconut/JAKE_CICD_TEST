@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import useOnClickOutside from "@repo/hooks/useOnClickOutside";
-import type { Languages } from "@repo/types";
+import type { BreadcrumbItemType } from "@repo/types";
 
 import * as S from "./BreadcrumbDropdown.styled";
 
 interface BreadcrumbDropdownProps {
   className?: string;
-  breadcrumbs: { name: Languages; path?: string }[];
+  breadcrumbs: BreadcrumbItemType[];
 }
 
 const BreadcrumbDropdown = ({
@@ -25,7 +25,11 @@ const BreadcrumbDropdown = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [clicked, setClicked] = useState(false);
 
-  useOnClickOutside(dropdownRef, () => setClicked(false));
+  useOnClickOutside({
+    ref: dropdownRef,
+    handler: () => setClicked(false),
+    exceptEl: undefined,
+  });
 
   const handlePageBreadcrumbDropdownButtonClick = (): void => setClicked(true);
 
@@ -47,15 +51,17 @@ const BreadcrumbDropdown = ({
       </S.BreadcrumbDropdownButton>
       {clicked && (
         <S.BreadcrumbDropdownUl>
-          {breadcrumbs.map(({ name, path }) => {
+          {breadcrumbs.map(({ isTranslated, name, path }) => {
+            const breadcrumbName = isTranslated ? defaultLanguage(name) : name;
+
             return (
               <S.BreadcrumbDropdownLi
                 key={name}
-                content={defaultLanguage(name)}
+                content={breadcrumbName}
                 showTooltip={showTooltip}
               >
                 <Link key={name} ref={anchorRef} to={path ?? ""}>
-                  {defaultLanguage(name)}
+                  {breadcrumbName}
                 </Link>
               </S.BreadcrumbDropdownLi>
             );

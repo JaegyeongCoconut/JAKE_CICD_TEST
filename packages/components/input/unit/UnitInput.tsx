@@ -6,18 +6,29 @@ import { CURRENCY } from "@repo/constants/currency";
 import type { Languages } from "@repo/types";
 
 import * as S from "./UnitInput.styled";
-import Input from "../Input";
+import DisabledInput from "../disabled/DisabledInput";
+import FormInput from "../form/FormInput";
 
-interface UnitInputProps {
+interface BaseUintInputProps {
   className?: string;
-  hasError?: boolean;
-  maxLength?: number;
-  value: string;
-  placeholder?: Languages;
-  disabled?: boolean;
+  placeholder: Languages;
   unit: string;
-  handleChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  register?: UseFormRegisterReturn<string>;
+}
+
+interface UnitInputWithValueProps extends BaseUintInputProps {
+  disabled: true;
+  hasError?: never;
+  value: string;
+  maxLength?: never;
+  register?: never;
+}
+
+interface UnitInputWithoutValueProps extends BaseUintInputProps {
+  disabled: boolean;
+  hasError: boolean;
+  value?: never;
+  maxLength: number;
+  register: UseFormRegisterReturn<string>;
 }
 
 const UnitInput = ({
@@ -28,9 +39,8 @@ const UnitInput = ({
   value,
   disabled,
   unit,
-  handleChange,
   register,
-}: UnitInputProps) => {
+}: UnitInputWithValueProps | UnitInputWithoutValueProps) => {
   const unitRef = useRef<HTMLLabelElement | null>(null);
 
   const [unitOffsetWidth, setUnitOffsetWidth] = useState(0);
@@ -44,25 +54,32 @@ const UnitInput = ({
   return (
     <S.InputWrapper
       className={className}
+      disabled={disabled}
+      hasError={hasError}
       isCurrency={
         unit === CURRENCY.LAK.unit ||
         unit === CURRENCY.THB.unit ||
         unit === CURRENCY.USD.unit ||
         unit === "P"
       }
-      hasError={hasError}
-      disabled={disabled}
     >
       <S.Unit ref={unitRef}>{unit}</S.Unit>
-      <Input
-        css={S.input(unitOffsetWidth)}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        value={value}
-        disabled={disabled}
-        handleChange={handleChange}
-        register={register}
-      />
+      {disabled ? (
+        <DisabledInput
+          css={S.input(unitOffsetWidth)}
+          value={value ?? ""}
+          placeholder={placeholder}
+        />
+      ) : (
+        <FormInput
+          css={S.input(unitOffsetWidth)}
+          disabled={disabled}
+          hasError={false}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          register={register}
+        />
+      )}
     </S.InputWrapper>
   );
 };

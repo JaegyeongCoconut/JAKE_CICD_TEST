@@ -1,6 +1,8 @@
 import React from "react";
 
-import { NoneSearchIcon, NoneSelectIcon } from "@repo/assets/icon";
+import { ReactComponent as WarningIcon } from "@repo/assets/icon/ic_warning.svg";
+import { ReactComponent as WebSearchIcon } from "@repo/assets/icon/ic_web_search.svg";
+import { ReactComponent as WebSelectIcon } from "@repo/assets/icon/ic_web_select.svg";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 
@@ -9,15 +11,16 @@ import * as S from "./NoResult.styled";
 interface NoResultProps {
   className?: string;
   contents: Languages[];
-  type?: "search" | "select";
+  type?: "search" | "select" | "warning";
 }
 
 const NoResult = ({ className, contents, type = "search" }: NoResultProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   const icon = {
-    search: <NoneSearchIcon />,
-    select: <NoneSelectIcon />,
+    search: <WebSearchIcon />,
+    select: <WebSelectIcon />,
+    warning: <WarningIcon />,
   };
 
   return (

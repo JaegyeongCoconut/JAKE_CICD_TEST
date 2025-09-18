@@ -18,11 +18,20 @@ export const replaceFirstTextZeroToEmpty = (value: string): string => {
   return value;
 };
 
+//TODO: Undefined 받아서 사용하는 공용 코드로 변경 필요 (리팩토링)
 export const setCommaNotZeroFirstNumericOnly = (value: string): string =>
   comma(replaceFirstTextZeroToEmpty(numericOnly(value)));
 
 // NOTE: 소수점 입력을 위한 함수
-export const decimalNumber = (value: string) => {
+interface DecimalNumberType {
+  value: string;
+  maxDecimalLength: number;
+}
+
+export const decimalNumber = ({
+  value,
+  maxDecimalLength,
+}: DecimalNumberType) => {
   // NOTE: 숫자와 . 이외의 문자를 제거
   let sanitizedValue = value.replace(/[^0-9.]/g, "");
 
@@ -32,9 +41,9 @@ export const decimalNumber = (value: string) => {
   // NOTE: 소수점 앞의 숫자 부분에 3자리마다 쉼표 추가
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-  // NOTE: 소수점 최대 두자리만 입력
-  if (parts.length > 1) {
-    parts[1] = parts[1].slice(0, 2);
+  // NOTE: 소수점 최대 자리수 설정
+  if (maxDecimalLength && parts.length > 1) {
+    parts[1] = parts[1].slice(0, maxDecimalLength);
   }
 
   // NOTE: 소수점이 여러 개 포함된 경우 처리
@@ -61,40 +70,4 @@ export const removeLeadingZero = (input: string): string => {
   }
 
   return input;
-};
-
-export const normalizeNumberInput = (
-  allowNegative: boolean,
-  input: string,
-): string => {
-  const removeNonNumericAndDash = input.replace(/[^-\d]/g, "");
-
-  const removeNonLeadingDash = (value: string): string =>
-    value.replace(/(?!^)-/g, "");
-
-  const isNegativeZero = (value: string): boolean => value.startsWith("-0");
-
-  const removeInvalidLeadingZero = (value: string): string =>
-    value.length > 1 && value[0] === "0" && value[1] !== "0"
-      ? value.slice(1)
-      : value;
-
-  const isDoubleZero = (value: string): boolean => value.startsWith("00");
-
-  const normalizedInput = allowNegative
-    ? removeNonLeadingDash(removeNonNumericAndDash)
-    : removeNonNumericAndDash.replace(/-/g, "");
-
-  if (isNegativeZero(normalizedInput)) {
-    return "-";
-  }
-
-  const removeLeadingZeroIfNecessary =
-    removeInvalidLeadingZero(normalizedInput);
-
-  if (isDoubleZero(removeLeadingZeroIfNecessary)) {
-    return "0";
-  }
-
-  return removeLeadingZeroIfNecessary;
 };

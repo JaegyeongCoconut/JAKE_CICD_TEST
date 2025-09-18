@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 
 import { useTimerStore } from "@repo/stores/timer";
 
-const useTimer = (initTime: number = 300) => {
+const useTimer = (initTime: number) => {
   const isTimeStart = useTimerStore((state) => state.isTimeStart);
   const isTimeout = useTimerStore((state) => state.isTimeOut);
-  const startTimer = useTimerStore((state) => state.startTimer);
-  const setTimeOut = useTimerStore((state) => state.setTimeOut);
-  const resetTimer = useTimerStore((state) => state.resetTimer);
+  const startTimer = useTimerStore((state) => state.onStartTimer);
+  const setTimeOut = useTimerStore((state) => state.onSetTimeOut);
+  const resetTimer = useTimerStore((state) => state.onResetTimer);
 
   const [limitTime, setLimitTime] = useState(initTime);
   const [min, setMin] = useState(Math.floor(initTime / 60));
@@ -54,6 +54,7 @@ const useTimer = (initTime: number = 300) => {
 
   return {
     isTimeout,
+    isTimeStart,
     limitTime,
     min,
     sec,

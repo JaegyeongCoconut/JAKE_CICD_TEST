@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import type { TooltipPosition } from "@repo/types";
@@ -32,19 +33,19 @@ export const Container = styled.div<ContainerProps>`
     top: ${position === "BOTTOM_LEFT" || position === "BOTTOM_RIGHT"
       ? "calc(100% + 14px)"
       : "auto"};
+    right: ${position === "TOP_RIGHT" || position === "BOTTOM_RIGHT"
+      ? "-72px"
+      : "auto"};
     bottom: ${position === "TOP_LEFT" || position === "TOP_RIGHT"
       ? "calc(100% + 14px)"
       : "auto"};
     left: ${position === "TOP_LEFT" || position === "BOTTOM_LEFT"
       ? "-72px"
       : "auto"};
-    right: ${position === "TOP_RIGHT" || position === "BOTTOM_RIGHT"
-      ? "-72px"
-      : "auto"};
     width: 300px;
     border-radius: 2px;
     padding: 10px 16px;
-    color: ${theme.color.white};
+    color: ${theme.color.white_00};
     background-color: ${theme.color.gray_80};
     visibility: hidden;
     z-index: 1;
@@ -53,10 +54,10 @@ export const Container = styled.div<ContainerProps>`
     &::after {
       content: "";
       position: absolute;
-      left: ${position === "TOP_LEFT" || position === "BOTTOM_LEFT"
+      right: ${position === "TOP_RIGHT" || position === "BOTTOM_RIGHT"
         ? "72px"
         : "auto"};
-      right: ${position === "TOP_RIGHT" || position === "BOTTOM_RIGHT"
+      left: ${position === "TOP_LEFT" || position === "BOTTOM_LEFT"
         ? "72px"
         : "auto"};
       display: block;
@@ -66,12 +67,12 @@ export const Container = styled.div<ContainerProps>`
           ? "12px"
           : "-12px"}
         solid ${theme.color.gray_80};
+      border-right: 7.5px solid transparent;
       border-bottom: ${position === "TOP_LEFT" || position === "TOP_RIGHT"
           ? "-12px"
           : "12px"}
         solid transparent;
       border-left: 7.5px solid transparent;
-      border-right: 7.5px solid transparent;
     }
 
     &::before {

@@ -9,4 +9,5 @@ export interface CheckVerifyCodeQueryModel extends GetVerifyCodeQueryModel {
 export interface UpdatePasswordWithVerifyQueryModel
   extends CheckVerifyCodeQueryModel {
   password: string;
+  token?: string;
 }

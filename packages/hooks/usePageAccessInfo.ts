@@ -1,8 +1,8 @@
 import type { InaccessInfo } from "@repo/types";
 
 interface PageAccessInfoProps {
-  level: string | number;
   inaccessInfo: InaccessInfo;
+  level: string | number;
 }
 
 const usePageAccessInfo = ({ level, inaccessInfo }: PageAccessInfoProps) => {
@@ -13,9 +13,15 @@ const usePageAccessInfo = ({ level, inaccessInfo }: PageAccessInfoProps) => {
   const isAccessLocationParameter = () => {
     const currentPath = `/${location?.pathname?.split("/").slice(1).join("/")}`;
 
-    return accessInfo.path.some(
-      (accessiblePath) => currentPath.indexOf(accessiblePath) > -1,
-    );
+    const precompiledRegexes = accessInfo.path.map((accessiblePath) => {
+      const regexPattern = accessiblePath
+        .replace(/:[^/]+/g, "[^/]+")
+        .replace(/\//g, "\\/");
+
+      return new RegExp(`^${regexPattern}$`);
+    });
+
+    return precompiledRegexes.some((regex) => regex.test(currentPath));
   };
 
   const isAccessiblePage = !(

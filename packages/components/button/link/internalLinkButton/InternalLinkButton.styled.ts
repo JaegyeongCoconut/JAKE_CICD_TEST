@@ -1,9 +1,10 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 
-import { button } from "@repo/styles/themes";
+import type { button } from "@repo/styles/themes";
 
 export const internalLink =
-  (variant: keyof typeof button) => (theme: Theme) => css`
+  (variant: keyof typeof button | "iconOnly") => (theme: Theme) => css`
     ${variant === "primary" && theme.button.primary};
     ${variant === "secondary" && theme.button.secondary};
     ${variant === "third" && theme.button.third};

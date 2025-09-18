@@ -1,0 +1,8 @@
+{
+    "name":"@stories/mdx",
+    "version": "0.1.0",    
+    "dependencies": {
+      "@repo/assets": "workspace:*"
+    }
+  }
+  

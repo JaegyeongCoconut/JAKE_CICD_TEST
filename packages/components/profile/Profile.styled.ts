@@ -13,15 +13,6 @@ export const skeleton = css`
   border-radius: 50%;
 `;
 
-export const ProfilImg = styled.img<{ isLoading: boolean }>`
-  ${({ isLoading }) => css`
-    display: ${isLoading ? "none" : "block"};
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-  `}
-`;
-
 export const InfoWrapper = styled.div`
   display: flex;
   flex-flow: column;
@@ -30,13 +21,19 @@ export const InfoWrapper = styled.div`
 export const Name = styled.span`
   ${({ theme }) => css`
     ${theme.font.medium_15};
-
     margin-bottom: 4px;
-    color: ${theme.color.black};
+    color: ${theme.color.gray_90};
   `}
 `;
 
 export const clientIcon = (isLoading: boolean) => css`
   display: ${isLoading && "none"};
   width: 56px;
+`;
+
+export const image = (isLoading: boolean) => css`
+  display: ${isLoading ? "none" : "block"};
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
 `;

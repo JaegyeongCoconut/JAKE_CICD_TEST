@@ -3,7 +3,7 @@ import React from "react";
 import type { Languages } from "@repo/types";
 
 import * as S from "./LengthInput.styled";
-import Input from "../Input";
+import DisabledInput from "../disabled/DisabledInput";
 
 interface LengthInputProps {
   className?: string;
@@ -20,7 +20,7 @@ const LengthInputSkeleton = ({
 }: LengthInputProps) => {
   return (
     <S.Wrapper className={className}>
-      <Input maxLength={maxLength} placeholder={placeholder} />
+      <DisabledInput value="" placeholder={placeholder} />
       <label>{`${valueLength ?? 0}/${maxLength}`}</label>
     </S.Wrapper>
   );

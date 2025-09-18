@@ -1,9 +1,11 @@
-import React, { SyntheticEvent, useState } from "react";
+import type { SyntheticEvent } from "react";
+import React, { useState } from "react";
 
 import Skeleton from "react-loading-skeleton";
 
 import * as S from "./Profile.styled";
 import NoProfileImg, { ReactComponent as NoProfileIcon } from "./noProfile.svg";
+import HeadlessImage from "../image/HeadlessImage";
 
 interface ProfileProps {
   isPresignedLoading: boolean;
@@ -28,12 +30,12 @@ const Profile = ({ isPresignedLoading, imgSrc }: ProfileProps) => {
       {imgSrc ? (
         <>
           {isImageLoad && <Skeleton css={S.skeleton} />}
-          <S.ProfilImg
-            isLoading={isImageLoad}
-            src={imgSrc}
+          <HeadlessImage
+            css={S.image(isImageLoad)}
             alt="Profile Image"
-            onError={handleImageError}
-            onLoad={handleImageLoad}
+            src={imgSrc}
+            handleImageError={handleImageError}
+            handleImageLoad={handleImageLoad}
           />
         </>
       ) : (

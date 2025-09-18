@@ -1,4 +1,5 @@
-import { css, type Theme } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
 
@@ -13,7 +14,7 @@ export const ToolBoxWrapper = styled.div`
     border: 1px solid ${theme.color.gray_20};
     border-bottom: 0;
     padding: 0 22px 0 24px;
-    background-color: ${theme.color.white};
+    background-color: ${theme.color.white_00};
     z-index: ${theme.zIndex.STICKY};
   `}
 `;
@@ -28,7 +29,7 @@ export const SelectedCount = styled.span`
   ${({ theme }) => css`
     ${theme.font.regular_14};
     position: relative;
-    color: ${theme.color.blue_10};
+    color: ${theme.color.blue_60};
     ::after {
       content: "";
       position: absolute;
@@ -45,7 +46,7 @@ export const SelectedCount = styled.span`
 export const Table = styled.table<{ gridTemplateColumns: string }>`
   ${({ theme, gridTemplateColumns }) => css`
     width: 100%;
-    height: 883px;
+    height: ${theme.size.TABLE_HEIGHT};
     border: 1px solid ${theme.color.gray_20};
     border-top: 0;
     border-bottom: 0;
@@ -102,12 +103,12 @@ export const Th = styled.th`
   ${({ theme }) => css`
     display: block;
     padding: 0px 12px;
+    overflow: hidden;
+    line-height: 40px;
     color: ${theme.color.gray_60};
     text-align: left;
-    line-height: 40px;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
+    text-overflow: ellipsis;
   `}
 `;
 
@@ -130,19 +131,19 @@ export const Td = styled.td`
     ${theme.font.regular_13};
     display: block;
     padding: 0px 12px;
-    color: ${theme.color.black};
-    text-align: left;
-    line-height: 40px;
     overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 40px;
+    color: ${theme.color.gray_90};
+    text-align: left;
     white-space: nowrap;
+    text-overflow: ellipsis;
 
     & > time,
     span,
     address {
       overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
+      text-overflow: ellipsis;
     }
   `}
 `;
@@ -152,16 +153,21 @@ export const CheckTd = styled(Td)`
 `;
 
 interface SelectableRowProps {
+  hasId: boolean;
   isSelected?: boolean;
 }
 
 export const SelectRow = styled(TableRow)<SelectableRowProps>`
-  ${({ theme, isSelected }) => css`
-    background-color: ${isSelected && theme.color.gray_10};
+  ${({ theme, hasId, isSelected }) => css`
+    background-color: ${hasId && isSelected && theme.color.gray_10};
+    cursor: ${!hasId && "not-allowed"};
 
-    &:hover {
-      background-color: ${theme.color.gray_10};
-    }
+    ${hasId &&
+    css`
+      &:hover {
+        background-color: ${theme.color.gray_10};
+      }
+    `};
   `}
 `;
 
