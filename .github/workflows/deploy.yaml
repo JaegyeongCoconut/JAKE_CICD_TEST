@@ -20,8 +20,8 @@ on:
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
 jobs:
-  call-deploy-common:
-    uses: ./.github/workflows/deploy-common.yaml # ✅ 공용 yaml 호출
+  call-validation:
+    uses: ./.github/workflows/validation.yaml # ✅ 공용 yaml 호출
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ inputs.DEPLOY_ENV }}
@@ -33,14 +33,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
-    needs: call-deploy-common
+    needs: call-validation
     env:
-      AUTHORIZED_ENV: ${{ needs.call-deploy-common.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: ${{ needs.call-deploy-common.outputs.AUTHORIZED_BRANCHES }}
-      AUTHORIZED_USERS_IN_DEV: ${{ needs.call-deploy-common.outputs.AUTHORIZED_USERS_IN_DEV }}
+      AUTHORIZED_ENV: ${{ needs.call-validation.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ needs.call-validation.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV: ${{ needs.call-validation.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_IAM_ROLE: ""
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.call-deploy-common.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.call-deploy-common.outputs.S3_BUCKET_NAME }}
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.call-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ needs.call-validation.outputs.S3_BUCKET_NAME }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
