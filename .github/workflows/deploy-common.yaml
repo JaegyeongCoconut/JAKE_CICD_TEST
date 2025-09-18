@@ -50,6 +50,7 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+      CURRENT_BRANCH: ${{ github.ref_name }}
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: ${{ steps.export-env.outputs.AUTHORIZED_BRANCHES }}
@@ -62,6 +63,14 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+
+      - name: "🔍 배포 브랜치 유효성 검사"
+        run: |
+          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
+            printf "::error:: 🚨 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
 
       - name: "🛡️ 배포 환경 유효성 검사"
         run: |

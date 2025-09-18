@@ -44,12 +44,6 @@ jobs:
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
     steps:
-      - name: "🔑 AWS IAM KEY 설정"
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
-
       - name: "🗂️ build 폴더를 build-legacy 폴더로 백업 (build → build-legacy)"
         run: |
           aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-legacy || {
