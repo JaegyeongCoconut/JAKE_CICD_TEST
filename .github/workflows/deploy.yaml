@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - moveRanking
+          - carInspection
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
@@ -45,7 +46,7 @@ jobs:
 
       # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
-      ENV_MOVERANKING_PROD: ${{ secrets.ENV_MOVERANKING_PROD }}
+      ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
 
     steps:
       - name: "🔑 AWS IAM KEY 설정"

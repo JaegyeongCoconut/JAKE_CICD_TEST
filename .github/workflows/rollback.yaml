@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - moveRanking
+          - carInspection
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
