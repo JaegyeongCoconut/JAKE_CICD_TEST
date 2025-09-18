@@ -8,20 +8,13 @@ on:
         required: true
         type: choice
         options:
-          - carAdmin
-          - carInspection
-          - logisticsAdmin
-          - moveAdmin
           - moveRanking
-          - kokkokAdmin
-          - delivery
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
         type: choice
         options:
           - dev
-          - prod
 
 run-name: "↩️ KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
 
@@ -32,10 +25,8 @@ jobs:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ inputs.DEPLOY_ENV }}
     secrets:
-      AWS_ACCOUNT_ID_MOVE: ${{secrets.AWS_ACCOUNT_ID_MOVE}}
-      AWS_ACCOUNT_ID_CAR: ${{secrets.AWS_ACCOUNT_ID_CAR}}
-      AWS_ACCOUNT_ID_KOKKOK: ${{secrets.AWS_ACCOUNT_ID_KOKKOK}}
-      AWS_ACCOUNT_ID_LOGISTICS: ${{secrets.AWS_ACCOUNT_ID_LOGISTICS}}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   run-rollback:
     runs-on: ubuntu-latest
@@ -50,7 +41,6 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-deploy-common.outputs.S3_DEPLOY_BUCKET_REGION }}
       AWS_IAM_ROLE: ""
       S3_BUCKET_NAME: ${{ needs.call-deploy-common.outputs.S3_BUCKET_NAME }}
-      CLOUDFRONT_ID: ${{ needs.call-deploy-common.outputs.CLOUDFRONT_ID }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
@@ -100,14 +90,3 @@ jobs:
           }
 
           printf "::notice:: ✅ build-before → build 롤백 완료\n"
-
-      - name: "🧹 CloudFront 캐시 무효화"
-        run: |
-          printf "::notice:: 🚀 CloudFront 배포의 캐시를 무효화합니다: $CLOUDFRONT_ID\n"
-          aws cloudfront create-invalidation \
-            --distribution-id $CLOUDFRONT_ID \
-            --paths "/*" || {
-            printf "::error:: 🚨 CloudFront 캐시 무효화 실패!\n"
-            exit 1
-          }
-          printf "::notice:: ✅ 배포 ID: $DISTRIBUTION_ID에 대한 캐시가 무효화되었습니다.\n"
