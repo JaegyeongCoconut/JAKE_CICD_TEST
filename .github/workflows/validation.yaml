@@ -19,10 +19,10 @@ on:
     outputs:
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
-        value: ${{ jobs.aws-validate-and-export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
+        value: ${{ jobs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME:
         description: "서비스 S3 버킷 이름"
-        value: ${{ jobs.aws-validate-and-export-env.outputs.S3_BUCKET_NAME }}
+        value: ${{ jobs.deploy-validate-and-aws-setting.outputs.S3_BUCKET_NAME }}
 
 jobs:
   output-set-up:
@@ -146,9 +146,3 @@ jobs:
             exit 1
           }
           printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
-
-      - name: 📌 다음 .yaml 에서 사용할 환경변수 export (return)
-        id: export-env
-        run: |
-          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
-          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
