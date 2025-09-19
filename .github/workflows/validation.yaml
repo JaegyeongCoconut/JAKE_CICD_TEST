@@ -19,19 +19,19 @@ on:
     outputs:
       AUTHORIZED_ENV:
         description: "배포 가능한 환경 목록"
-        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_ENV }}
+        value: ${{ jobs.aws-validate-and-export-env.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES:
         description: "배포 가능한 브랜치 목록"
-        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
+        value: ${{ jobs.aws-validate-and-export-env.outputs.AUTHORIZED_BRANCHES }}
       AUTHORIZED_USERS_IN_DEV:
         description: "개발 환경 배포 권한이 있는 사용자 목록"
-        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
+        value: ${{ jobs.aws-validate-and-export-env.outputs.AUTHORIZED_USERS_IN_DEV }}
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
-        value: ${{ jobs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
+        value: ${{ jobs.aws-validate-and-export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME:
         description: "서비스 S3 버킷 이름"
-        value: ${{ jobs.output-set-up.outputs.S3_BUCKET_NAME }}
+        value: ${{ jobs.aws-validate-and-export-env.outputs.S3_BUCKET_NAME }}
 
 jobs:
   output-set-up:
@@ -53,16 +53,41 @@ jobs:
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
       CURRENT_BRANCH: ${{ github.ref_name }}
     outputs:
-      AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: ${{ steps.export-env.outputs.AUTHORIZED_BRANCHES }}
-      AUTHORIZED_USERS_IN_DEV: ${{ steps.export-env.outputs.AUTHORIZED_USERS_IN_DEV }}
-      S3_DEPLOY_BUCKET_REGION: ${{ steps.export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ steps.export-env.outputs.S3_BUCKET_NAME }}
+      AUTHORIZED_ENV: ${{ steps.export-const.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ steps.export-const.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV: ${{ steps.export-const.outputs.AUTHORIZED_USERS_IN_DEV }}
+      S3_DEPLOY_BUCKET_REGION: ${{ steps.export-const.outputs.S3_DEPLOY_BUCKET_REGION }}
+      AWS_CONFIG: ${{ steps.export-const.outputs.AWS_CONFIG }}
+      SERVICE_NAME: ${{ steps.export-const.outputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ steps.export-const.outputs.DEPLOY_ENV }}
+      CURRENT_BRANCH: ${{ steps.export-const.outputs.CURRENT_BRANCH }}
+    steps:
+      - name: "📌 공통 상수 export"
+        id: export-const
+        run: |
+          echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
+          echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
+          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
+          echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_OUTPUT
+          echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_OUTPUT
+          echo "CURRENT_BRANCH=${CURRENT_BRANCH}" >> $GITHUB_OUTPUT
 
   deploy-validate-and-aws-setting:
     runs-on: ubuntu-latest
     needs: output-set-up
-    secrets: inherit
+    env:
+      AUTHORIZED_ENV: ${{ needs.output-set-up.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ needs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV: ${{ needs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
+      AWS_CONFIG: ${{ needs.output-set-up.outputs.AWS_CONFIG }}
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
+      SERVICE_NAME: ${{ needs.output-set-up.outputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ needs.output-set-up.outputs.DEPLOY_ENV }}
+      CURRENT_BRANCH: ${{ needs.output-set-up.outputs.CURRENT_BRANCH }}
+    outputs:
+      S3_BUCKET_NAME: ${{ steps.aws-setting.outputs.S3_BUCKET_NAME }}
     steps:
       - name: "🔍 배포 브랜치 유효성 검사"
         run: |
@@ -92,6 +117,7 @@ jobs:
           printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 $DEPLOY_ENV 환경에 배포할 권한이 있습니다.\n"
 
       - name: "🛠️ AWS 배포 환경 설정"
+        id: aws-setting
         run: |
           SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
 
@@ -104,14 +130,29 @@ jobs:
             exit 1
           fi
 
-          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정
+          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정 (동일 job 내에서만 유효)
           echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
+          # 다음 job으로 넘기기 위해 outputs에도 기록
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
+
           printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
 
   aws-validate-and-export-env:
     runs-on: ubuntu-latest
-    needs: deploy-validation
-    secrets: inherit
+    needs: [output-set-up, deploy-validate-and-aws-setting]
+    env:
+      AUTHORIZED_ENV: ${{ needs.output-set-up.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ needs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV: ${{ needs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
+      AWS_IAM_ROLE: ""
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ needs.deploy-validate-and-aws-setting.outputs.S3_BUCKET_NAME }}
+    outputs:
+      AUTHORIZED_ENV: ${{ steps.export-env.outputs.AUTHORIZED_ENV }}
+      AUTHORIZED_BRANCHES: ${{ steps.export-env.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_USERS_IN_DEV: ${{ steps.export-env.outputs.AUTHORIZED_USERS_IN_DEV }}
+      S3_DEPLOY_BUCKET_REGION: ${{ steps.export-env.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ steps.export-env.outputs.S3_BUCKET_NAME }}
     steps:
       - name: "🔑 AWS IAM KEY 설정"
         run: |
