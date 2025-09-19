@@ -34,13 +34,6 @@ jobs:
     permissions:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: call-validation
-
-    # ✅ 추가: matrix
-    strategy:
-      fail-fast: false
-      matrix:
-        service: ["${{ inputs.SERVICE_NAME }}"]
-
     env:
       AUTHORIZED_ENV: ${{ needs.call-validation.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: ${{ needs.call-validation.outputs.AUTHORIZED_BRANCHES }}
@@ -48,10 +41,7 @@ jobs:
       AWS_IAM_ROLE: ""
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.call-validation.outputs.S3_BUCKET_NAME }}
-
-      # ✅ matrix 값을 주입
-      SERVICE_NAME: ${{ matrix.service }}
-
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
       # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
