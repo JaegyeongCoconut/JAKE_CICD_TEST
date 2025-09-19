@@ -17,6 +17,9 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
+      AUTHORIZED_BRANCHES:
+        description: "배포 가능한 브랜치 목록"
+        value: ${{ jobs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
         value: ${{ jobs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
