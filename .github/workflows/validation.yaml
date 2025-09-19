@@ -58,8 +58,8 @@ jobs:
           echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
           echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
           echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
-          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
           echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
+          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
           echo "SERVICE_NAME=${SERVICE_NAME}" >> $GITHUB_OUTPUT
           echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_OUTPUT
           echo "CURRENT_BRANCH=${CURRENT_BRANCH}" >> $GITHUB_OUTPUT
@@ -72,7 +72,6 @@ jobs:
       AUTHORIZED_BRANCHES: ${{ needs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
       AUTHORIZED_USERS_IN_DEV: ${{ needs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_CONFIG: ${{ needs.output-set-up.outputs.AWS_CONFIG }}
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
       SERVICE_NAME: ${{ needs.output-set-up.outputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ needs.output-set-up.outputs.DEPLOY_ENV }}
       CURRENT_BRANCH: ${{ needs.output-set-up.outputs.CURRENT_BRANCH }}
@@ -147,3 +146,9 @@ jobs:
             exit 1
           }
           printf "::notice:: ✅ S3 버킷 '$S3_BUCKET_NAME'에 접근할 수 있습니다.\n"
+
+      - name: 📌 다음 .yaml 에서 사용할 환경변수 export (return)
+        id: export-env
+        run: |
+          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
+          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
