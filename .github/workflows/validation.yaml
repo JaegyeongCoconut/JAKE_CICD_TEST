@@ -10,8 +10,7 @@ on:
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
-        type:
-          - 개발
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
