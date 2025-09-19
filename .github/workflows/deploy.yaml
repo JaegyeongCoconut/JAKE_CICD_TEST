@@ -49,6 +49,8 @@ jobs:
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          printf "::notice:: ✅ S3_DEPLOY_BUCKET_REGION: ${S3_DEPLOY_BUCKET_REGION}\n"
+          printf "::notice:: ✅ S3_BUCKET_NAME: ${S3_BUCKET_NAME}\n"
           printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
       - name: "📥 소스 repo 코드 체크아웃"
