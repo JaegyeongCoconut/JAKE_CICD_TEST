@@ -17,15 +17,6 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
-      AUTHORIZED_ENV:
-        description: "배포 가능한 환경 목록"
-        value: ${{ jobs.aws-validate-and-export-env.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES:
-        description: "배포 가능한 브랜치 목록"
-        value: ${{ jobs.aws-validate-and-export-env.outputs.AUTHORIZED_BRANCHES }}
-      AUTHORIZED_USERS_IN_DEV:
-        description: "개발 환경 배포 권한이 있는 사용자 목록"
-        value: ${{ jobs.aws-validate-and-export-env.outputs.AUTHORIZED_USERS_IN_DEV }}
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
         value: ${{ jobs.aws-validate-and-export-env.outputs.S3_DEPLOY_BUCKET_REGION }}

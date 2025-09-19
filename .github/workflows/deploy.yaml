@@ -35,9 +35,6 @@ jobs:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: validation
     env:
-      AUTHORIZED_ENV: ${{ needs.validation.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: ${{ needs.validation.outputs.AUTHORIZED_BRANCHES }}
-      AUTHORIZED_USERS_IN_DEV: ${{ needs.validation.outputs.AUTHORIZED_USERS_IN_DEV }}
       S3_DEPLOY_BUCKET_REGION: ${{ needs.validation.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.validation.outputs.S3_BUCKET_NAME }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
@@ -175,6 +172,9 @@ jobs:
           fi
 
           printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
+
+          printf "::notice:: ✅ 빌드한 버킷 리전: $S3_DEPLOY_BUCKET_REGION\n"
+          printf "::notice:: ✅ 빌드한 버킷 이름 $S3_BUCKET_NAME\n"
 
           # ✅ S3에 빌드된 모든 파일 업로드 (build 폴더 내 파일)
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
