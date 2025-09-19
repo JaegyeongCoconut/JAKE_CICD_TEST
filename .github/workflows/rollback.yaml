@@ -15,7 +15,7 @@ on:
         required: true
         type: choice
         options:
-          - dev
+          - 개발
 
 run-name: "↩️ KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
 

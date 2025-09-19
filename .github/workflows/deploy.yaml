@@ -15,7 +15,7 @@ on:
         required: true
         type: choice
         options:
-          - dev
+          - 개발
 
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
@@ -105,7 +105,7 @@ jobs:
           done
 
           # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
-          ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "dev" ]] && echo "development" || echo "production")"
+          ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "개발" ]] && echo "development" || echo "production")"
           echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
           printf "::notice:: ✅ 환경 변수를 $ENV_FILE_NAME 파일에 저장했습니다.\n"
 
@@ -140,7 +140,7 @@ jobs:
       - name: "⚡ React 빌드"
         run: |
           APP_DIR="apps/$SERVICE_NAME"
-          BUILD_COMMAND="$([[ "$DEPLOY_ENV" == "dev" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME"
+          BUILD_COMMAND="$([[ "$DEPLOY_ENV" == "개발" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME"
 
           printf "::notice:: 🔍 빌드 경로 확인: $APP_DIR\n"
           printf "::notice:: 🔍 .env 파일 내용:\n"
@@ -172,7 +172,7 @@ jobs:
       - name: "☁️ S3에 build 폴더 업로드 및 index.html root 경로 업로드"
         run: |
           APP_DIR="apps/$SERVICE_NAME"
-          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "dev" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
 
           # NOTE: BUILD_DIR 존재 여부 확인
           if [ ! -d "$BUILD_DIR" ]; then
