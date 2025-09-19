@@ -173,9 +173,6 @@ jobs:
 
           printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
 
-          printf "::notice:: ✅ 빌드한 버킷 리전: $S3_DEPLOY_BUCKET_REGION\n"
-          printf "::notice:: ✅ 빌드한 버킷 이름 $S3_BUCKET_NAME\n"
-
           # ✅ S3에 빌드된 모든 파일 업로드 (build 폴더 내 파일)
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
             printf "::error:: 🚨 S3에 빌드 파일 업로드 실패!\n"
