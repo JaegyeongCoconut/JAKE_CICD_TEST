@@ -39,14 +39,12 @@ jobs:
         "carInspection-dev": {"s3BucketName": "jakecicd"}
         }'
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
-      CURRENT_BRANCH: ${{ github.ref_name }}
     outputs:
       AUTHORIZED_ENV: ${{ steps.export-const.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: ${{ steps.export-const.outputs.AUTHORIZED_BRANCHES }}
       AUTHORIZED_USERS_IN_DEV: ${{ steps.export-const.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_CONFIG: ${{ steps.export-const.outputs.AWS_CONFIG }}
       S3_DEPLOY_BUCKET_REGION: ${{ steps.export-const.outputs.S3_DEPLOY_BUCKET_REGION }}
-      CURRENT_BRANCH: ${{ steps.export-const.outputs.CURRENT_BRANCH }}
     steps:
       - name: "📌 공통 상수 export"
         id: export-const
@@ -56,7 +54,6 @@ jobs:
           echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
           echo "AWS_CONFIG=${AWS_CONFIG}" >> $GITHUB_OUTPUT
           echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
-          echo "CURRENT_BRANCH=${CURRENT_BRANCH}" >> $GITHUB_OUTPUT
 
   deploy-validate-and-aws-setting:
     runs-on: ubuntu-latest
@@ -68,18 +65,9 @@ jobs:
       AUTHORIZED_BRANCHES: ${{ needs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
       AUTHORIZED_USERS_IN_DEV: ${{ needs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
       AWS_CONFIG: ${{ needs.output-set-up.outputs.AWS_CONFIG }}
-      CURRENT_BRANCH: ${{ needs.output-set-up.outputs.CURRENT_BRANCH }}
     outputs:
       S3_BUCKET_NAME: ${{ steps.aws-setting.outputs.S3_BUCKET_NAME }}
     steps:
-      - name: "🔍 배포 브랜치 유효성 검사"
-        run: |
-          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
-            printf "::error:: 🚨 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
-            exit 1
-          fi
-          printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
-
       - name: "🛡️ 배포 환경 유효성 검사"
         run: |
           if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
