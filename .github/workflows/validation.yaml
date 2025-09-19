@@ -90,7 +90,7 @@ jobs:
       - name: "🛠️ AWS 배포 환경 설정"
         id: aws-setting
         run: |
-          SERVICE_KEY="${SERVICE_NAME}-${DEPLOY_ENV}"
+          SERVICE_KEY="${SERVICE_NAME}-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")"
 
           # NOTE: 상단에서 미리 작성해둔 AWS_CONFIG > JSON 환경 변수에서 S3 및 CloudFront ID 찾기
           S3_BUCKET_NAME=$(echo "$AWS_CONFIG" | jq -r --arg key "$SERVICE_KEY" '.[$key].s3BucketName')
