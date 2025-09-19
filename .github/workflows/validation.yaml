@@ -47,7 +47,6 @@ jobs:
         "moveRanking-dev": {"s3BucketName": "jakecicd"},
         "carInspection-dev": {"s3BucketName": "jakecicd"}
         }'
-      AWS_IAM_ROLE: ""
       S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
@@ -144,7 +143,6 @@ jobs:
       AUTHORIZED_ENV: ${{ needs.output-set-up.outputs.AUTHORIZED_ENV }}
       AUTHORIZED_BRANCHES: ${{ needs.output-set-up.outputs.AUTHORIZED_BRANCHES }}
       AUTHORIZED_USERS_IN_DEV: ${{ needs.output-set-up.outputs.AUTHORIZED_USERS_IN_DEV }}
-      AWS_IAM_ROLE: ""
       S3_DEPLOY_BUCKET_REGION: ${{ needs.output-set-up.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.deploy-validate-and-aws-setting.outputs.S3_BUCKET_NAME }}
     outputs:
@@ -174,6 +172,5 @@ jobs:
           echo "AUTHORIZED_ENV=${AUTHORIZED_ENV}" >> $GITHUB_OUTPUT
           echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
           echo "AUTHORIZED_USERS_IN_DEV=${AUTHORIZED_USERS_IN_DEV}" >> $GITHUB_OUTPUT
-          echo "AWS_IAM_ROLE=${AWS_IAM_ROLE}" >> $GITHUB_OUTPUT
           echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
           echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
