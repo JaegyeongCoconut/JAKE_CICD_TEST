@@ -35,11 +35,11 @@ jobs:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: call-validation
 
-    # ✅ 추가: matrix (서비스별로 병렬 실행되며 UI에 박스가 분리되어 보임)
+    # ✅ 추가: matrix
     strategy:
       fail-fast: false
       matrix:
-        service: [${{ inputs.SERVICE_NAME }}]
+        service: ["${{ inputs.SERVICE_NAME }}"]
 
     env:
       AUTHORIZED_ENV: ${{ needs.call-validation.outputs.AUTHORIZED_ENV }}
@@ -49,7 +49,7 @@ jobs:
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.call-validation.outputs.S3_BUCKET_NAME }}
 
-      # ✅ 변경: 기존 값 대신 matrix 값을 주입 (변수명/주석은 그대로 유지)
+      # ✅ matrix 값을 주입
       SERVICE_NAME: ${{ matrix.service }}
 
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
