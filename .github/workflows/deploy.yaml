@@ -84,7 +84,7 @@ jobs:
         run: |
           # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
           UPPER_SERVICE_NAME=$(echo "$SERVICE_NAME" | tr '[:lower:]' '[:upper:]')
-          UPPER_DEPLOY_ENV=$(echo "$DEPLOY_ENV" | tr '[:lower:]' '[:upper:]')
+          UPPER_DEPLOY_ENV=$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")
           ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
           printf "::notice:: ✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
 
