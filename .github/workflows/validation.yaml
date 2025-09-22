@@ -43,10 +43,6 @@ jobs:
     env:
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
-      AUTHORIZED_ENV: ${{ step.pick.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_BRANCHES: ${{ step.pick.outputs.AUTHORIZED_BRANCHES }}
-      AUTHORIZED_USERS_IN_DEV: ${{ step.pick.outputs.AUTHORIZED_USERS_IN_DEV }}
-      AWS_CONFIG: ${{ step.pick.outputs.AWS_CONFIG }}
     outputs:
       S3_BUCKET_NAME: ${{ steps.aws-setting.outputs.S3_BUCKET_NAME }}
     steps:
@@ -94,7 +90,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate-and-configure-deploy
     env:
-      S3_DEPLOY_BUCKET_REGION: ${{ step.pick.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.validate-and-configure-deploy.outputs.S3_BUCKET_NAME }}
     steps:
       - name: "🪪 AWS IAM KEY 설정"
