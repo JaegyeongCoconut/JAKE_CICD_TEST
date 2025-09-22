@@ -54,7 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate-deploy
     env:
-      # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
       ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
     steps:
