@@ -29,23 +29,14 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  build-and-deploy:
+  validate-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: validation
     env:
       AUTHORIZED_BRANCHES: ${{ needs.validation.outputs.AUTHORIZED_BRANCHES }}
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.validation.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.validation.outputs.S3_BUCKET_NAME }}
-      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
       CURRENT_BRANCH: ${{ github.ref_name }}
-
-      # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
-      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
-      ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
-
     steps:
       - name: "🔍 배포 브랜치 유효성 검사"
         run: |
@@ -61,6 +52,13 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
 
+  build-project:
+    runs-on: ubuntu-latest
+    env:
+      # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
+      ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
+    steps:
       - name: "📥 소스 repo 코드 체크아웃"
         uses: actions/checkout@v4
 
@@ -152,6 +150,17 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
+  deploy-aws:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
+    needs: validation
+    env:
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.validation.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ needs.validation.outputs.S3_BUCKET_NAME }}
+      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
+      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+    steps:
       - name: "🗑️ S3에서 build-legacy 폴더 삭제"
         run: |
           if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-legacy  | grep -q .; then
