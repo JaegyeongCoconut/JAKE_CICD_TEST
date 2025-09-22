@@ -31,8 +31,6 @@ jobs:
 
   validate-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: validation
     env:
       AUTHORIZED_BRANCHES: ${{ needs.validation.outputs.AUTHORIZED_BRANCHES }}
@@ -54,6 +52,7 @@ jobs:
 
   build-project:
     runs-on: ubuntu-latest
+    needs: validate-deploy
     env:
       # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
       ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
@@ -152,9 +151,7 @@ jobs:
 
   deploy-aws:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
-    needs: validation
+    needs: [build-project, validate-deploy]
     env:
       S3_DEPLOY_BUCKET_REGION: ${{ needs.validation.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.validation.outputs.S3_BUCKET_NAME }}
