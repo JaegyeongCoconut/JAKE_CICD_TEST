@@ -159,7 +159,7 @@ jobs:
       - name: "⬆️ Build artifact 업로드"
         uses: actions/upload-artifact@v4
         with:
-          name: build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME
+          name: build-${{ github.event.inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ env.SERVICE_NAME }}
           path: ${{ steps.build.outputs.build_dir }}
           if-no-files-found: error
           retention-days: 1
@@ -176,7 +176,7 @@ jobs:
       - name: "⬇️ Build artifact 다운로드"
         uses: actions/download-artifact@v4
         with:
-          name: build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME
+          name: build-${{ github.event.inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ env.SERVICE_NAME }}
           path: dist
 
       - name: "🪪 AWS IAM KEY 설정"
