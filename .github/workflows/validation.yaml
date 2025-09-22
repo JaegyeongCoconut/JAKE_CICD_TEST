@@ -19,10 +19,10 @@ on:
     outputs:
       AUTHORIZED_BRANCHES:
         description: "배포 가능한 브랜치 목록"
-        value: ${{ jobs.export.outputs.AUTHORIZED_BRANCHES }}
+        value: ${{ jobs.validate-and-configure-deploy.outputs.AUTHORIZED_BRANCHES }}
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
-        value: ${{ jobs.export.outputs.S3_DEPLOY_BUCKET_REGION }}
+        value: ${{ jobs.validate-and-configure-deploy.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME:
         description: "서비스 S3 버킷 이름"
         value: ${{ jobs.validate-and-configure-deploy.outputs.S3_BUCKET_NAME }}
@@ -44,6 +44,8 @@ jobs:
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
     outputs:
+      AUTHORIZED_BRANCHES: ${{ env.AUTHORIZED_BRANCHES }}
+      S3_DEPLOY_BUCKET_REGION: ${{ env.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ steps.aws-setting.outputs.S3_BUCKET_NAME }}
     steps:
       - name: "🛡️ 배포 환경 유효성 검사"
@@ -79,9 +81,9 @@ jobs:
             exit 1
           fi
 
-          # NOTE: GitHub Actions 환경 변수에 S3 버킷 설정 (동일 job 내에서만 유효)
-          echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_ENV
-          # 다음 job으로 넘기기 위해 outputs에도 기록
+          # NOTE: 다음 job으로 넘기기 위해 outputs에도 기록
+          echo "AUTHORIZED_BRANCHES=${AUTHORIZED_BRANCHES}" >> $GITHUB_OUTPUT
+          echo "S3_DEPLOY_BUCKET_REGION=${S3_DEPLOY_BUCKET_REGION}" >> $GITHUB_OUTPUT
           echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> $GITHUB_OUTPUT
 
           printf "::notice:: ✅ 서비스 '$SERVICE_NAME'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
