@@ -35,14 +35,8 @@ jobs:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: call-validation
     env:
-      AUTHORIZED_ENV: ${{ needs.call-validation.outputs.AUTHORIZED_ENV }}
-      AUTHORIZED_USERS_IN_DEV: ${{ needs.call-validation.outputs.AUTHORIZED_USERS_IN_DEV }}
-      AUTHORIZED_USERS_IN_PROD: ${{ needs.call-validation.outputs.AUTHORIZED_USERS_IN_PROD }}
       S3_DEPLOY_BUCKET_REGION: ${{ needs.call-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
-      AWS_IAM_ROLE: ""
       S3_BUCKET_NAME: ${{ needs.call-validation.outputs.S3_BUCKET_NAME }}
-      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
 
     steps:
       - name: "🔑 AWS IAM KEY 설정"
