@@ -20,7 +20,7 @@ on:
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
 jobs:
-  validation:
+  call-validation:
     uses: ./.github/workflows/validation.yaml # ✅ 공용 yaml 호출
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
@@ -31,9 +31,9 @@ jobs:
 
   validate-build-config:
     runs-on: ubuntu-latest
-    needs: validation
+    needs: call-validation
     env:
-      AUTHORIZED_BRANCHES: ${{ needs.validation.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_BRANCHES: ${{ needs.call-validation.outputs.AUTHORIZED_BRANCHES }}
       CURRENT_BRANCH: ${{ github.ref_name }}
     steps:
       - name: "🔍 배포 브랜치 유효성 검사"
