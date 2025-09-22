@@ -20,7 +20,7 @@ on:
 run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
 
 jobs:
-  call-validation:
+  check-validation:
     uses: ./.github/workflows/validation.yaml # ✅ 공용 yaml 호출
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
@@ -31,9 +31,9 @@ jobs:
 
   validate-build-config:
     runs-on: ubuntu-latest
-    needs: call-validation
+    needs: check-validation
     env:
-      AUTHORIZED_BRANCHES: ${{ needs.call-validation.outputs.AUTHORIZED_BRANCHES }}
+      AUTHORIZED_BRANCHES: ${{ needs.check-validation.outputs.AUTHORIZED_BRANCHES }}
       CURRENT_BRANCH: ${{ github.ref_name }}
     steps:
       - name: "🔍 배포 브랜치 유효성 검사"
@@ -166,10 +166,10 @@ jobs:
 
   deploy-aws:
     runs-on: ubuntu-latest
-    needs: [build-project, validate-build-config, validation]
+    needs: [build-project, validate-build-config, check-validation]
     env:
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.validation.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.validation.outputs.S3_BUCKET_NAME }}
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
     steps:

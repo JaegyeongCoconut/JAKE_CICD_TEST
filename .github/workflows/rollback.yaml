@@ -20,7 +20,7 @@ on:
 run-name: "↩️ KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
 
 jobs:
-  call-validation:
+  check-validation:
     uses: ./.github/workflows/validation.yaml # ✅ 공용 yaml 호출
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
@@ -33,10 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
-    needs: call-validation
+    needs: check-validation
     env:
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.call-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.call-validation.outputs.S3_BUCKET_NAME }}
+      S3_DEPLOY_BUCKET_REGION: ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_BUCKET_NAME: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}
 
     steps:
       - name: "🪪 AWS IAM KEY 설정"
