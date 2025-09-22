@@ -44,12 +44,6 @@ jobs:
           fi
           printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
 
-      - name: "🪪 AWS IAM KEY 설정"
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
-
   build-project:
     runs-on: ubuntu-latest
     needs: validate-deploy
@@ -150,15 +144,45 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
+          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+
+          # NOTE: BUILD_DIR 존재 여부 확인
+          if [ ! -d "$BUILD_DIR" ]; then
+            printf "::error:: 🚨 빌드 결과 디렉토리를 찾을 수 없습니다: $BUILD_DIR\n"
+            exit 1
+          fi
+
+          printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
+
+      - name: "⬆️ Build artifact 업로드"
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME
+          path: ${{ steps.build.outputs.build_dir }}
+          if-no-files-found: error
+          retention-days: 1
+
   deploy-aws:
     runs-on: ubuntu-latest
-    needs: [build-project, validate-deploy]
+    needs: [build-project, validate-deploy, validation]
     env:
       S3_DEPLOY_BUCKET_REGION: ${{ needs.validation.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ needs.validation.outputs.S3_BUCKET_NAME }}
       SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
     steps:
+      - name: "⬇️ Build artifact 다운로드"
+        uses: actions/download-artifact@v4
+        with:
+          name: build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME
+          path: dist
+
+      - name: "🪪 AWS IAM KEY 설정"
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+
       - name: "🗑️ S3에서 build-legacy 폴더 삭제"
         run: |
           if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-legacy  | grep -q .; then
@@ -179,8 +203,7 @@ jobs:
 
       - name: "☁️ S3에 build 폴더 업로드 및 index.html root 경로 업로드"
         run: |
-          APP_DIR="apps/$SERVICE_NAME"
-          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+          BUILD_DIR="dist"  # ✅ 다운로드 받은 경로 사용
 
           # NOTE: BUILD_DIR 존재 여부 확인
           if [ ! -d "$BUILD_DIR" ]; then
@@ -189,6 +212,8 @@ jobs:
           fi
 
           printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
+          printf "::notice:: 🔎 대상: s3://%s (region=%s)\n" "$S3_BUCKET_NAME" "$S3_DEPLOY_BUCKET_REGION"
+
 
           # ✅ S3에 빌드된 모든 파일 업로드 (build 폴더 내 파일)
           aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
