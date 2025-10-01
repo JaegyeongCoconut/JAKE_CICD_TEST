@@ -64,7 +64,7 @@ jobs:
 
           printf "::notice:: ✅ 서비스 '${{ inputs.SERVICE_NAME }}'의 S3 버킷은 '${S3_BUCKET_NAME}'입니다.\n"
 
-  validate-workflow-config:
+  validate-config:
     runs-on: ubuntu-latest
     needs: set-output
     steps:
@@ -87,9 +87,11 @@ jobs:
 
           printf "::notice:: ✅ 사용자 '${{ github.actor }}'는 ${{ inputs.DEPLOY_ENV }} 환경에 배포할 권한이 있습니다.\n"
 
-  validate-aws:
+  verify-aws:
     runs-on: ubuntu-latest
-    needs: [set-output, validate-workflow-config]
+    permissions:
+      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
+    needs: [set-output, validate-config]
     steps:
       - name: "🪪 AWS IAM KEY 설정"
         run: |
