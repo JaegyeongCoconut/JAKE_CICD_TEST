@@ -1,4 +1,4 @@
-name: KOKKOK 웹 서비스 S3 직전 버전 롤백
+name: ↩️ Rollback KOKKOK WEB service on S3
 
 on:
   workflow_dispatch:
@@ -7,17 +7,17 @@ on:
         description: "배포 서비스 이름"
         required: true
         type: choice
-        options:
-          - moveRanking
-          - carInspection
+        options: [carInspection, moveRanking]
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
         type: choice
-        options:
-          - 개발
+        options: [개발, 운영]
 
-run-name: "↩️ KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
+run-name: "↩️ ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
+
+env:
+  AWS_IAM_ROLE: ""
 
 jobs:
   check-validation:
@@ -34,10 +34,6 @@ jobs:
     permissions:
       contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
     needs: check-validation
-    env:
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}
-
     steps:
       - name: "🪪 AWS IAM KEY 설정"
         run: |
@@ -47,36 +43,36 @@ jobs:
 
       - name: "🗂️ build 폴더를 build-legacy 폴더로 백업 (build → build-legacy)"
         run: |
-          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-legacy || {
+          aws s3 mv --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-legacy || {
             printf "::error:: 🚨 기존 build 폴더가 없습니다.\n"
             exit 1
           }
 
-          printf "::notice:: ✅ 기존 build를 build-new로 백업 완료\n"
+          printf "::notice:: ✅ 기존 build를 build-legacy로 백업 완료\n"
 
       - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
         run: |
           # NOTE: S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
-          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before/index.html s3://$S3_BUCKET_NAME/index.html || {
+          aws s3 cp --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-before/index.html s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/index.html || {
             printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
 
-            aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy s3://$S3_BUCKET_NAME/build
+            aws s3 mv --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-legacy s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build
             printf "::notice:: 🔄 build-legacy → build 폴더로 롤백 완료\n"
 
             exit 1
           }
 
-          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
+          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/index.html\n"
 
       - name: "↩️ build-before 폴더를 build 폴더로 롤백 (build-before → build) 및 index.html root 경로 업로드"
         run: |
-          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-before s3://$S3_BUCKET_NAME/build || {
+          aws s3 mv --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-before s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build || {
             printf "::error:: 🚨 build-before → build 폴더로 롤백 실패!\n"
 
-            aws s3 cp --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy/index.html s3://$S3_BUCKET_NAME/index.html || {
+            aws s3 cp --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-legacy/index.html s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/index.html || {
             printf "::notice:: 🔄 S3 루트에 index.html 롤백 완료\n"
 
-            aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy s3://$S3_BUCKET_NAME/build
+            aws s3 mv --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-legacy s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build
             printf "::notice:: 🔄 build-legacy → build 폴더로 롤백 완료\n"
             
             exit 1
