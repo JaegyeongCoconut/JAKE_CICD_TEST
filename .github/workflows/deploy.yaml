@@ -1,4 +1,4 @@
-name: KOKKOK 웹 서비스 S3 배포
+name: 🚀 Build and Deploy KOKKOK WEB service on S3
 
 on:
   workflow_dispatch:
@@ -7,17 +7,21 @@ on:
         description: "배포 서비스 이름"
         required: true
         type: choice
-        options:
-          - moveRanking
-          - carInspection
+        options: [carInspection, moveRanking]
       DEPLOY_ENV:
         description: "배포 환경"
         required: true
         type: choice
-        options:
-          - 개발
+        options: [개발, 운영]
 
-run-name: "🚀 KOKKOK ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
+run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 배포 실행"
+
+env:
+  AWS_IAM_ROLE: ""
+  CURRENT_BRANCH: ${{ github.ref_name }}
+  # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+  ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
+  ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
 
 jobs:
   check-validation:
@@ -29,29 +33,21 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  validate-build-config:
+  validate-workflow-config:
     runs-on: ubuntu-latest
     needs: check-validation
-    env:
-      AUTHORIZED_BRANCHES: ${{ needs.check-validation.outputs.AUTHORIZED_BRANCHES }}
-      CURRENT_BRANCH: ${{ github.ref_name }}
     steps:
       - name: "🔍 배포 브랜치 유효성 검사"
         run: |
-          if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
-            printf "::error:: 🚨 지원되지 않는 브랜치입니다: $CURRENT_BRANCH\n"
+          if [[ ! ",${{ needs.check-validation.outputs.AUTHORIZED_BRANCHES }}," =~ ",${{ env.CURRENT_BRANCH }}," ]]; then
+            printf "::error:: 🚨 지원되지 않는 브랜치입니다: ${{ env.CURRENT_BRANCH }}\n"
             exit 1
           fi
-          printf "::notice:: ✅ 브랜치 '$CURRENT_BRANCH'는 배포에 유효합니다.\n"
+          printf "::notice:: ✅ 브랜치 '${{ env.CURRENT_BRANCH }}'는 배포에 유효합니다.\n"
 
   build-project:
     runs-on: ubuntu-latest
-    needs: validate-build-config
-    env:
-      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
-      ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
-      ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
+    needs: validate-workflow-config
     steps:
       - name: "📥 소스 repo 코드 체크아웃"
         uses: actions/checkout@v4
@@ -75,8 +71,8 @@ jobs:
       - name: "🔑 GitHub Secrets 환경 변수 설정"
         run: |
           # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
-          UPPER_SERVICE_NAME=$(echo "$SERVICE_NAME" | tr '[:lower:]' '[:upper:]')
-          UPPER_DEPLOY_ENV=$([[ "$DEPLOY_ENV" == "개발" ]] && echo "DEV" || echo "PROD")
+          UPPER_SERVICE_NAME=$(echo ${{ inputs.SERVICE_NAME }} | tr '[:lower:]' '[:upper:]')
+          UPPER_DEPLOY_ENV=$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "DEV" || echo "PROD")
           ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
           printf "::notice:: ✅ ENV_SECRET_NAME: $ENV_SECRET_NAME\n"
 
@@ -98,7 +94,7 @@ jobs:
           done
 
           # NOTE: .env.[환경] 파일이름으로 환경 변수 값 저장
-          ENV_FILE_NAME=".env.$([[ "$DEPLOY_ENV" == "개발" ]] && echo "development" || echo "production")"
+          ENV_FILE_NAME=".env.$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "development" || echo "production")"
           echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
           printf "::notice:: ✅ 환경 변수를 $ENV_FILE_NAME 파일에 저장했습니다.\n"
 
@@ -114,7 +110,7 @@ jobs:
 
       - name: "📂 프로젝트 디렉토리 설정 및 .env.[환경] 파일 위치 수정"
         run: |
-          APP_DIR="apps/$SERVICE_NAME"
+          APP_DIR="apps/${{ inputs.SERVICE_NAME }}"
 
           mv $ENV_FILE_NAME $APP_DIR || {
             printf "::error:: 🚨 .env 파일을 $APP_DIR로 이동하지 못했습니다.\n"
@@ -131,10 +127,10 @@ jobs:
           fi
 
       - name: "⚡ React 빌드"
-        id: build
+        id: build-react-app
         run: |
-          APP_DIR="apps/$SERVICE_NAME"
-          BUILD_COMMAND="$([[ "$DEPLOY_ENV" == "개발" ]] && echo "build" || echo "build-prod"):$SERVICE_NAME"
+          APP_DIR="apps/${{ inputs.SERVICE_NAME }}"
+          BUILD_COMMAND="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "build" || echo "build-prod"):${{ inputs.SERVICE_NAME }}"
 
           printf "::notice:: 🔍 빌드 경로 확인: $APP_DIR\n"
           printf "::notice:: 🔍 .env 파일 내용:\n"
@@ -145,38 +141,33 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
-          BUILD_DIR="$APP_DIR/build-$([[ "$DEPLOY_ENV" == "개발" ]] && echo "dev" || echo "prod")-$SERVICE_NAME"
+          BUILD_DIR_PATH="$APP_DIR/build-$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")-${{ inputs.SERVICE_NAME }}"
 
-          # NOTE: BUILD_DIR 존재 여부 확인
-          if [ ! -d "$BUILD_DIR" ]; then
-            printf "::error:: 🚨 빌드 결과 디렉토리를 찾을 수 없습니다: $BUILD_DIR\n"
+          # NOTE: BUILD_DIR_PATH 존재 여부 확인
+          if [ ! -d "$BUILD_DIR_PATH" ]; then
+            printf "::error:: 🚨 빌드 결과 디렉토리를 찾을 수 없습니다: $BUILD_DIR_PATH\n"
             exit 1
           fi
 
-          echo "build_dir=$BUILD_DIR" >> $GITHUB_OUTPUT
-          printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
+          echo "BUILD_DIR_PATH=$BUILD_DIR_PATH" >> $GITHUB_OUTPUT
+          printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR_PATH\n"
 
       - name: "⬆️ Build artifact 업로드"
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ github.event.inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ env.SERVICE_NAME }}
-          path: ${{ steps.build.outputs.build_dir }}
+          name: build-${{ inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ inputs.SERVICE_NAME }}
+          path: ${{ steps.build-react-app.outputs.BUILD_DIR_PATH }}
           if-no-files-found: error
           retention-days: 1
 
   deploy-aws:
     runs-on: ubuntu-latest
-    needs: [build-project, validate-build-config, check-validation]
-    env:
-      S3_DEPLOY_BUCKET_REGION: ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}
-      SERVICE_NAME: ${{ github.event.inputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ github.event.inputs.DEPLOY_ENV }}
+    needs: [build-project, validate-workflow-config, check-validation]
     steps:
       - name: "⬇️ Build artifact 다운로드"
         uses: actions/download-artifact@v4
         with:
-          name: build-${{ github.event.inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ env.SERVICE_NAME }}
+          name: build-${{ inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ inputs.SERVICE_NAME }}
           path: dist
 
       - name: "🪪 AWS IAM KEY 설정"
@@ -187,17 +178,17 @@ jobs:
 
       - name: "🗑️ S3에서 build-legacy 폴더 삭제"
         run: |
-          if aws s3 --region $S3_DEPLOY_BUCKET_REGION ls s3://$S3_BUCKET_NAME/build-legacy  | grep -q .; then
+          if aws s3 --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} ls s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-legacy  | grep -q .; then
             printf "::notice:: 🗑️ build-legacy 폴더 삭제 중...\n"
-            aws s3 rm --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build-legacy 
+            aws s3 rm --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-legacy 
             printf "::notice:: ✅ build-legacy 폴더 삭제 완료\n"
           else
             printf "::notice:: ⚠️ build-legacy 폴더가 존재하지 않음. 삭제할 항목이 없습니다.\n"
           fi
 
-      - name: "🗂️ build 폴더를 buile-before 폴더로 백업 (build → build-before)"
+      - name: "🗂️ build 폴더를 build-before 폴더로 백업 (build → build-before)"
         run: |
-          aws s3 mv --recursive --region $S3_DEPLOY_BUCKET_REGION s3://$S3_BUCKET_NAME/build s3://$S3_BUCKET_NAME/build-before || {
+          aws s3 mv --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build-before || {
             printf "::notice:: 🔄 기존 build 폴더가 없거나 백업 중 일부 파일이 존재하지 않을 수 있습니다.\n"
           }
 
@@ -205,7 +196,7 @@ jobs:
 
       - name: "☁️ S3에 build 폴더 업로드 및 index.html root 경로 업로드"
         run: |
-          BUILD_DIR="dist"  # ✅ 다운로드 받은 경로 사용
+          BUILD_DIR="dist"  # NOTE: 다운로드 받은 경로 사용
 
           # NOTE: BUILD_DIR 존재 여부 확인
           if [ ! -d "$BUILD_DIR" ]; then
@@ -214,21 +205,21 @@ jobs:
           fi
 
           printf "::notice:: ✅ 빌드한 프로젝트 폴더 이름: $BUILD_DIR\n"
-          printf "::notice:: 🔎 대상: s3://%s (region=%s)\n" "$S3_BUCKET_NAME" "$S3_DEPLOY_BUCKET_REGION"
+          printf "::notice:: 🔎 대상: s3://%s (region=%s)\n" "${{ needs.check-validation.outputs.S3_BUCKET_NAME }}" "${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }}"
 
 
           # ✅ S3에 빌드된 모든 파일 업로드 (build 폴더 내 파일)
-          aws s3 cp --recursive --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR s3://$S3_BUCKET_NAME/build || {
+          aws s3 cp --recursive --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} $BUILD_DIR s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build || {
             printf "::error:: 🚨 S3에 빌드 파일 업로드 실패!\n"
             exit 1
           }
 
-          printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: $S3_BUCKET_NAME/build\n"
+          printf "::notice:: ✅ 빌드 파일이 S3에 업로드되었습니다: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/build\n"
 
           # ✅ S3 루트에 index.html 업로드
-          aws s3 cp --region $S3_DEPLOY_BUCKET_REGION $BUILD_DIR/index.html s3://$S3_BUCKET_NAME/index.html || {
+          aws s3 cp --region ${{ needs.check-validation.outputs.S3_DEPLOY_BUCKET_REGION }} $BUILD_DIR/index.html s3://${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/index.html || {
             printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
             exit 1
           }
 
-          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: $S3_BUCKET_NAME/index.html\n"
+          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: ${{ needs.check-validation.outputs.S3_BUCKET_NAME }}/index.html\n"
