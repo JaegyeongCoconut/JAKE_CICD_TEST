@@ -12,7 +12,7 @@ on:
         description: "배포 환경"
         required: true
         type: choice
-        options: [개발, 운영]
+        options: [개발]
 
 run-name: "↩️ ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
 
