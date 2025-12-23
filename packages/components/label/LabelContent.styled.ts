@@ -1,10 +1,12 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-export const Wrapper = styled.div<{
-  columnWidth?: number;
+interface WrapperProps {
+  columnWidth: number | undefined;
   direction: "horizontal" | "vertical";
-}>`
+}
+
+export const Wrapper = styled.div<WrapperProps>`
   ${({ direction, columnWidth }) => css`
     display: grid;
     grid-template-columns: ${columnWidth && `${columnWidth}px 1fr`};
@@ -18,7 +20,7 @@ export const LabelWrapper = styled.div`
   column-gap: 4px;
 `;
 
-export const Label = styled.label<{ isRequired?: boolean }>`
+export const Label = styled.label<{ isRequired: boolean }>`
   ${({ theme, isRequired }) => css`
     ${theme.font.medium_13};
     position: relative;

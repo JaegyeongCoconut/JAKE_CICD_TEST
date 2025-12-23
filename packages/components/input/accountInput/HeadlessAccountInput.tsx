@@ -99,7 +99,7 @@ const Label = ({ className, id, label }: LabelProps) => {
 
   return (
     <label className={className} htmlFor={id}>
-      {defaultLanguage(label)}
+      {defaultLanguage({ text: label })}
     </label>
   );
 };

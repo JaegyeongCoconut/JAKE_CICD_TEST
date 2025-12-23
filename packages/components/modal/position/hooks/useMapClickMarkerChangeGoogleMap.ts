@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useGoogleMap } from "@repo/contexts/GoogleMapProvider";
+import useGoogleMap from "@repo/hooks/useGoogleMap";
 import type { LatLng } from "@repo/types";
 
 interface UseMapClickMarkerChangeGoogleMapProps {

@@ -1,4 +1,12 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": [".","../../packages/types/declare/*"]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@packages/*": ["./*"],
+      "@tests/setup": ["../test/setup.ts"],
+      "@tests/renderComponent": ["../test/renderComponent.tsx"]
+    }
+  },
+  "include": [".", "../../packages/types/declare/*"]
 }

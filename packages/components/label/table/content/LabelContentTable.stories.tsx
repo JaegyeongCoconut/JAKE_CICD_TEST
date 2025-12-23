@@ -24,11 +24,20 @@ const meta = {
   tags: ["autodocs"],
   args: {
     variant: "bg",
-    marginBottom: 30,
+    hasDefaultMarginBottom: true,
     subject: "Default information",
     children: (
-      <LabelContentTable.Row>
-        <LabelContentTable.Content label="Name">
+      <LabelContentTable.Row
+        hasError={false}
+        hasPartition={false}
+        marginTop={0}
+      >
+        <LabelContentTable.Content
+          hasError={false}
+          isRequired={false}
+          label="Name"
+          labelWidth={210}
+        >
           <span>Member</span>
         </LabelContentTable.Content>
       </LabelContentTable.Row>
@@ -36,41 +45,47 @@ const meta = {
   },
   argTypes: {
     className: {
+      description: "LabelContentTable의 스타일을 커스텀하기 위해 사용합니다.",
       control: false,
-      description: "Tab을 스타일을 커스텀하기 위해 사용합니다.",
     },
-    variant: { description: "배경색을 지정합니다." },
+    variant: {
+      description: "LabelContentTable의 Label 영역 스타일을 설정합니다.",
+    },
     children: {
       description:
         "LabelContentTable.Row, LabelContentTable.Content를 전달 받습니다.",
+      type: { required: true, name: "other", value: "ReactNode" },
+      table: { type: { summary: "ReactNode" } },
       control: false,
     },
-    marginBottom: { description: "하단 여백을 지정합니다." },
+    hasDefaultMarginBottom: {
+      description:
+        "기본 하단 여백 값 사용 여부를 결정합니다. (기본 marginBottom: 40px)",
+      table: { defaultValue: { summary: "false" } },
+    },
+    marginBottom: {
+      description: "하단 여백을 직접 설정합니다.",
+      type: { required: true, name: "number" },
+      if: { arg: "hasDefaultMarginBottom", neq: true },
+    },
     subject: {
       description: "LabelContentTable의 제목 또는 ReactNode를 지정합니다.",
-      table: { type: { summary: "string | ReactNode" } },
-      control: false,
+      table: { type: { summary: "string | ReactNode | null" } },
     },
   },
   decorators: [
     (Story) => {
       return (
-        <div style={{ width: "930px" }}>
+        <div style={{ width: "840px" }}>
           <Story />
-          <Button
-            variant="primary"
-            disabled={false}
-            isLoading={false}
-            label="Confirm"
-            handleButtonClick={() => {}}
-          />
         </div>
       );
     },
   ],
 } satisfies Meta<typeof LabelContentTable>;
+
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof LabelContentTable>;
 
 export const Row1Partition1: Story = {
   parameters: {
@@ -83,8 +98,17 @@ export const Row1Partition1: Story = {
   },
   args: {
     children: (
-      <LabelContentTable.Row>
-        <LabelContentTable.Content label="Name">
+      <LabelContentTable.Row
+        hasError={false}
+        hasPartition={false}
+        marginTop={0}
+      >
+        <LabelContentTable.Content
+          hasError={false}
+          isRequired={false}
+          label="Name"
+          labelWidth={210}
+        >
           <span>Member</span>
         </LabelContentTable.Content>
       </LabelContentTable.Row>
@@ -103,15 +127,25 @@ export const Row2Partition2: Story = {
   },
   args: {
     children: (
-      <LabelContentTable.Row partition={2}>
-        <LabelContentTable.Content label="Name">
+      <LabelContentTable.Row hasError={false} hasPartition marginTop={0}>
+        <LabelContentTable.Content
+          hasError={false}
+          isRequired={false}
+          label="Name"
+          labelWidth={210}
+        >
           <span>Member</span>
         </LabelContentTable.Content>
-        <LabelContentTable.Content label="Vehicle type">
+        <LabelContentTable.Content
+          hasError={false}
+          isRequired={false}
+          label="Vehicle type"
+          labelWidth={210}
+        >
           <span>Truck</span>
         </LabelContentTable.Content>
       </LabelContentTable.Row>
-    ),
+    ) as React.ReactNode,
   },
 };
 
@@ -124,8 +158,13 @@ export const Complex: Story = {
   args: {
     children: (
       <>
-        <LabelContentTable.Row partition={2}>
-          <LabelContentTable.Content label="Driver mobile">
+        <LabelContentTable.Row hasError={false} hasPartition marginTop={0}>
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label="Driver mobile number"
+            labelWidth={210}
+          >
             <div
               style={{
                 display: "flex",
@@ -134,15 +173,35 @@ export const Complex: Story = {
               }}
             >
               <span>+856 10 20304050</span>
-              <GhostButton variant="ghost_blue" label="Change" />
+              <GhostButton
+                variant="ghost_blue"
+                disabled={false}
+                isLoading={false}
+                label="Change"
+                handleButtonClick={() => {}}
+              />
             </div>
           </LabelContentTable.Content>
-          <LabelContentTable.Content label="Vehicle type">
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label="Vehicle type"
+            labelWidth={210}
+          >
             <span>Truck</span>
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row>
-          <LabelContentTable.Content label={"Icon palette" as Languages}>
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label={"Icon palette" as Languages}
+            labelWidth={210}
+          >
             <div
               style={{
                 display: "flex",
@@ -155,8 +214,17 @@ export const Complex: Story = {
             </div>
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row>
-          <LabelContentTable.Content label="Total distance">
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label="Total distance"
+            labelWidth={210}
+          >
             <div
               style={{ display: "flex", alignItems: "center", width: "100%" }}
             >
@@ -171,11 +239,21 @@ export const Complex: Story = {
             </div>
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row partition={2}>
-          <LabelContentTable.Content label="Pick-up date">
+        <LabelContentTable.Row hasError={false} hasPartition marginTop={0}>
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label="Pick-up date"
+            labelWidth={210}
+          >
             <time>05/03/2025, 09:44</time>
           </LabelContentTable.Content>
-          <LabelContentTable.Content label="Pick-up date">
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label="Pick-up date"
+            labelWidth={210}
+          >
             <time>05/03/2025, 09:44</time>
           </LabelContentTable.Content>
         </LabelContentTable.Row>

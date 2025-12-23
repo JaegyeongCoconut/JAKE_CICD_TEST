@@ -11,6 +11,7 @@
     "@repo/apis": "workspace:*",
     "@repo/constants": "workspace:*",
     "@repo/hooks": "workspace:*",
+    "@repo/stores": "workspace:*",
     "@repo/types": "workspace:*"
   },
   "devDependencies": {

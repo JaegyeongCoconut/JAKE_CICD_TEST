@@ -20,7 +20,9 @@ export const calcTableWidth = ({
     ...tableHeaderInfos.flatMap((headerInfo) => {
       const { columnWidth, secondDepthes = [] } = headerInfo;
 
-      return [columnWidth, ...secondDepthes.map((depth) => depth.columnWidth)];
+      return secondDepthes.length > 0
+        ? [...secondDepthes.map((depth) => depth.columnWidth)]
+        : [columnWidth];
     }),
     ...(nextGrid || []),
   ].filter(Boolean);

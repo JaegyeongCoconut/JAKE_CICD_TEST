@@ -1,93 +1,135 @@
 import React from "react";
 
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
-import useModal from "@repo/hooks/modal/useModal";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 
 import * as S from "./DetailModal.styled";
 import Button from "../../button/Button";
+import DisabledButton from "../../button/disabled/DisabledButton";
 import BaseModal from "../base/BaseModal";
 
-interface DetailModalProps {
+interface DetailModalBaseProps {
   className?: string;
-  isNegDisabled?: boolean;
-  isPosDisabled?: boolean;
-  isPosLoading: boolean;
-  desc?: Languages;
-  negButtonName?: Languages;
-  posButtonName?: Languages;
-  posFnType?: "submit" | "button";
+  description: Languages | undefined;
   title: Languages;
-  handleClose?: () => void;
-  handleNegButtonClick?: (e: React.MouseEvent) => void;
-  handlePosButtonClick?: () => void;
-  children: React.ReactNode;
+  handleClose: () => void;
+  children?: React.ReactNode;
 }
 
-const DetailModal = React.forwardRef<HTMLDialogElement, DetailModalProps>(
+type DetailModalPositiveButtonProps =
+  | {
+      isPositiveDisabled: true;
+      isPositiveLoading?: never;
+      positiveButtonName: Languages;
+      handlePositiveButtonClick?: never;
+    }
+  | {
+      isPositiveDisabled: boolean;
+      isPositiveLoading: boolean;
+      positiveButtonName: Languages;
+      handlePositiveButtonClick: () => void;
+    }
+  | {
+      isPositiveDisabled?: never;
+      isPositiveLoading?: never;
+      positiveButtonName?: never;
+      handlePositiveButtonClick?: never;
+    };
+
+type DetailModalNegativeButtonProps =
+  | {
+      isNegativeDisabled: true;
+      negativeButtonName: Languages;
+      handleNegativeButtonClick?: never;
+    }
+  | {
+      isNegativeDisabled: boolean;
+      negativeButtonName: Languages;
+      handleNegativeButtonClick: (e: React.MouseEvent) => void;
+    }
+  | {
+      isNegativeDisabled?: never;
+      negativeButtonName?: never;
+      handleNegativeButtonClick?: never;
+    };
+
+const DetailModal = React.forwardRef<
+  HTMLDialogElement,
+  DetailModalBaseProps &
+    DetailModalPositiveButtonProps &
+    DetailModalNegativeButtonProps
+>(
   (
     {
       className,
       children,
-      isPosLoading,
-      isPosDisabled,
-      isNegDisabled,
-      negButtonName,
-      posButtonName,
+      isPositiveLoading,
+      isPositiveDisabled,
+      isNegativeDisabled,
+      negativeButtonName,
+      positiveButtonName,
       title,
-      desc,
-      posFnType = "button",
+      description,
       handleClose,
-      handleNegButtonClick,
-      handlePosButtonClick,
+      handleNegativeButtonClick,
+      handlePositiveButtonClick,
     },
     ref,
   ) => {
     const { defaultLanguage } = useDefaultLanguage();
-    const { handleModalClose } = useModal();
 
     return (
       <BaseModal css={S.baseModal} className={className} ref={ref}>
         <S.DetailHeader>
-          <S.Title>{defaultLanguage(title)}</S.Title>
-          {desc && <S.DetailDesc>{defaultLanguage(desc)}</S.DetailDesc>}
+          <S.Title>{defaultLanguage({ text: title })}</S.Title>
+          {description && (
+            <S.DetailDescription>
+              {defaultLanguage({ text: description })}
+            </S.DetailDescription>
+          )}
         </S.DetailHeader>
         <S.DetailContent>{children}</S.DetailContent>
         <S.DetailInfoFooter>
           <Button
             variant="secondary"
-            // NOTE: Button의 disabled이 필수로 변경됨에 따라 임시로 false, 테스트 후 필요하면 값 변경 필요
             disabled={false}
-            // NOTE: Button의 isLoading이 필수로 변경됨에 따라 임시로 false, 테스트 후 필요하면 값 변경 필요
             isLoading={false}
             label={LANGUAGE_LABEL.CLOSE}
-            handleButtonClick={handleClose ?? handleModalClose}
+            handleButtonClick={handleClose}
           />
-          <div>
-            {negButtonName && (
-              <Button
-                variant="error"
-                // NOTE: Button의 disabled이 필수로 변경됨에 따라 임시로 false, 테스트 후 필요하면 값 변경 필요
-                disabled={isNegDisabled || false}
-                // NOTE: Button의 isLoading이 필수로 변경됨에 따라 임시로 false, 테스트 후 필요하면 값 변경 필요
-                isLoading={false}
-                label={negButtonName}
-                handleButtonClick={handleNegButtonClick || (() => {})}
-              />
-            )}
-            {posButtonName && (
-              <Button
-                variant="primary"
-                // NOTE: Button의 disabled이 필수로 변경됨에 따라 임시로 false, 테스트 후 필요하면 값 변경 필요
-                disabled={isPosDisabled || false}
-                isLoading={isPosLoading}
-                label={posButtonName}
-                type={posFnType}
-                handleButtonClick={handlePosButtonClick || (() => {})}
-              />
-            )}
-          </div>
+          {(negativeButtonName || positiveButtonName) && (
+            <div>
+              {negativeButtonName &&
+                (isNegativeDisabled ? (
+                  <DisabledButton variant="error" label={negativeButtonName} />
+                ) : (
+                  <Button
+                    variant="error"
+                    disabled={isNegativeDisabled}
+                    isLoading={false}
+                    label={negativeButtonName}
+                    handleButtonClick={handleNegativeButtonClick}
+                  />
+                ))}
+              {positiveButtonName &&
+                (isPositiveDisabled ? (
+                  <DisabledButton
+                    variant="primary"
+                    label={positiveButtonName}
+                  />
+                ) : (
+                  <Button
+                    variant="primary"
+                    disabled={isPositiveDisabled}
+                    isLoading={isPositiveLoading}
+                    label={positiveButtonName}
+                    type="button"
+                    handleButtonClick={handlePositiveButtonClick}
+                  />
+                ))}
+            </div>
+          )}
         </S.DetailInfoFooter>
       </BaseModal>
     );

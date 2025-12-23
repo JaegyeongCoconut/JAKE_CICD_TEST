@@ -1,8 +1,8 @@
 import type { Languages } from "./language";
 
-export type ToastType = {
+export type ToastType<T extends Languages = Languages> = {
   id: string;
-  content: Languages;
+  content: T;
   type: "success" | "warning";
 };
 

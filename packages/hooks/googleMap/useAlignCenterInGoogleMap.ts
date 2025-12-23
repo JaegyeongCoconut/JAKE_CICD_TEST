@@ -1,7 +1,8 @@
 import { isEmpty } from "lodash-es";
 
-import { useGoogleMap } from "@repo/contexts/GoogleMapProvider";
 import type { LatLng, RecursiveUndefined } from "@repo/types";
+
+import useGoogleMap from "../useGoogleMap";
 
 interface AlignCenterProps {
   paddingLeft: number;

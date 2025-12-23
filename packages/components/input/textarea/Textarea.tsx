@@ -53,7 +53,7 @@ const Textarea = ({
         value={value}
         maxLength={maxLength}
         // NOTE: translation 결과 타입에 'null' 이 잡혀서 에러 발생
-        placeholder={defaultLanguage(placeholder)!}
+        placeholder={defaultLanguage({ text: placeholder })!}
         onBlur={handleBlur}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

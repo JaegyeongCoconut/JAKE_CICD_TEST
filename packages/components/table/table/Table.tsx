@@ -1,5 +1,5 @@
 import type { ReactNode, MouseEvent } from "react";
-import React from "react";
+import React, { useId } from "react";
 
 import { isEmpty } from "lodash-es";
 
@@ -13,7 +13,6 @@ import type { TableHeaderInfo } from "@repo/types";
 import { calcTableWidth } from "@repo/utils/table";
 
 import * as S from "./Table.styled";
-import NoResult from "../../noResult/NoResult";
 import Portal from "../../portal/Portal";
 
 interface BaseTableProps {
@@ -22,10 +21,10 @@ interface BaseTableProps {
 }
 
 interface TableProps extends BaseTableProps {
-  isInitQueryFilter?: boolean;
-  isLoading?: boolean;
+  isInitQueryFilter: boolean;
+  isLoading: boolean;
   tableHeaderInfos: TableHeaderInfo;
-  title?: string;
+  title: string;
 }
 
 interface SelectRowProps extends BaseTableProps {
@@ -47,7 +46,7 @@ const Table = ({
   children,
   isLoading,
   isInitQueryFilter,
-  title = "",
+  title,
   tableHeaderInfos,
 }: TableProps) => {
   const { tableRef } = useTableScrollTop();
@@ -108,7 +107,7 @@ Table.Header = function Header({ tableHeaderInfos }: HeaderProps) {
                 rowCount={hasNotDepthOfColumn ? 3 : 1}
                 scope="col"
               >
-                {defaultLanguage(column.label)}
+                {defaultLanguage({ text: column.label })}
               </S.Th>
             );
           });
@@ -129,9 +128,11 @@ Table.SelectRow = function SelectRow({
   isSelected,
   handleSelect,
 }: SelectRowProps) {
+  const uuid = useId();
+
   const { domReady } = useDomReady();
 
-  const rowId = `table-row-${id}`;
+  const rowId = `table-row-${id ?? uuid}`;
 
   return (
     <>
@@ -143,11 +144,13 @@ Table.SelectRow = function SelectRow({
       >
         {children}
       </S.SelectRow>
-      <Portal container={`#${rowId} > td`} mounted={domReady}>
-        <S.RowButton type="button" onClick={handleSelect}>
-          <span className="a11y">select row</span>
-        </S.RowButton>
-      </Portal>
+      {!!id && (
+        <Portal container={`#${rowId} > td`} mounted={domReady}>
+          <S.RowButton type="button" onClick={handleSelect}>
+            <span className="a11y">select row</span>
+          </S.RowButton>
+        </Portal>
+      )}
     </>
   );
 };
@@ -230,8 +233,8 @@ Table.NoData = function NoData({ className }: NoDataProps) {
   return (
     <S.NoData className={className}>
       <td>
-        <WarningIcon css={S.noResultIcon} />
-        {defaultLanguage(LANGUAGE_LABEL.NO_RESULTS_FOUND)}
+        <WarningIcon css={S.dataIcon} />
+        {defaultLanguage({ text: LANGUAGE_LABEL.NO_RESULTS_FOUND })}
       </td>
     </S.NoData>
   );
@@ -243,20 +246,12 @@ Table.InitData = function InitData() {
   return (
     <S.NoData>
       <td>
-        <WebSearchIcon css={S.noResultIcon} />
-        {defaultLanguage(LANGUAGE_LABEL.PLEASE_APPLY_THE_FILTER_TO_SEARCH)}
+        <WebSearchIcon css={S.dataIcon} />
+        {defaultLanguage({
+          text: LANGUAGE_LABEL.PLEASE_APPLY_THE_FILTER_TO_SEARCH,
+        })}
       </td>
     </S.NoData>
-  );
-};
-
-Table.NoResultTr = function NoResultTr() {
-  return (
-    <S.NoResultTr>
-      <td>
-        <NoResult contents={[LANGUAGE_LABEL.NO_RESULTS_FOUND]} type="search" />
-      </td>
-    </S.NoResultTr>
   );
 };
 

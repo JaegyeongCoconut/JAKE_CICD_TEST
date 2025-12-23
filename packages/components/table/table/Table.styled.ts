@@ -72,9 +72,7 @@ export const HeadRow = styled(TableRow)<{ hasMultiColumn: boolean }>`
   `}
 `;
 
-export const Row = styled(TableRow)<{ height?: number }>`
-  height: ${({ height }) => `${height}px`};
-
+export const Row = styled(TableRow)`
   & > :last-child {
     border-right: 0;
   }
@@ -190,7 +188,7 @@ export const NoData = styled.tr`
   `}
 `;
 
-export const noResultIcon = (theme: Theme) => css`
+export const dataIcon = (theme: Theme) => css`
   width: 52px;
   height: 52px;
   margin-bottom: 8px;
@@ -198,22 +196,6 @@ export const noResultIcon = (theme: Theme) => css`
   & > path {
     fill: ${theme.color.gray_50};
   }
-`;
-
-export const NoResultTr = styled.tr`
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-
-  & > td > div {
-    display: flex;
-    row-gap: 8px;
-  }
-`;
-
-export const headerTooltip = css`
-  margin-left: 4px;
 `;
 
 interface ThProps {

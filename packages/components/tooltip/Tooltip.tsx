@@ -20,7 +20,7 @@ const Tooltip = ({ className, position, message }: TooltipProps) => {
       <QuestionCircleIcon css={S.tooltipIcon} />
       <S.Container position={position}>
         <S.Message id="tip" role="tooltip">
-          {defaultLanguage(message)}
+          {defaultLanguage({ text: message })}
         </S.Message>
       </S.Container>
     </S.Tooltip>

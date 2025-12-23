@@ -8,6 +8,19 @@ import type { DropdownOptionType, Languages } from "@repo/types";
 
 import Dropdown from "./Dropdown";
 
+// DESC: 타입 강제 지정 Dropdown의 타입이 union이라 storybook 에서 args를 never로 추론됨
+interface StoryDropdownProps {
+  className?: string;
+  disabled: boolean;
+  hasError: boolean;
+  isLoading: boolean;
+  Icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+  options: readonly DropdownOptionType<Languages>[];
+  placeholder: Languages;
+  selectedOption: DropdownOptionType<Languages>;
+  handleSelect: (value: string) => void;
+}
+
 const dropdownOptions = [
   { key: "KIA", label: "KIA" as Languages },
   { key: "HYUNDAI", label: "HYUNDAI" as Languages },
@@ -46,20 +59,25 @@ const meta = {
     isLoading: {
       description:
         "`Dropdown` 옵션 로딩 상태를 나타냅니다. 로딩 중에는 스켈레톤이 표시됩니다.",
-      defaultValue: { summary: "false" },
+      type: { required: true, name: "boolean" },
+      if: { arg: "disabled", neq: true },
     },
-    disabled: {
-      description: "`Dropdown` 기능을 비활성화 처리합니다.",
-      defaultValue: { summary: "false" },
-    },
+    disabled: { description: "`Dropdown` 기능을 비활성화 처리합니다." },
     hasError: {
       description: "`Dropdown` 에러 스타일 적용 여부를 나타냅니다.",
-      defaultValue: { summary: "false" },
+      type: { required: true, name: "boolean" },
+      if: { arg: "disabled", neq: true },
     },
     selectedOption: {
       description: "`Dropdown`에서 선택한 옵션의 값이 노출됩니다.",
-      control: false,
+      type: {
+        required: true,
+        name: "object",
+        value: { key: { name: "string" }, label: { name: "string" } },
+      },
       table: { type: { summary: "{ key : string, label : string }" } },
+      control: false,
+      if: { arg: "disabled", neq: true },
     },
     Icon: {
       description: "`Dropdown` 아이콘 설정합니다. ",
@@ -70,26 +88,30 @@ const meta = {
     },
     options: {
       description: "`Dropdown`에 표시할 옵션 목록입니다.",
-      control: false,
+      type: {
+        required: true,
+        name: "array",
+        value: {
+          name: "object",
+          value: { key: { name: "string" }, label: { name: "string" } },
+        },
+      },
       table: { type: { summary: "{ key : string, label : string }[]" } },
+      control: false,
+      if: { arg: "disabled", neq: true },
     },
     placeholder: {
       description:
         "`Dropdown`에서 선택된 옵션이 없을 때 표시되는 placeholder입니다.",
+      type: { required: true, name: "string" },
       table: { type: { summary: "string" } },
     },
     handleSelect: {
       description:
         "`Dropdown`에서 옵션을 선택했을 때 동작하는 handler 함수입니다.",
+      type: { required: true, name: "function" },
       control: false,
-    },
-    handleConditionFocus: {
-      description: "`Dropdown`에서 focus했을 때 동작하는 handler 함수입니다.",
-      control: false,
-    },
-    handleConditionBlur: {
-      description: "`Dropdown`에서 blur했을 때 동작하는 handler 함수입니다.",
-      control: false,
+      if: { arg: "disabled", neq: true },
     },
   },
   decorators: [
@@ -101,7 +123,7 @@ const meta = {
       );
     },
   ],
-} satisfies Meta<typeof Dropdown>;
+} satisfies Meta<StoryDropdownProps>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -110,10 +132,7 @@ export const Default: Story = {
   render: (args) => {
     const [selectedOption, setSelectedOption] = useState<
       DropdownOptionType<Languages>
-    >({
-      key: "",
-      label: "" as Languages,
-    });
+    >({ key: "", label: "" as Languages });
 
     const handleSelect = (findKey: string): void => {
       const selected = dropdownOptions.find((item) => item.key === findKey);

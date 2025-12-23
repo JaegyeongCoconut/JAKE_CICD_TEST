@@ -7,21 +7,17 @@ import * as S from "./Pagination.styled";
 
 interface QueryPaginationSkeletonProps {
   className?: string;
-  hasDoubleButton?: boolean;
 }
 
 const QueryPaginationSkeleton = ({
   className,
-  hasDoubleButton = true,
 }: QueryPaginationSkeletonProps) => {
   return (
     <S.Pagination className={className}>
       <S.Wrapper>
-        {hasDoubleButton && (
-          <S.ArrowButton disabled type="button">
-            <LeftDoubleIcon />
-          </S.ArrowButton>
-        )}
+        <S.ArrowButton disabled type="button">
+          <LeftDoubleIcon />
+        </S.ArrowButton>
         <S.ArrowButton disabled type="button">
           <DownIcon css={S.chevronLeftIcon} />
         </S.ArrowButton>
@@ -33,11 +29,9 @@ const QueryPaginationSkeleton = ({
         <S.ArrowButton disabled type="button">
           <DownIcon css={S.chevronRightIcon} />
         </S.ArrowButton>
-        {hasDoubleButton && (
-          <S.ArrowButton disabled type="button">
-            <LeftDoubleIcon css={S.chevronDoubleRightIcon} />
-          </S.ArrowButton>
-        )}
+        <S.ArrowButton disabled type="button">
+          <LeftDoubleIcon css={S.chevronDoubleRightIcon} />
+        </S.ArrowButton>
       </S.Wrapper>
     </S.Pagination>
   );

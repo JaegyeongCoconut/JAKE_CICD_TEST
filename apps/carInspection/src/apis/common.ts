@@ -1,9 +1,12 @@
 import axios from "axios";
 import { is, validate } from "typia";
 
-import { apiDebug } from "@repo/stores/apiDebug";
 import type { S3PresignedServerModel } from "@repo/types";
-import { sanitizeTypiaErrors } from "@repo/utils/api";
+import {
+  clearTypiaLog,
+  sanitizeTypiaErrors,
+  setTypiaLog,
+} from "@repo/utils/api";
 import { getS3FileFormData } from "@repo/utils/file";
 
 import { ax } from "~apis";
@@ -39,9 +42,7 @@ export const getMakersAPI = async (req: GetMakersQueryModel) => {
   const isMatched = is<GetMakersServerModel>(data);
 
   if (isMatched) {
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onClearLog(path);
-
+    clearTypiaLog(path);
     return data;
   }
 
@@ -54,9 +55,7 @@ export const getMakersAPI = async (req: GetMakersQueryModel) => {
       errors: response.errors,
     });
 
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onSetLog({ path, errors: response.errors });
-
+    setTypiaLog({ path, errors: response.errors });
     return sanitizedData;
   }
 };
@@ -73,9 +72,7 @@ export const getColorsAPI = async (req: GetColorsQueryModel) => {
   const isMatched = is<GetColorsServerModel>(data);
 
   if (isMatched) {
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onClearLog(path);
-
+    clearTypiaLog(path);
     return data;
   }
 
@@ -88,9 +85,7 @@ export const getColorsAPI = async (req: GetColorsQueryModel) => {
       errors: response.errors,
     });
 
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onSetLog({ path, errors: response.errors });
-
+    setTypiaLog({ path, errors: response.errors });
     return sanitizedData;
   }
 };
@@ -107,9 +102,7 @@ export const getFuelTypesAPI = async (req: GetFuelTypesQueryModel) => {
   const isMatched = is<GetFuelTypesServerModel>(data);
 
   if (isMatched) {
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onClearLog(path);
-
+    clearTypiaLog(path);
     return data;
   }
 
@@ -122,9 +115,7 @@ export const getFuelTypesAPI = async (req: GetFuelTypesQueryModel) => {
       errors: response.errors,
     });
 
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onSetLog({ path, errors: response.errors });
-
+    setTypiaLog({ path, errors: response.errors });
     return sanitizedData;
   }
 };
@@ -141,9 +132,7 @@ export const getTransmissionsAPI = async (req: GetTransmissionsQueryModel) => {
   const isMatched = is<GetTransmissionsServerModel>(data);
 
   if (isMatched) {
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onClearLog(path);
-
+    clearTypiaLog(path);
     return data;
   }
 
@@ -156,9 +145,7 @@ export const getTransmissionsAPI = async (req: GetTransmissionsQueryModel) => {
       errors: response.errors,
     });
 
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onSetLog({ path, errors: response.errors });
-
+    setTypiaLog({ path, errors: response.errors });
     return sanitizedData;
   }
 };

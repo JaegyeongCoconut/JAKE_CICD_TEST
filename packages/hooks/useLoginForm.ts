@@ -1,26 +1,18 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { object } from "yup";
 
-import type { FormLogin } from "@repo/types";
-import { SCHEMA } from "@repo/utils/yup/schema";
-import { TEST } from "@repo/utils/yup/yupTest";
+import {
+  loginSchema,
+  type LoginFormSchema,
+} from "@repo/schemas/loginForm.schema";
 
-const LOGIN_INIT_FORM = {
-  email: "",
-  password: "",
-};
-
-const schema = object({
-  email: SCHEMA.REQUIRED_STRING().test(TEST.TRIM()).test(TEST.EMAIL),
-  password: SCHEMA.REQUIRED_STRING(),
-});
+const INIT_FORM: LoginFormSchema = { email: "", password: "" };
 
 const useLoginForm = () => {
-  const formMethod = useForm<FormLogin>({
-    defaultValues: LOGIN_INIT_FORM,
+  const formMethod = useForm<LoginFormSchema>({
+    defaultValues: INIT_FORM,
     mode: "onTouched",
-    resolver: yupResolver(schema),
+    resolver: zodResolver(loginSchema),
   });
 
   return { formMethod };

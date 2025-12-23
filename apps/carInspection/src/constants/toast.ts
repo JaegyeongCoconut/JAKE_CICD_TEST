@@ -9,11 +9,13 @@ export const TOAST_MESSAGE = {
   WARNING: {
     INSPECTION_COMPLETED: {
       type: "warning",
-      content: LANGUAGE_LABEL.FAILED_TO_COMPLETE_INSPECTION,
+      content:
+        LANGUAGE_LABEL.FAILED_TO_COMPLETE_INSPECTION,
     },
     PHOTO_UPLOAD_FAIL: {
       type: "warning",
-      content: LANGUAGE_LABEL.YOU_CAN_UPLOAD_UP_TO_3_FILES_AT_A_TIME,
+      content:
+        LANGUAGE_LABEL.YOU_CAN_UPLOAD_UP_TO_3_FILES_AT_A_TIME,
     },
   },
 } satisfies ToastMessage<CarInspectionLanguages>;

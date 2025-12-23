@@ -18,7 +18,7 @@ export const Title = styled.h3`
   `}
 `;
 
-export const DetailDesc = styled.p`
+export const DetailDescription = styled.p`
   ${({ theme }) => css`
     ${theme.font.regular_13};
     color: ${theme.color.gray_60};

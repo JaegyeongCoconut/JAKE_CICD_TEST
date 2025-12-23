@@ -1,19 +1,9 @@
-export class PathStorage {
-  constructor(protected _key: string) {}
+const pathStorage = {
+  getPath: (defaultPath: string): string =>
+    localStorage.getItem("sign_in_redirect") ?? defaultPath,
+  setPath: (path: string): void => {
+    localStorage.setItem("sign_in_redirect", path);
+  },
+};
 
-  get key() {
-    return this._key;
-  }
-
-  getPath(defaultPath: string) {
-    return globalThis?.sessionStorage.getItem(this.key) ?? defaultPath;
-  }
-
-  setPath(path: string) {
-    globalThis?.sessionStorage.setItem(this._key, path);
-  }
-
-  clearPath() {
-    globalThis?.sessionStorage.removeItem(this.key);
-  }
-}
+export default pathStorage;

@@ -26,6 +26,7 @@ const QueryFilterFieldNameCheckbox = <T extends string>({
   return (
     <Checkbox
       css={S.checkbox}
+      disabled={false}
       isChecked={isAllChecked}
       handleCheck={handleAllCheckboxClick(queryKey)}
     />

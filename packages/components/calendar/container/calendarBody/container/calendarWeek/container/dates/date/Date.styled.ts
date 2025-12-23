@@ -87,9 +87,5 @@ export const Button = styled.button`
     height: 100%;
     color: ${theme.color.gray_90};
     z-index: ${theme.zIndex.CALENDAR};
-
-    &:disabled {
-      color: ${theme.color.gray_50};
-    }
   `}
 `;

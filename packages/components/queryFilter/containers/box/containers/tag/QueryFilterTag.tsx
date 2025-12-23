@@ -24,13 +24,25 @@ const QueryFilterTag = ({
 }: QueryFilterTagProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
+  const translateTagValue = (value: string): string => {
+    if (isExpanded) {
+      const pieces = value
+        .split(",")
+        .map((piece) => defaultLanguage({ text: piece.trim() as Languages }));
+
+      return pieces.join(", ");
+    }
+
+    return defaultLanguage({ text: value as Languages });
+  };
+
   return (
     <S.QueryFilterTag isExpanded={isExpanded} wrapperWidth={wrapperWidth}>
-      <S.QueryFilterTagName>{defaultLanguage(label)}: </S.QueryFilterTagName>
+      <S.QueryFilterTagName>
+        {defaultLanguage({ text: label })}:{" "}
+      </S.QueryFilterTagName>
       <S.QueryFilterTagContent>
-        {Array.isArray(content)
-          ? content
-          : defaultLanguage(content as Languages)}
+        {translateTagValue(content)}
       </S.QueryFilterTagContent>
       <Button
         css={S.button}

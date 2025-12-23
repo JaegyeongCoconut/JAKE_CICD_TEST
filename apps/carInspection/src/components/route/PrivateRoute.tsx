@@ -2,16 +2,15 @@ import React from "react";
 
 import CommonPrivateRoute from "@repo/components/route/private";
 
-import { useAuth } from "~contexts";
+import { useAuthStore } from "~stores";
 
 const PrivateRoute = () => {
-  const { user, initializing } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   return (
     <CommonPrivateRoute
       hasUser={!!user}
       isAccessiblePage={false}
-      initializing={initializing}
       navigatePath=""
     />
   );

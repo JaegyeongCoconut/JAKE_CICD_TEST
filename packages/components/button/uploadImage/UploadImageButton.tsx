@@ -40,7 +40,9 @@ const UploadImageButton = ({
             ) : (
               <>
                 <PhotoIcon css={S.photoIcon} />
-                <span>{defaultLanguage(LANGUAGE_LABEL.UPLOAD_PHOTO)}</span>
+                <span>
+                  {defaultLanguage({ text: LANGUAGE_LABEL.UPLOAD_PHOTO })}
+                </span>
                 <input
                   id="photo"
                   accept="image/jpg, image/jpeg, image/png"
@@ -56,7 +58,7 @@ const UploadImageButton = ({
       ) : (
         <S.CompletedUploadLabel hasError={hasError}>
           <CheckIcon css={S.checkIcon} />
-          <span>{defaultLanguage(uploadCompletedLabel)}</span>
+          <span>{defaultLanguage({ text: uploadCompletedLabel })}</span>
         </S.CompletedUploadLabel>
       )}
     </>

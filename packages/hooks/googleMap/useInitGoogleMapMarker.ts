@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import MarkerSvg from "@repo/assets/icon/ic_marker.svg";
-import { useGoogleMap } from "@repo/contexts/GoogleMapProvider";
+import GoogleMarkerSvg from "@repo/assets/icon/ic_google_marker.svg";
+import useGoogleMap from "@repo/hooks/useGoogleMap";
 import { zIndex } from "@repo/styles/themes";
 
 interface UseInitGoogleMapMarkerProps {
@@ -10,9 +10,14 @@ interface UseInitGoogleMapMarkerProps {
 }
 
 const useInitGoogleMapMarker = ({ lat, lng }: UseInitGoogleMapMarkerProps) => {
-  const { googleMap } = useGoogleMap();
+  const markerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(
+    null,
+  );
+
   const [marker, setMarker] =
     useState<google.maps.marker.AdvancedMarkerElement | null>(null);
+
+  const { googleMap } = useGoogleMap();
 
   useEffect(() => {
     if (!googleMap) return;
@@ -25,19 +30,20 @@ const useInitGoogleMapMarker = ({ lat, lng }: UseInitGoogleMapMarkerProps) => {
         content: createCustomIconElement(),
       });
 
+      markerRef.current = newMarker;
       setMarker(newMarker);
     };
 
     initMarker();
 
     return () => {
-      if (marker) marker.map = null;
+      if (markerRef.current) markerRef.current.map = null;
     };
   }, [googleMap]);
 
   const createCustomIconElement = (): HTMLElement => {
     const img = document.createElement("img");
-    img.src = MarkerSvg;
+    img.src = GoogleMarkerSvg;
     img.style.width = "40px";
     img.style.height = "40px";
 

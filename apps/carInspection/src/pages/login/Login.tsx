@@ -4,7 +4,7 @@ import { FormProvider } from "react-hook-form";
 
 import LoginForm from "@repo/components/form/login";
 import useLoginForm from "@repo/hooks/useLoginForm";
-import type { FormLogin } from "@repo/types";
+import type { LoginFormSchema } from "@repo/schemas/loginForm.schema";
 import { encryptWithSha256 } from "@repo/utils/crypto";
 
 import { LogoCarInspectionIcon } from "~assets";
@@ -19,7 +19,7 @@ const Login = () => {
 
   const { formMethod } = useLoginForm();
 
-  const handleLogin = (data: FormLogin) => {
+  const handleLogin = (data: LoginFormSchema) => {
     const req: LoginQueryModel = {
       email: data.email,
       password: encryptWithSha256(data.password),
@@ -42,6 +42,7 @@ const Login = () => {
       <LoginForm
         isLoading={isLoading}
         logoIcon={<LogoCarInspectionIcon css={S.logo} />}
+        resetPasswordPath={null}
         handleLogin={handleLogin}
       />
     </FormProvider>

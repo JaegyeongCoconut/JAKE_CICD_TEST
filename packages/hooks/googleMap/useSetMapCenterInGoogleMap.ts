@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 
-import { useGoogleMap } from "@repo/contexts/GoogleMapProvider";
 import type { LatLng } from "@repo/types";
+
+import useGoogleMap from "../useGoogleMap";
 
 const useSetMapCenterInGoogleMap = (center: LatLng, zoom: number) => {
   const { googleMap } = useGoogleMap();

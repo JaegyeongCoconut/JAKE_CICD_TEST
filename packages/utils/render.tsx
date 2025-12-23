@@ -4,12 +4,14 @@ import type { jsx, SerializedStyles } from "@emotion/react";
 
 import { ReactComponent as PinIcon } from "@repo/assets/icon/ic_pin.svg";
 import type {
+  DefaultLanguageFn,
   CommonUnitType,
   CurrencyUnitType,
   Languages,
   RenderTableColumnType,
   RenderTableRowType,
   RenderTableType,
+  StatusColorType,
 } from "@repo/types";
 import { formatICTDateTime } from "@repo/utils/date";
 import {
@@ -76,20 +78,22 @@ export const renderDate = ({
 };
 
 interface RenderLabelProps<
-  T extends { key: string | number; label: Languages },
+  TLabel extends Languages,
+  T extends { key: string | number; label: TLabel },
 > {
   key: string | number | undefined | null;
   list: ReadonlyArray<T>;
-  handleTranslate: ((text: Languages) => string) | undefined;
+  handleTranslate: DefaultLanguageFn<TLabel> | undefined;
 }
 
 export const renderLabel = <
-  T extends { key: string | number; label: Languages },
+  TLabel extends Languages,
+  T extends { key: string | number; label: TLabel },
 >({
   key,
   list,
   handleTranslate,
-}: RenderLabelProps<T>): jsx.JSX.Element => {
+}: RenderLabelProps<TLabel, T>): jsx.JSX.Element => {
   if (
     key === undefined ||
     key === null ||
@@ -101,7 +105,9 @@ export const renderLabel = <
   const label = findLookupTableLabel({ list, key }) || "-";
 
   return (
-    <span>{handleTranslate ? handleTranslate(label as Languages) : label}</span>
+    <span>
+      {handleTranslate ? handleTranslate({ text: label as TLabel }) : label}
+    </span>
   );
 };
 
@@ -162,8 +168,8 @@ export const renderDefault = (value: unknown): jsx.JSX.Element => {
 
 interface RenderStatusProps {
   className?: string;
-  color: "orange" | "green" | "blue" | "gray" | "red" | undefined;
-  hasBg?: boolean;
+  color: StatusColorType | undefined;
+  hasBg: boolean;
   status: Languages | null;
 }
 

@@ -16,9 +16,12 @@ const useDropdownValue = ({ options, initKey }: UseDropdownValueProps) => {
     (key: string): void => {
       const selectIndex = options.findIndex((item) => item.key === key);
 
+      if (selectIndex < 0)
+        return setSelectedOption({ key: "", label: "" as Languages });
+
       setSelectedOption(options[selectIndex]);
     },
-    [selectedOption],
+    [options],
   );
 
   useLayoutEffect(() => {

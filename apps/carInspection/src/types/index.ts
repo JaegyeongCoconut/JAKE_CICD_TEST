@@ -7,6 +7,5 @@ export * from "./domain/common/client";
 export * from "./domain/common/query";
 export * from "./domain/common/server";
 export * from "./domain/inspection/client";
-export * from "./domain/inspection/form";
 export * from "./domain/inspection/query";
 export * from "./domain/inspection/server";

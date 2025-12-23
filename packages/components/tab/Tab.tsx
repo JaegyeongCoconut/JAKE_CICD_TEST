@@ -3,9 +3,9 @@ import React, { createContext, useContext } from "react";
 
 import { Link } from "react-router-dom";
 
-import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import useTab from "@repo/hooks/useTab";
+import { useQueryFilterStore } from "@repo/stores/queryFilter";
 import type { Languages, TabType } from "@repo/types";
 
 import * as S from "./Tab.styled";
@@ -41,7 +41,12 @@ const TabHeader = ({ className }: TabHeaderProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   const { tabs, selectedTab } = useContext(TabContentContext);
-  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
+  const isInitQueryFilter = useQueryFilterStore(
+    (state) => state.isInitQueryFilter,
+  );
+  const setIsInitQueryFilter = useQueryFilterStore(
+    (state) => state.setIsInitQueryFilter,
+  );
 
   const handleTabClick = (): void => {
     if (isInitQueryFilter) return;
@@ -61,7 +66,7 @@ const TabHeader = ({ className }: TabHeaderProps) => {
             to={`?tab=${key}`}
             onClick={handleTabClick}
           >
-            <span>{defaultLanguage(label)}</span>
+            <span>{defaultLanguage({ text: label })}</span>
           </Link>
         </S.Tab>
       ))}

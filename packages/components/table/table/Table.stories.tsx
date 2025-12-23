@@ -8,6 +8,7 @@ import type { Languages } from "@repo/types";
 import { filterTableColumns } from "@repo/utils/table";
 
 import Table from "./Table";
+import TableSkeleton from "./Table.skeleton";
 
 const tableHeaderInfos = [
   { key: "column1", label: "Column 1" as Languages, columnWidth: "160px" },
@@ -82,6 +83,7 @@ const meta = {
     title: {
       description:
         "`Table` 제목입니다. ally를 위해 사용되며, 화면에는 표시되지 않습니다.",
+      control: false,
     },
     tableHeaderInfos: {
       description:
@@ -92,6 +94,7 @@ const meta = {
             "{ key: string, label: string, columnWidth: string, secondDepthes?: { key: string, label: string, columnWidth: string }[] }[]",
         },
       },
+      control: false,
     },
   },
 } satisfies Meta<typeof Table>;
@@ -100,5 +103,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => <Table {...args} css={table} />,
+  render: (args) => {
+    return args.isLoading ? (
+      <TableSkeleton
+        css={table}
+        rowCount={3}
+        tableHeaderInfos={args.tableHeaderInfos}
+      />
+    ) : (
+      <Table {...args} css={table} />
+    );
+  },
 };

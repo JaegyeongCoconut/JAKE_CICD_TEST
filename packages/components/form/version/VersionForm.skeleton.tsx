@@ -21,7 +21,10 @@ const VersionFormSkeleton = ({ className }: VersionFormSkeletonProps) => {
       css={S.labelContent}
       className={className}
       variant="empty"
+      hasDefaultMarginBottom
       info={VERSION_FORM_INFO}
+      labelWidth={210}
+      subject={null}
     />
   );
 };

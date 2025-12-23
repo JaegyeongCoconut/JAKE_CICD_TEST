@@ -1,3 +1,3 @@
-import type { FormLogin } from "@repo/types";
+import type { LoginFormSchema } from "@repo/schemas/loginForm.schema";
 
-export interface LoginQueryModel extends FormLogin {}
+export interface LoginQueryModel extends LoginFormSchema {}

@@ -9,7 +9,8 @@ export const formatFullName = ({
   firstName,
   lastName,
 }: FormatFullNameProps): string | null => {
-  if (!firstName && !lastName) return null;
+  if (!firstName?.trim() && !lastName?.trim()) return null;
+
   return `${firstName || ""} ${lastName || ""}`.trim();
 };
 

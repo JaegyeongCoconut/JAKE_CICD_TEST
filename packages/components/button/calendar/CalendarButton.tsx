@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import useDialog from "@repo/hooks/modal/useDialog";
 
@@ -7,7 +7,6 @@ import * as S from "./CalendarButton.styled";
 interface CalendarButtonProps {
   className?: string;
   disabled: boolean;
-  handleOpen?: (state: boolean) => void;
   onPopup: (
     ref: React.RefObject<HTMLDialogElement>,
     isOpen: boolean,
@@ -17,13 +16,9 @@ interface CalendarButtonProps {
 }
 
 const CalendarButton = React.forwardRef<HTMLButtonElement, CalendarButtonProps>(
-  ({ className, children, disabled, handleOpen, onPopup }, ref) => {
+  ({ className, children, disabled, onPopup }, ref) => {
     const { isDialogOpen, dialogRef, handleToggleDialog, handleDialogClose } =
       useDialog({ disabled });
-
-    useEffect(() => {
-      typeof handleOpen === "function" && handleOpen(isDialogOpen);
-    }, [isDialogOpen]);
 
     return (
       <>

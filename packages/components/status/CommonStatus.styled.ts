@@ -1,8 +1,12 @@
+import type { Theme } from "@emotion/react";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
+import type { StatusColorType } from "@repo/types";
+
 interface LabelProps {
-  hasBg?: boolean;
+  variant: StatusColorType;
+  hasBg: boolean;
 }
 
 export const Status = styled.span<LabelProps>`
@@ -13,37 +17,23 @@ export const Status = styled.span<LabelProps>`
   `}
 `;
 
-export const OrangeLabel = styled(Status)<LabelProps>`
-  ${({ theme, hasBg }) => css`
-    color: ${theme.color.yellow_60};
-    background-color: ${hasBg && theme.color.yellow_10};
-  `}
-`;
+const statusColor: {
+  [key: string]: {
+    color: keyof Theme["color"];
+    backgroundColor: keyof Theme["color"];
+  };
+} = {
+  orange: { color: "yellow_60", backgroundColor: "yellow_10" },
+  green: { color: "green_50", backgroundColor: "green_10" },
+  blue: { color: "blue_60", backgroundColor: "blue_60_10" },
+  gray: { color: "gray_60", backgroundColor: "gray_20" },
+  red: { color: "red_50", backgroundColor: "red_20" },
+};
 
-export const GreenLabel = styled(Status)<LabelProps>`
-  ${({ theme, hasBg }) => css`
-    color: ${theme.color.green_50};
-    background-color: ${hasBg && theme.color.green_10};
-  `}
-`;
-
-export const BlueLabel = styled(Status)<LabelProps>`
-  ${({ theme, hasBg }) => css`
-    color: ${theme.color.blue_60};
-    background-color: ${hasBg && theme.color.blue_60_10};
-  `}
-`;
-
-export const GrayLabel = styled(Status)<LabelProps>`
-  ${({ theme, hasBg }) => css`
-    color: ${theme.color.gray_60};
-    background-color: ${hasBg && theme.color.gray_20};
-  `}
-`;
-
-export const RedLabel = styled(Status)<LabelProps>`
-  ${({ theme, hasBg }) => css`
-    color: ${theme.color.red_50};
-    background-color: ${hasBg && theme.color.red_20};
+export const Label = styled(Status)<LabelProps>`
+  ${({ theme, hasBg, variant }) => css`
+    color: ${theme.color[statusColor[variant].color]};
+    background-color: ${hasBg &&
+    theme.color[statusColor[variant].backgroundColor]};
   `}
 `;

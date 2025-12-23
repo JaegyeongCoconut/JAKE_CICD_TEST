@@ -25,11 +25,11 @@ const CalendarHeader = ({ datePicker, calendar }: CalendarHeaderProps) => {
         <S.MonthYearContent>
           <S.OpenMonthWrapper>
             <time>
-              {defaultLanguage(
-                datePicker.monthYear.value
+              {defaultLanguage({
+                text: datePicker.monthYear.value
                   .format("MMM")
                   .toUpperCase() as Languages,
-              )}
+              })}
             </time>
             <DownIcon css={S.chevronMonthIcon(!!calendar.isOpenMonthDialog)} />
           </S.OpenMonthWrapper>

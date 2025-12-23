@@ -9,6 +9,7 @@ import type { Languages } from "@repo/types";
 import { renderDefault } from "@repo/utils/render";
 
 import CheckTable from "./CheckTable";
+import CheckTableSkeleton from "./CheckTable.skeleton";
 import Checkbox from "../../button/checkbox/Checkbox";
 import GhostButton from "../../button/ghost/GhostButton";
 
@@ -50,14 +51,24 @@ const meta = {
     isInitQueryFilter: false,
     toolButtons: (
       <>
-        <GhostButton variant="ghost" label="Pin" handleButtonClick={() => {}} />
         <GhostButton
           variant="ghost"
+          disabled={false}
+          isLoading={false}
+          label="Pin"
+          handleButtonClick={() => {}}
+        />
+        <GhostButton
+          variant="ghost"
+          disabled={false}
+          isLoading={false}
           label="Unpin"
           handleButtonClick={() => {}}
         />
         <GhostButton
           variant="ghost_red"
+          disabled={false}
+          isLoading={false}
           label="Delete"
           handleButtonClick={() => {}}
         />
@@ -106,6 +117,7 @@ const meta = {
     title: {
       description:
         "`CheckTable` 제목입니다. ally를 위해 사용되며, 화면에는 표시되지 않습니다.",
+      control: false,
     },
     selectedCount: {
       description: "`CheckTable`에서 현재 선택된 행(Row)의 개수를 의미합니다.",
@@ -113,15 +125,18 @@ const meta = {
     },
     isAllChecked: {
       description: "`CheckTable`의 전체 선택 체크박스 상태를 나타냅니다.",
+      type: { required: true, name: "boolean" },
       control: false,
     },
     handleAllCheck: {
       description:
         "`CheckTable`에서 전체 행을 선택할 때 호출되는 handler 함수입니다.",
+      type: { required: true, name: "function" },
     },
     handleAllUnCheck: {
       description:
         "`CheckTable`에서 전체 행 선택을 해제할 때 호출되는 handler 함수입니다.",
+      type: { required: true, name: "function" },
     },
   },
   decorators: [
@@ -173,7 +188,13 @@ export const Default: Story = {
       handleAllUnCheck,
     } = useCheckTableWithCondition({ tableDatas: dummyTableData ?? [] });
 
-    return (
+    return args.isLoading ? (
+      <CheckTableSkeleton
+        css={table}
+        rowCount={3}
+        tableHeaderInfos={args.tableHeaderInfos}
+      />
+    ) : (
       <CheckTable
         {...args}
         css={table}
@@ -186,6 +207,7 @@ export const Default: Story = {
           <CheckTable.Row key={i}>
             <CheckTable.CheckTd>
               <Checkbox
+                disabled={false}
                 isChecked={isChecked(item?.id)}
                 handleCheck={handleCheck(item?.id)}
               />

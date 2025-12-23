@@ -5,7 +5,7 @@ import { useFormContext } from "react-hook-form";
 
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { FormResetPassword } from "@repo/types";
+import type { ResetPasswordFormSchema } from "@repo/schemas/resetPasswordForm.schema";
 
 import * as S from "./AccountIdForm.styled";
 import AccountInput from "../../../../input/accountInput/AccountInput";
@@ -13,7 +13,7 @@ import ErrorMessage from "../../../../message/ErrorMessage";
 
 interface AccountIdFormProps {
   isTimeStart: boolean;
-  handleEmailSend: (data: FormResetPassword) => void;
+  handleEmailSend: (data: ResetPasswordFormSchema) => void;
 }
 
 const AccountIdForm = ({
@@ -28,7 +28,7 @@ const AccountIdForm = ({
     handleSubmit,
     register,
     setValue,
-  } = useFormContext<FormResetPassword>();
+  } = useFormContext<ResetPasswordFormSchema>();
 
   return (
     <S.AccountIdSection isVerifyDone={getValues("verify.isAuthCodeSend")}>
@@ -52,7 +52,7 @@ const AccountIdForm = ({
           type="button"
           onClick={handleSubmit(handleEmailSend)}
         >
-          {defaultLanguage(LANGUAGE_LABEL.VERIFY)}
+          {defaultLanguage({ text: LANGUAGE_LABEL.VERIFY })}
         </S.EmailVerifyButton>
       </S.AccountInputWrapper>
       {errors.verify?.email?.message && (

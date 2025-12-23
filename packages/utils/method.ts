@@ -1,8 +1,5 @@
 import type { Languages } from "@repo/types";
 
-export const keys = <T extends object>(object: T): (keyof T)[] =>
-  Object.keys(object) as (keyof T)[];
-
 interface FindLookupTableLabelProps<
   T extends { key: string | number; label: Languages },
 > {
@@ -26,17 +23,17 @@ export const findLookupTableLabel = <
 export interface getValueFromKeyPairReturnTypeStringProps<
   T extends Record<number | string, string>,
 > {
-  hasReturnTypeString: true;
   value: number | string | undefined | null;
   pair: T;
+  returnAsString: true;
 }
 
 export interface getValueFromKeyPairReturnTypeMappedPairProps<
   T extends Record<number | string, string>,
 > {
-  hasReturnTypeString: false;
   value: number | string | undefined | null;
   pair: T;
+  returnAsString: false;
 }
 
 export function getValueFromKeyPair<T extends Record<number | string, string>>(
@@ -50,12 +47,20 @@ export function getValueFromKeyPair<T extends Record<number | string, string>>(
 export function getValueFromKeyPair<T extends Record<number | string, string>>({
   pair,
   value,
-  hasReturnTypeString,
+  returnAsString,
 }:
   | getValueFromKeyPairReturnTypeStringProps<T>
   | getValueFromKeyPairReturnTypeMappedPairProps<T>) {
   if (value == null || value === undefined || !(value in pair))
     return undefined;
 
-  return hasReturnTypeString ? pair[value] : (pair[value] as T[keyof T]);
+  return returnAsString ? pair[value] : (pair[value] as T[keyof T]);
 }
+
+export const getLiteralArrayFromKeyPair = <
+  T extends Record<string | number, string>,
+>(
+  keyPair: T,
+): `${Extract<keyof T, string | number>}`[] => {
+  return Object.keys(keyPair) as `${Extract<keyof T, string | number>}`[];
+};

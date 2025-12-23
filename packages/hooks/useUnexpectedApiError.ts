@@ -1,5 +1,4 @@
 import { upperCase } from "lodash-es";
-import { useLocation } from "react-router-dom";
 
 import { COMMON_ERROR_CODE } from "@repo/constants/error/code";
 
@@ -12,8 +11,6 @@ interface ShowAlertProps {
 
 // NOTE: 정의하지 않은 API 에러 발생 시, 사용자에게 알림을 보여주는 커스텀 훅
 const useUnexpectedApiError = () => {
-  const location = useLocation();
-
   const showAlert = ({
     message = "None",
     method = "None",
@@ -35,12 +32,14 @@ const useUnexpectedApiError = () => {
       return;
     }
 
+    const currentPath = window.location.pathname;
+
     alert(`An unexpected error has occurred.
       Please share the following information with our support team to resolve the issue:
       - API Path: ${upperCase(method)} ${url}
       - Error Code: ${statusCode}
       - Error Message: ${message}
-      - Current Page: ${location.pathname}
+      - Current Page: ${currentPath}
       - Current UTC Time: ${new Date().toUTCString()}`);
   };
 

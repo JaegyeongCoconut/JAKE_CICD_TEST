@@ -9,7 +9,7 @@ import * as S from "./FormRadioButton.styled";
 
 interface RadioButtonProps<T extends string | number> {
   className?: string;
-  disabled?: boolean;
+  disabled: boolean;
   radioList: readonly RadioType<T, Languages>[];
   register: UseFormRegisterReturn<string>;
 }
@@ -35,7 +35,7 @@ const FormRadioButton = <T extends string | number>({
             {...register}
           />
           <S.RadioButton htmlFor={item.key + uuid} tabIndex={0} />
-          <span>{defaultLanguage(item.label)}</span>
+          <span>{defaultLanguage({ text: item.label })}</span>
         </S.Label>
       ))}
     </S.RadioWrapper>

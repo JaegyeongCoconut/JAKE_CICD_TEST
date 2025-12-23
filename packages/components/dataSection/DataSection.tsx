@@ -1,9 +1,8 @@
-import React, { useCallback } from "react";
+import React, { Children, useCallback } from "react";
 
 import { ReactComponent as DownloadIcon } from "@repo/assets/icon/ic_download.svg";
 import { ReactComponent as RefreshIcon } from "@repo/assets/icon/ic_refresh.svg";
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
-import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 import { formatICTDateTime, formatLocalDateTime } from "@repo/utils/date";
@@ -14,45 +13,30 @@ import Button from "../button/Button";
 
 interface DataSectionProps {
   className?: string;
-  isLocalTime?: boolean;
-  activeButtons?: React.ReactNode;
-  dataUpdatedAt?: number;
-  title?: Languages;
+  isApiCalled: boolean;
+  isLocalTime?: boolean; // NOTE: moveIoT 에서만 사용하고 있어 옵셔널 유지
+  activeButtons: React.ReactNode;
+  dataUpdatedAt: number;
+  title: Languages;
   totalData: number;
   onRefetch: () => void;
   onRemove: () => void;
   children: React.ReactNode;
 }
 
-interface ExcelDownloadButtonProps {
-  className?: string;
-  disabled?: boolean;
-  isLoading: boolean;
-  handleDownload: () => void;
-}
-
-export interface ActiveButtonProps {
-  className?: string;
-  variant?: "primary" | "secondary";
-  disabled?: boolean;
-  label: Languages;
-  handleActiveButtonClick: () => void;
-}
-
 const DataSection = ({
-  children,
   className,
-  totalData,
+  isApiCalled,
+  isLocalTime = false,
   activeButtons,
   dataUpdatedAt,
-  title = "List",
-  isLocalTime = false,
+  title,
+  totalData,
   onRefetch,
   onRemove,
+  children,
 }: DataSectionProps) => {
   const { defaultLanguage } = useDefaultLanguage();
-
-  const { isInitQueryFilter } = useQueryInitFilterHooks();
 
   const handleRefetch = useCallback(() => {
     onRemove && onRemove();
@@ -61,15 +45,21 @@ const DataSection = ({
 
   return (
     <section className={className}>
-      <S.Header>
+      <S.Header
+        hasOnlyButton={
+          isApiCalled && !title && Children.count(activeButtons) > 0
+        }
+      >
         <S.LeftContent>
           <h2>
-            {defaultLanguage(title)}&#32;(
-            {isInitQueryFilter ? 0 : totalData ? comma(totalData) : 0})
+            {defaultLanguage({ text: title })}&#32;(
+            {!isApiCalled ? 0 : totalData ? comma(totalData) : 0})
           </h2>
-          {!isInitQueryFilter && (
+          {isApiCalled && (
             <S.Refetch>
-              <span>{defaultLanguage(LANGUAGE_LABEL.LATEST_UPDATED)}:</span>
+              <span>
+                {defaultLanguage({ text: LANGUAGE_LABEL.LATEST_UPDATED })}:
+              </span>
               <time>
                 {dataUpdatedAt
                   ? isLocalTime
@@ -95,16 +85,23 @@ const DataSection = ({
   );
 };
 
+interface ExcelDownloadButtonProps {
+  className?: string;
+  disabled: boolean;
+  isLoading: boolean;
+  handleDownload: () => void;
+}
+
 DataSection.ExcelDownloadButton = function ExcelDownloadButton({
-  handleDownload,
-  isLoading,
   disabled,
+  isLoading,
+  handleDownload,
 }: ExcelDownloadButtonProps) {
   return (
     <Button
       css={S.excelDownloadButton}
       variant="secondary"
-      disabled={disabled || false}
+      disabled={disabled}
       isLoading={isLoading}
       Icon={DownloadIcon}
       label={LANGUAGE_LABEL.EXPORT}

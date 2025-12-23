@@ -3,7 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 import type { jsx } from "@emotion/react";
 
 import { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
+import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateUnion } from "@repo/types";
 
 import * as S from "./QueryFilterTagBox.styled";
@@ -13,8 +15,15 @@ const QueryFilterTagBox = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [wrapperWidth, setWrapperWidth] = useState(0);
 
-  const { queryFilters, updateTagValue, updateInputValue } =
-    useQueryFilterHooks();
+  const queryFilters = useQueryFilterStateStore((state) => state.queryFilters);
+  const updateInputValue = useQueryFilterStateStore(
+    (state) => state.onUpdateInputValue,
+  );
+  const updateTagValue = useQueryFilterStateStore(
+    (state) => state.onUpdateTagValue,
+  );
+
+  const { defaultLanguage } = useDefaultLanguage();
 
   useEffect(() => {
     if (!wrapperRef.current) return;
@@ -34,10 +43,18 @@ const QueryFilterTagBox = () => {
 
   const handleTagDeleteButtonClick =
     (queryKey: string, selectedTag: string | string[]) => (): void => {
-      updateTagValue({
-        queryKey,
-        selectedKey: Array.isArray(selectedTag) ? [] : "",
-      });
+      Array.isArray(selectedTag)
+        ? updateTagValue({
+            queryKey,
+            options: "array",
+            selectedKey: [],
+          })
+        : updateTagValue({
+            queryKey,
+            options: "single",
+            selectedKey: "",
+          });
+
       updateInputValue({ queryKey, inputValue: "" });
     };
 
@@ -60,7 +77,7 @@ const QueryFilterTagBox = () => {
         hasAllCheckButton &&
         tagValue.length === selections.length;
       const content = allSelected
-        ? "All"
+        ? defaultLanguage({ text: LANGUAGE_LABEL.ALL })
         : tagValue
             .map(
               (key) =>

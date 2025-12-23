@@ -50,16 +50,3 @@ export const checkUrl = (value: string): boolean => {
 
   return regex.test(value);
 };
-
-export const checkColorHexCode = (value: string): boolean => {
-  const regex = /([^a-fA-F0-9])/gim;
-
-  return regex.test(value);
-};
-
-export const checkValidCarOption = (value: string): boolean => {
-  const regex =
-    /^[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};':"\\|,.<>\/\?~`\s]*$/;
-
-  return regex.test(value);
-};

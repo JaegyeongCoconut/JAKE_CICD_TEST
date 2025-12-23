@@ -28,21 +28,27 @@ const HeadlessRadioButton = <T extends string | number>({
 
 type ContentProps<T extends string | number> = {
   className?: string;
-  disabled?: boolean;
+  disabled: boolean;
   radio: RadioType<T, Languages>;
   radioState: T | null;
-  handleRadioButtonClick?: (radio: T) => () => void;
+  handleRadioButtonClick: (radio: T) => () => void;
 };
 
 const Content = <T extends string | number>({
   className,
-  radioState,
-  radio,
   disabled,
+  radio,
+  radioState,
   handleRadioButtonClick,
 }: ContentProps<T>) => {
   const uuid = useId();
   const { defaultLanguage } = useDefaultLanguage();
+
+  const handleChange = (): void => {
+    if (!handleRadioButtonClick) return;
+
+    handleRadioButtonClick(radio.key)();
+  };
 
   return (
     <label className={className}>
@@ -52,11 +58,11 @@ const Content = <T extends string | number>({
         checked={radioState === radio.key}
         disabled={disabled}
         type="radio"
-        onChange={handleRadioButtonClick && handleRadioButtonClick(radio.key)}
+        onChange={handleChange}
       />
       <label htmlFor={radio.key + uuid} tabIndex={0} />
       {radio.Icon && <radio.Icon />}
-      <span>{defaultLanguage(radio.label)}</span>
+      <span>{defaultLanguage({ text: radio.label })}</span>
     </label>
   );
 };

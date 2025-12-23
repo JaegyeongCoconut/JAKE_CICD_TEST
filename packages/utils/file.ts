@@ -1,18 +1,19 @@
 import type { AxiosResponse } from "axios";
 
+import type { IMAGE_FILE_EXTENSIONS } from "@repo/assets/static/file";
 import type { S3PresignedServerModel } from "@repo/types";
 
 import { makeNewImageFileName } from "./formatter/name";
-import { extractS3ImageKey } from "./image";
+import { extractS3ImageKey } from "./image/common";
 
 interface GetFileSizeProps {
   size: number;
-  type: "MB" | "KB";
+  type: "MB" | "kB";
 }
 
 export const getFileSize = ({ type, size }: GetFileSizeProps): number => {
   switch (type) {
-    case "KB":
+    case "kB":
       return +(size / 1024).toFixed(2);
     case "MB":
       return +(size / 1048576).toFixed(2);
@@ -40,7 +41,9 @@ export const getS3FileFormData = ({
 };
 
 interface CheckFileExtensionProps {
-  acceptableFileExtensions: readonly string[];
+  acceptableFileExtensions: ReadonlyArray<
+    (typeof IMAGE_FILE_EXTENSIONS)[number]
+  >;
   currentFileExtension: string;
 }
 
@@ -48,7 +51,7 @@ export const checkFileExtension = ({
   acceptableFileExtensions,
   currentFileExtension,
 }: CheckFileExtensionProps): boolean =>
-  acceptableFileExtensions.includes(currentFileExtension);
+  (acceptableFileExtensions as string[]).includes(currentFileExtension);
 
 interface UploadFileToS3AndReturnFileKeyProps {
   file: File | string;

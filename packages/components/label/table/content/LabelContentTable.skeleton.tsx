@@ -1,72 +1,104 @@
 import React from "react";
 
+import type { jsx } from "@emotion/react";
 import Skeleton from "react-loading-skeleton";
 
-import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages, ReadonlyOverlappingArray } from "@repo/types";
 
+import type { LabelContentType } from "./LabelContentTable";
 import LabelContentTable from "./LabelContentTable";
 import * as S from "./LabelContentTable.styled";
 
-type LabelContentType = "bg" | "underline" | "empty";
-type InfoPiece = { key: string; isRequired?: boolean; heading: Languages };
-
-interface LabelContentSkeletonProps {
+interface BaseLabelContentTableSkeletonProps {
   className?: string;
   variant: LabelContentType;
-  marginBottom?: number;
-  info: ReadonlyOverlappingArray<InfoPiece>;
-  labelWidth?: number; // TODO: 임시 Optional 처리 추후 필수값으로 변경 필요
-  subject?: Languages | React.ReactNode;
+  info: ReadonlyOverlappingArray<{
+    key: string;
+    heading: Languages;
+  }>;
+  labelWidth: number;
+  subject: Languages | React.ReactNode | null;
 }
+
+interface DefaultMarginBottomLabelContentTableSkeletonProps
+  extends BaseLabelContentTableSkeletonProps {
+  hasDefaultMarginBottom: true;
+  marginBottom?: never;
+}
+
+interface CustomMarginBottomLabelContentTableSkeletonProps
+  extends BaseLabelContentTableSkeletonProps {
+  hasDefaultMarginBottom: false;
+  marginBottom: number;
+}
+
+type LabelContentTableSkeletonProps =
+  | DefaultMarginBottomLabelContentTableSkeletonProps
+  | CustomMarginBottomLabelContentTableSkeletonProps;
 
 const LabelContentTableSkeleton = ({
   className,
   marginBottom,
+  hasDefaultMarginBottom,
   info: infos,
   subject,
   variant,
   labelWidth,
-}: LabelContentSkeletonProps) => {
-  const { defaultLanguage } = useDefaultLanguage();
+}: LabelContentTableSkeletonProps) => {
+  const renderRow = (): jsx.JSX.Element => {
+    return (
+      <>
+        {infos.map(
+          (info, i) =>
+            info.length !== 0 && (
+              <LabelContentTable.Row
+                key={i}
+                hasError={false}
+                hasPartition={info.length === 2}
+                marginTop={0}
+              >
+                {info.map(({ key, heading }) => (
+                  <LabelContentTable.Content
+                    key={key}
+                    hasError={false}
+                    isRequired={false}
+                    label={heading}
+                    labelWidth={labelWidth}
+                  >
+                    <S.SkeletonWrapper>
+                      {key === "profile" ? (
+                        <Skeleton height="56px" width="56px" circle />
+                      ) : (
+                        <Skeleton />
+                      )}
+                    </S.SkeletonWrapper>
+                  </LabelContentTable.Content>
+                ))}
+              </LabelContentTable.Row>
+            ),
+        )}
+      </>
+    );
+  };
 
-  return (
+  return hasDefaultMarginBottom ? (
     <LabelContentTable
       className={className}
       variant={variant}
-      marginBottom={marginBottom}
+      hasDefaultMarginBottom
+      subject={subject}
     >
-      {subject &&
-        (typeof subject === "string" ? (
-          <S.SubjectWrapper>
-            {defaultLanguage(subject as Languages)}
-          </S.SubjectWrapper>
-        ) : (
-          <S.SubjectComponentWrapper>{subject}</S.SubjectComponentWrapper>
-        ))}
-      {infos.map(
-        (info, i) =>
-          info.length !== 0 && (
-            <LabelContentTable.Row key={i} partition={info.length}>
-              {info.map(({ key, heading, isRequired }) => (
-                <LabelContentTable.Content
-                  key={key}
-                  isRequired={isRequired}
-                  label={heading}
-                  labelWidth={labelWidth}
-                >
-                  <S.SkeletonWrapper>
-                    {key === "profile" ? (
-                      <Skeleton height="56px" width="56px" circle />
-                    ) : (
-                      <Skeleton />
-                    )}
-                  </S.SkeletonWrapper>
-                </LabelContentTable.Content>
-              ))}
-            </LabelContentTable.Row>
-          ),
-      )}
+      {renderRow()}
+    </LabelContentTable>
+  ) : (
+    <LabelContentTable
+      className={className}
+      variant={variant}
+      hasDefaultMarginBottom={false}
+      marginBottom={marginBottom}
+      subject={subject}
+    >
+      {renderRow()}
     </LabelContentTable>
   );
 };

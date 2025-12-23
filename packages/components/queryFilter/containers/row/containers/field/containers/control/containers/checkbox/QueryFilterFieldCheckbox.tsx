@@ -36,7 +36,7 @@ const QueryFilterFieldCheckbox = <T extends string>({
           key={i}
           disabled={false}
           isChecked={queryFilter.tagValue.includes(key)}
-          label={defaultLanguage(label)}
+          label={defaultLanguage({ text: label })}
           handleCheck={handleCheckboxClick(queryKey, key)}
         />
       ))}

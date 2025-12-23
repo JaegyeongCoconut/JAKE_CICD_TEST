@@ -56,7 +56,7 @@ const QueryFilterFieldInput = <T extends string>({
         <S.QueryFilterFieldInputApplyButton
           onMouseDown={handleApplyButtonMouseDown(queryKey)}
         >
-          {defaultLanguage(LANGUAGE_LABEL.APPLY)}
+          {defaultLanguage({ text: LANGUAGE_LABEL.APPLY })}
         </S.QueryFilterFieldInputApplyButton>
       )}
     </S.QueryFilterFieldInputWrapper>

@@ -1,5 +1,4 @@
 import { copyServiceWorker } from "./copy-service-worker.js";
-import { createI18nextDeclare } from "./create-i18next-declare.js";
 import { SERVICE_INFO } from "../assets/static/serviceInfo.js";
 
 import { execSync } from "child_process";
@@ -24,21 +23,8 @@ const packageRun = () => {
       copyServiceWorker(serviceName);
     }
 
-    createI18nextDeclare({
-      serviceName: serviceInfo.serviceName,
-      needsTranslation: serviceInfo.needsTranslation,
-      command,
-    });
-
     runScript(scriptCommand);
   } else {
-    Object.values(SERVICE_INFO).forEach((serviceInfo) => {
-      createI18nextDeclare({
-        serviceName: serviceInfo.serviceName,
-        needsTranslation: serviceInfo.needsTranslation,
-        command,
-      });
-    });
     runScript(`turbo ${command}`);
   }
 };

@@ -7,11 +7,6 @@ import { LANGUAGE_LABEL } from "./languageLabel";
 
 export const COMMON_TOAST_MESSAGE = {
   SUCCESS: {
-    COPY_DRIVER_MOBILE: {
-      type: "success",
-      content:
-        LANGUAGE_LABEL.COPIED_THE_MOBILE_NUMBER,
-    },
     COPY_LINK: {
       type: "success",
       content:
@@ -22,20 +17,10 @@ export const COMMON_TOAST_MESSAGE = {
       content:
         LANGUAGE_LABEL.MOBILE_NUMBER_HAS_BEEN_COPIED,
     },
-    PASSWORD_CHANGE: {
-      type: "success",
-      content:
-        LANGUAGE_LABEL.PASSWORD_HAS_BEEN_CHANGED,
-    },
     PASSWORD_COPIED: {
       type: "success",
       content:
         LANGUAGE_LABEL.PASSWORD_HAS_BEEN_COPIED,
-    },
-    STATUS_CHANGE: {
-      type: "success",
-      content:
-        LANGUAGE_LABEL.STATUS_HAS_BEEN_CHANGED,
     },
   },
   WARNING: {

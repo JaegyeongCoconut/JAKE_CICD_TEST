@@ -72,7 +72,9 @@ const FileUploadInput = ({
           )}
         </S.FileButtonWrapper>
       </S.FileInput>
-      <S.FileInputInfo>{defaultLanguage(fileInputInfo)}</S.FileInputInfo>
+      <S.FileInputInfo>
+        {defaultLanguage({ text: fileInputInfo })}
+      </S.FileInputInfo>
       {errorMessage && <ErrorMessage message={errorMessage} />}
     </S.FileInputWrapper>
   );

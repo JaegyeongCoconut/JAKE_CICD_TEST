@@ -1,7 +1,7 @@
 import type { Dayjs } from "dayjs";
 
 import type { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateMaped } from "@repo/types";
 import { formatLocalDateTime } from "@repo/utils/date";
 
@@ -14,7 +14,9 @@ interface UseQueryFilterFieldCalendarProps<T extends string> {
 const useQueryFilterFieldCalendar = <T extends string>({
   queryFilter,
 }: UseQueryFilterFieldCalendarProps<T>) => {
-  const { updateTagValue } = useQueryFilterHooks();
+  const updateTagValue = useQueryFilterStateStore(
+    (state) => state.onUpdateTagValue,
+  );
 
   const handleDateChange =
     (queryKey: T) =>
@@ -26,7 +28,7 @@ const useQueryFilterFieldCalendar = <T extends string>({
           ? []
           : date.map((date) => formatLocalDateTime({ date }));
 
-      updateTagValue({ queryKey, selectedKey: values });
+      updateTagValue({ queryKey, options: "array", selectedKey: values });
     };
 
   return { handleDateChange };

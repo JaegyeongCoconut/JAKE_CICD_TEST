@@ -67,7 +67,6 @@ const CalendarInput = ({
             ? (dialogRef, isDialogOpen, handleDialogClose) => (
                 <Calendar
                   ref={dialogRef}
-                  as="dialog"
                   isDialogOpen={isDialogOpen}
                   dialogPosition={dialogPosition}
                   selectedDate={selectedDate}

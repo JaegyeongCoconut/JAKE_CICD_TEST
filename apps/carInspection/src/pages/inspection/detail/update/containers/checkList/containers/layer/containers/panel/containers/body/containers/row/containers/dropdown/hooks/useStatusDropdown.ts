@@ -11,9 +11,10 @@ import { useUpdateInspectionChecklist } from "~services";
 import type {
   CarInspectionLanguages,
   ChecklistType,
-  FormInspectionCheckItems,
   UpdateInspectionChecklistQueryModel,
 } from "~types";
+
+import type { CheckListFormSchema } from "../../../../../../../../../../schema/checkListForm.schema";
 
 interface useStatusDropdownProps {
   listId: string;
@@ -23,22 +24,23 @@ interface useStatusDropdownProps {
 const useStatusDropdown = ({ type, listId }: useStatusDropdownProps) => {
   const { inspectionId } = useParams();
 
-  const { watch, setValue, resetField } =
-    useFormContext<FormInspectionCheckItems>();
+  const { watch, setValue, resetField } = useFormContext<CheckListFormSchema>();
 
   const { mutate: updateInspectionChecklistMutate } =
     useUpdateInspectionChecklist();
 
-  const selectedResultKey = lowerCase(
-    watch(`${type}Checklist`).find(({ no }) => `${no}` === listId)?.status,
-  ) as keyof typeof STATUS_ICONS;
+  const selectedResultKey =
+    watch(`${type}Checklist`).find(({ no }) => `${no}` === listId)?.status ||
+    null;
 
   const initialSelectedOption: { key: string; label: CarInspectionLanguages } =
     selectedResultKey
       ? {
           key: selectedResultKey,
           label: INSPECTION_STATUS_OBJECT_ARRAY.find(
-            ({ key }) => key === selectedResultKey,
+            ({ key }) =>
+              key ===
+              (lowerCase(selectedResultKey) as keyof typeof STATUS_ICONS),
           )?.label!,
         }
       : { key: "", label: LANGUAGE_LABEL.SELECT_THE_OPTION };

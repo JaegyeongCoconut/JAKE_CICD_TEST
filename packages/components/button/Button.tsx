@@ -11,8 +11,7 @@ import LoadingSpinner from "../loadingSpinner/LoadingSpinner";
 interface BaseButtonProps {
   className?: string;
   disabled: boolean;
-  Icon?: FC<SVGProps<SVGSVGElement>>;
-  type?: "button" | "submit" | "reset";
+  type?: "button" | "submit";
   handleButtonClick: (e: React.MouseEvent) => void;
 }
 
@@ -26,13 +25,14 @@ interface IconOnlyProps extends BaseButtonProps {
 interface DefaultButtonProps extends BaseButtonProps {
   variant: Exclude<ButtonVariant, "iconOnly">;
   isLoading: boolean;
+  Icon?: FC<SVGProps<SVGSVGElement>>;
   label: Languages;
 }
 
 const Button = ({
   className,
   disabled,
-  isLoading = false,
+  isLoading,
   Icon,
   label,
   type = "button",
@@ -43,25 +43,25 @@ const Button = ({
 
   return (
     <HeadlessButton
-      css={S.button(isLoading, variant)}
+      css={S.button({ isLoading: !!isLoading, variant })}
       className={className}
       disabled={disabled}
-      isLoading={isLoading}
+      isLoading={!!isLoading}
       type={type}
       handleButtonClick={handleButtonClick}
     >
       {isLoading ? (
-        <S.LoadingWrapper>
+        <S.LoadingWrapper data-testid="spinner">
           <LoadingSpinner css={S.loadingSpinner} />
           <S.LoadingContents>
             {Icon && <Icon />}
-            {label && defaultLanguage(label)}
+            {label && defaultLanguage({ text: label })}
           </S.LoadingContents>
         </S.LoadingWrapper>
       ) : (
         <>
           {Icon && <Icon />}
-          {label && defaultLanguage(label)}
+          {label && defaultLanguage({ text: label })}
         </>
       )}
     </HeadlessButton>

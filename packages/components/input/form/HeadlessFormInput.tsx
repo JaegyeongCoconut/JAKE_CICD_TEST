@@ -31,7 +31,7 @@ const HeadlessFormInput = ({
       autoComplete="off"
       inputMode={inputMode}
       maxLength={maxLength}
-      placeholder={defaultLanguage(placeholder)}
+      placeholder={defaultLanguage({ text: placeholder })}
       type="text"
       {...register}
     />

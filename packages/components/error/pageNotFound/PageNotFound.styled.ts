@@ -36,7 +36,7 @@ export const Title = styled.h1`
   `}
 `;
 
-export const Desc = styled.p`
+export const Description = styled.p`
   ${({ theme }) => css`
     ${theme.font.regular_14};
     margin-bottom: 32px;

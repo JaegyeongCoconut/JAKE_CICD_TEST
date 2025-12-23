@@ -12,25 +12,23 @@ import useCalendar from "./hooks/useCalendar";
 
 interface CalendarProps {
   className?: string;
-  as?: React.ElementType & string;
-  isDialogOpen?: boolean;
+  isDialogOpen: boolean;
   dialogPosition: "up" | "down" | "center";
   selectedDate: string[];
   type: CalendarType;
-  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleConditionBlur: (e?: React.FocusEvent<HTMLInputElement>) => void;
+  handleConditionFocus: (e?: React.FocusEvent<HTMLInputElement>) => void;
   handleDateChange: (date: dayjs.Dayjs[] | []) => void;
-  handleDialogClose?: () => void;
+  handleDialogClose: () => void;
 }
 
 const Calendar = React.forwardRef<HTMLDialogElement, CalendarProps>(
   (
     {
       className,
-      isDialogOpen = false,
+      isDialogOpen,
       dialogPosition,
-      as = "div",
-      type = "date",
+      type,
       selectedDate,
       handleDateChange,
       handleDialogClose,
@@ -53,8 +51,6 @@ const Calendar = React.forwardRef<HTMLDialogElement, CalendarProps>(
       <S.Root
         className={className}
         ref={ref}
-        as={as}
-        aria-modal="true"
         open={isDialogOpen}
         dialogPosition={dialogPosition}
       >

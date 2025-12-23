@@ -4,6 +4,7 @@ import React from "react";
 import { useIsMutating, type UseMutateFunction } from "@tanstack/react-query";
 
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
+import { useModalStore } from "@repo/stores/modal";
 import type {
   CommonApiErrorType,
   ChangeAccountPasswordQueryModel,
@@ -51,6 +52,10 @@ const ChangePasswordModal = React.forwardRef<
     },
     ref,
   ) => {
+    const mutatingCount = useIsMutating({ mutationKey });
+
+    const handleModalClose = useModalStore((state) => state.handleModalClose);
+
     const {
       formMethod: {
         setValue,
@@ -65,8 +70,6 @@ const ChangePasswordModal = React.forwardRef<
       onChangeAccountPasswordMutate,
       handleEncryptPassword,
     });
-
-    const mutatingCount = useIsMutating({ mutationKey });
 
     const handleCurrentPasswordChange = (
       e: ChangeEvent<HTMLInputElement>,
@@ -93,17 +96,28 @@ const ChangePasswordModal = React.forwardRef<
         css={S.modalLayout}
         className={className}
         ref={ref}
-        isPosDisabled={!!Object.keys(errors).length}
-        isPosLoading={!!mutatingCount}
-        posButtonName={buttonLabel}
-        posFnType="submit"
+        isPositiveDisabled={!!Object.keys(errors).length}
+        isPositiveLoading={!!mutatingCount}
+        description={undefined}
+        positiveButtonName={buttonLabel}
         title={LANGUAGE_LABEL.CHANGE_PASSWORD}
-        handlePosButtonClick={handlePasswordChange}
+        handleClose={handleModalClose}
+        handlePositiveButtonClick={handlePasswordChange}
       >
-        <LabelContentTable variant="empty" marginBottom={20}>
-          <LabelContentTable.Row>
+        <LabelContentTable
+          variant="empty"
+          hasDefaultMarginBottom={false}
+          marginBottom={20}
+          subject={null}
+        >
+          <LabelContentTable.Row
+            hasError={false}
+            hasPartition={false}
+            marginTop={0}
+          >
             <LabelContentTable.Content
               css={S.content}
+              hasError={false}
               isRequired
               label={LANGUAGE_LABEL.CURRENT_PASSWORD}
               labelWidth={150}
@@ -126,9 +140,14 @@ const ChangePasswordModal = React.forwardRef<
               </S.InputWrapper>
             </LabelContentTable.Content>
           </LabelContentTable.Row>
-          <LabelContentTable.Row>
+          <LabelContentTable.Row
+            hasError={false}
+            hasPartition={false}
+            marginTop={0}
+          >
             <LabelContentTable.Content
               css={S.content}
+              hasError={false}
               isRequired
               label={LANGUAGE_LABEL.NEW_PASSWORD}
               labelWidth={150}
@@ -155,9 +174,14 @@ const ChangePasswordModal = React.forwardRef<
               </S.InputWrapper>
             </LabelContentTable.Content>
           </LabelContentTable.Row>
-          <LabelContentTable.Row>
+          <LabelContentTable.Row
+            hasError={false}
+            hasPartition={false}
+            marginTop={0}
+          >
             <LabelContentTable.Content
               css={S.content}
+              hasError={false}
               isRequired
               label={LANGUAGE_LABEL.CONFIRM_PASSWORD}
               labelWidth={150}

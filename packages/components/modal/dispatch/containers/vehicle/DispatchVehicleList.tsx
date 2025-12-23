@@ -46,7 +46,11 @@ const DispatchVehicleList = ({
       </S.SearchHeader>
       <S.SearchBody>
         {!filteredVehicles?.length ? (
-          <NoResult css={S.noResult} contents={["No results found"]} />
+          <NoResult
+            css={S.noResult}
+            contents={[LANGUAGE_LABEL.NO_RESULTS_FOUND]}
+            type="search"
+          />
         ) : (
           <S.Ul>
             {filteredVehicles.map((vehicle, i) => (

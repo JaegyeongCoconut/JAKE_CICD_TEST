@@ -11,10 +11,10 @@ import * as S from "./NoResult.styled";
 interface NoResultProps {
   className?: string;
   contents: Languages[];
-  type?: "search" | "select" | "warning";
+  type: "search" | "select" | "warning";
 }
 
-const NoResult = ({ className, contents, type = "search" }: NoResultProps) => {
+const NoResult = ({ className, contents, type }: NoResultProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   const icon = {
@@ -28,7 +28,9 @@ const NoResult = ({ className, contents, type = "search" }: NoResultProps) => {
       {icon[type]}
       <S.ContentWrapper>
         {contents.map((content) => (
-          <S.Content key={content}>{defaultLanguage(content)}</S.Content>
+          <S.Content key={content}>
+            {defaultLanguage({ text: content })}
+          </S.Content>
         ))}
       </S.ContentWrapper>
     </S.Wrapper>

@@ -6,20 +6,18 @@ import { useParams } from "react-router-dom";
 
 import Textarea from "@repo/components/input/textarea";
 import DetailModal from "@repo/components/modal/detail";
-import useModal from "@repo/hooks/modal/useModal";
+import { useModalStore } from "@repo/stores/modal";
 
 import { LANGUAGE_LABEL } from "~constants";
 import { useUpdateInspectionChecklist } from "~services";
-import type {
-  FormInspectionCheckItems,
-  UpdateInspectionChecklistQueryModel,
-} from "~types";
+import type { UpdateInspectionChecklistQueryModel } from "~types";
 
 import * as S from "./RemarkModal.styled";
+import type { CheckListFormSchema } from "../../../../../../../../../../../../schema/checkListForm.schema";
 
 interface RemarkModalProps {
   name: keyof Omit<
-    FormInspectionCheckItems,
+    CheckListFormSchema,
     | "isCompleted"
     | "exteriorCount"
     | "interiorCount"
@@ -28,19 +26,19 @@ interface RemarkModalProps {
   >;
   calculateIndex: number;
   listId: string;
-  control: Control<FormInspectionCheckItems>;
+  control: Control<CheckListFormSchema>;
 }
 
 const RemarkModal = React.forwardRef<HTMLDialogElement, RemarkModalProps>(
   ({ name, listId, control, calculateIndex }, ref) => {
     const { inspectionId } = useParams();
 
+    const handleModalClose = useModalStore((state) => state.handleModalClose);
+
     const [remark, setRemark] = useState<string | null>(null);
 
     const { isLoading, mutate: updateInspectionChecklistMutate } =
       useUpdateInspectionChecklist();
-
-    const { handleModalClose } = useModal();
 
     const handleSaveRemark = (): void => {
       if (!inspectionId) return;
@@ -60,10 +58,13 @@ const RemarkModal = React.forwardRef<HTMLDialogElement, RemarkModalProps>(
       <DetailModal
         css={S.detailModal}
         ref={ref}
-        isPosLoading={isLoading}
-        posButtonName={LANGUAGE_LABEL.SAVE}
+        isPositiveDisabled={false}
+        isPositiveLoading={isLoading}
+        description={undefined}
+        positiveButtonName={LANGUAGE_LABEL.SAVE}
         title={LANGUAGE_LABEL.REMARKS}
-        handlePosButtonClick={handleSaveRemark}
+        handleClose={handleModalClose}
+        handlePositiveButtonClick={handleSaveRemark}
       >
         <Controller
           name={`${name}.${calculateIndex}.remark`}

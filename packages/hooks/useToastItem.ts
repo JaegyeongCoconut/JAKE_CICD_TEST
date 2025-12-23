@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import useToast from "@repo/hooks/useToast";
+import { useToastStore } from "@repo/stores/toast";
 
 interface useToastItemProps {
   id: string;
@@ -13,8 +13,9 @@ const useToastItem = ({
   toastDuration,
   transitionDuration,
 }: useToastItemProps) => {
+  const removeToast = useToastStore((state) => state.deleteToast);
+
   const [isClosing, setIsClosing] = useState(false);
-  const { removeToast } = useToast();
 
   useEffect(() => {
     const existTimeout = setTimeout(() => {

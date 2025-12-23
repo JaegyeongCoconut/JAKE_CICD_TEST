@@ -6,6 +6,6 @@ export const LAOS_MOBILE_PLACEHOLDER = "20XXXXXXXX" as Languages;
 
 export const DEFAULT_COUNTRY_CODE_INFO = {
   code: "LA",
-  name: "Laos" as const,
+  name: "Laos",
   dial: LAOS_COUNTRY_DIAL,
 } as const;

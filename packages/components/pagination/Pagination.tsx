@@ -8,7 +8,6 @@ import * as S from "./Pagination.styled";
 
 interface PaginationProps {
   className?: string;
-  hasDoubleButton?: boolean;
   currentPage: number;
   maxPageCount: number;
   totalPages: number;
@@ -21,7 +20,6 @@ interface PaginationProps {
 
 const Pagination = ({
   className,
-  hasDoubleButton = true,
   currentPage,
   totalPages,
   maxPageCount,
@@ -37,16 +35,13 @@ const Pagination = ({
   return (
     <S.Pagination className={className}>
       <S.Wrapper>
-        {hasDoubleButton && (
-          <S.ArrowButton
-            disabled={isPreviousNumberDisabled}
-            type="button"
-            onClick={handleFirstPageClick}
-          >
-            <LeftDoubleIcon />
-          </S.ArrowButton>
-        )}
-
+        <S.ArrowButton
+          disabled={isPreviousNumberDisabled}
+          type="button"
+          onClick={handleFirstPageClick}
+        >
+          <LeftDoubleIcon />
+        </S.ArrowButton>
         <S.ArrowButton
           disabled={isPreviousNumberDisabled}
           type="button"
@@ -79,15 +74,13 @@ const Pagination = ({
         >
           <DownIcon css={S.chevronRightIcon} />
         </S.ArrowButton>
-        {hasDoubleButton && (
-          <S.ArrowButton
-            disabled={isNextNumberDisabled}
-            type="button"
-            onClick={handleLastPageClick}
-          >
-            <LeftDoubleIcon css={S.chevronDoubleRightIcon} />
-          </S.ArrowButton>
-        )}
+        <S.ArrowButton
+          disabled={isNextNumberDisabled}
+          type="button"
+          onClick={handleLastPageClick}
+        >
+          <LeftDoubleIcon css={S.chevronDoubleRightIcon} />
+        </S.ArrowButton>
       </S.Wrapper>
     </S.Pagination>
   );

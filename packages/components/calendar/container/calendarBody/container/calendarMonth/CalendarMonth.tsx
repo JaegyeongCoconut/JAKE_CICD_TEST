@@ -27,7 +27,7 @@ const CalendarMonth = ({ datePicker, calendar }: CalendarMonthProps) => {
             type="button"
             onClick={calendar.handleMonthClick(value)}
           >
-            {defaultLanguage(label as Languages)}
+            {defaultLanguage({ text: label as Languages })}
           </S.MonthButton>
         </li>
       ))}

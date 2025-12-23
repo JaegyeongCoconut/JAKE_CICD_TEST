@@ -34,10 +34,7 @@ const useTableScrollTop = () => {
     }
   }, [searchParams.get("page")]);
 
-  return {
-    tableRef,
-    toolBoxRef,
-  };
+  return { tableRef, toolBoxRef };
 };
 
 export default useTableScrollTop;

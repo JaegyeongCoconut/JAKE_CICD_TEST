@@ -17,7 +17,6 @@ const meta = {
   },
   tags: ["autodocs"],
   args: {
-    hasDoubleButton: true,
     currentPage: 1,
     totalPages: 20,
     maxPageCount: 10,
@@ -31,10 +30,6 @@ const meta = {
     className: {
       description: "`Pagination` 스타일을 커스텀하기 위해 사용합니다.",
       control: false,
-    },
-    hasDoubleButton: {
-      description:
-        "`Pagination`에 처음 페이지와 마지막 페이지로 이동하는 버튼 표시 여부를 결정합니다.",
     },
     currentPage: {
       description: "현재 페이지 번호를 의미합니다.",

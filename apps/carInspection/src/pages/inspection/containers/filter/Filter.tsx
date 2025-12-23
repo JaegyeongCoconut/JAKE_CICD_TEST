@@ -15,7 +15,6 @@ import * as S from "./Filter.styled";
 
 const Filter = () => {
   const fetchingQueryNumber = useIsFetching({ queryKey: makerKeys.makers() });
-
   const { data } = useGetMakers();
 
   const brandDropdown = mappingToKeyLabelSelects<CarInspectionLanguages>(
@@ -36,7 +35,7 @@ const Filter = () => {
       queryKey: "frameNo",
       maxLength: 17,
       label: LANGUAGE_LABEL.FRAME_NUMBER,
-      placeholder: "Enter the frame number", // NOTE: 해당 값은 번역 파일에 문구가 존재하지 않아 string으로 유지
+      placeholder: LANGUAGE_LABEL.ENTER_THE_FRAME_NUMBER,
     },
     model: {
       type: "input",

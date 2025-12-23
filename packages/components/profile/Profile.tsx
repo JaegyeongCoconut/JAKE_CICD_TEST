@@ -9,7 +9,7 @@ import HeadlessImage from "../image/HeadlessImage";
 
 interface ProfileProps {
   isPresignedLoading: boolean;
-  imgSrc?: string | null;
+  imgSrc: string | null;
 }
 
 const Profile = ({ isPresignedLoading, imgSrc }: ProfileProps) => {

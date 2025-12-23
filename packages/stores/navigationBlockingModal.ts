@@ -12,14 +12,14 @@ interface NavigationBlockingModalState {
 const useNavigationBlockingModalStore = create<NavigationBlockingModalState>()(
   immer((set) => ({
     navigationBlockingModal: null,
-    handleNavigationBlockingModalAdd: (modal) => {
+    handleNavigationBlockingModalAdd: (modal): void => {
       set((state) => {
         state.navigationBlockingModal = modal;
 
         document.body.style.cssText = "overflow: hidden";
       });
     },
-    handleNavigationBlockingModalRemove: () => {
+    handleNavigationBlockingModalRemove: (): void => {
       set((state) => {
         state.navigationBlockingModal = null;
 

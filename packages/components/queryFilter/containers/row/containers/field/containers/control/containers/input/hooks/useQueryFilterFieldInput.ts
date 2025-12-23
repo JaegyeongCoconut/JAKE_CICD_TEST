@@ -2,7 +2,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useContext, useEffect, useState } from "react";
 
 import { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateMaped } from "@repo/types";
 
 import { QueryFilterFieldStateContext } from "../../../../../context/QueryFilterFieldStateContext";
@@ -27,7 +27,12 @@ const useQueryFilterFieldInput = <T extends string>({
     filter?.inputValue ?? "",
   );
 
-  const { updateInputValue, updateTagValue } = useQueryFilterHooks();
+  const updateInputValue = useQueryFilterStateStore(
+    (state) => state.onUpdateInputValue,
+  );
+  const updateTagValue = useQueryFilterStateStore(
+    (state) => state.onUpdateTagValue,
+  );
 
   const handleInputFocus = (): void => {
     if (!filter) return;
@@ -45,7 +50,11 @@ const useQueryFilterFieldInput = <T extends string>({
   const handleApplyButtonMouseDown = (queryKey: T) => (): void => {
     if (!filter) return;
 
-    updateTagValue({ queryKey, selectedKey: localInputValue });
+    updateTagValue({
+      queryKey,
+      options: "single",
+      selectedKey: localInputValue,
+    });
     updateInputValue({ queryKey, inputValue: localInputValue });
     handleBlur();
     handleErrorClear();
@@ -85,7 +94,11 @@ const useQueryFilterFieldInput = <T extends string>({
 
       if (!localInputValue) return alert("Please enter a search keyword.");
 
-      updateTagValue({ queryKey, selectedKey: localInputValue });
+      updateTagValue({
+        queryKey,
+        options: "single",
+        selectedKey: localInputValue,
+      });
       updateInputValue({ queryKey, inputValue: localInputValue });
       handleBlur();
       setIsVisible(false);

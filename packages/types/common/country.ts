@@ -1,3 +1,5 @@
+import type { RecursiveUndefined } from "./api";
+
 export type Country = {
   name: string;
   code: string;
@@ -8,7 +10,10 @@ export interface GetCountriesServerModel {
   countries: Country[];
 }
 
-//NOTE: 공용 코드라서 타입수정X, 다른 서비스와 같이 수정 필요
-export interface GetCountriesClientModel {
+export interface CountryModel {
   [key: string]: Country;
 }
+
+export type GetCountriesClientModel = RecursiveUndefined<{
+  countries: Country[];
+}>;

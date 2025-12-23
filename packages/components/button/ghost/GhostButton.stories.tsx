@@ -22,13 +22,9 @@ const meta = {
   args: {
     disabled: false,
     isLoading: false,
-    type: "button",
     variant: "ghost",
     label: "Reset",
-    icon: {
-      component: <RefreshIcon css={{ width: "12px", marginRight: "4px" }} />,
-      position: "left",
-    },
+    Icon: <RefreshIcon css={{ width: "12px" }} />,
     handleButtonClick: () => {},
   },
   argTypes: {
@@ -43,25 +39,23 @@ const meta = {
     isLoading: {
       description:
         "`GhostButton`이 로딩 상태인지 나타냅니다. 만약 로딩 상태라면 spinner 아이콘이 보여집니다.",
-    },
-    type: {
-      description:
-        "`GhostButton`의 타입을 정의합니다. 기본 값은 button 타입입니다.",
+      type: { required: true, name: "boolean" },
+      if: { arg: "disabled", neq: true },
     },
     variant: { description: "`GhostButton`의 스타일 variant를 정의합니다." },
     label: {
       description: "`GhostButton`에 표시할 텍스트를 설정합니다.",
       table: { type: { summary: "string" } },
     },
-    icon: {
-      description:
-        "`GhostButton`에 아이콘을 추가할 때 사용하는 객체입니다.<br />" +
-        "- `components`: 추가할 SVG 아이콘을 설정합니다.<br />" +
-        "- `position`: 아이콘이 버튼의 좌측 또는 우측에 위치하도록 설정합니다.",
+    Icon: {
+      description: "`GhostButton`에 추가할 SVG 아이콘을 설정합니다.",
       control: false,
     },
     handleButtonClick: {
       description: "`GhostButton` 클릭 시 호출되는 handler 함수입니다.",
+      type: { required: true, name: "function" },
+      if: { arg: "disabled", neq: true },
+      control: false,
     },
   },
 } satisfies Meta<typeof GhostButton>;

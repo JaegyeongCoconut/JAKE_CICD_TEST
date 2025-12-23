@@ -1,0 +1,143 @@
+{
+  "plugins": ["stylelint-order"],
+  "customSyntax": "postcss-styled-syntax",
+  "rules": {
+    "order/order": ["custom-properties", "declarations"],
+    "order/properties-order": [
+      {
+        "groupName": "Preset (미리 정의한 font, mixin, css etc.)",
+        "noEmptyLineBetween": true,
+        "properties": []
+      },
+      {
+        "groupName": "Pseudo Elements (가상 요소, content 등)",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": ["content"]
+      },
+      {
+        "groupName": "Positioning",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": ["position", "top", "right", "bottom", "left"]
+      },
+      {
+        "groupName": "Display",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": [
+          "display",
+          "flex",
+          "flex-direction",
+          "flex-wrap",
+          "grid-template",
+          "grid-template-rows",
+          "grid-template-columns",
+          "grid-row",
+          "grid-column",
+          "justify-content",
+          "justify-self",
+          "align-items",
+          "gap",
+          "row-gap",
+          "column-gap"
+        ]
+      },
+      {
+        "groupName": "Box Size",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": [
+          "min-width",
+          "min-height",
+          "width",
+          "height",
+          "max-width",
+          "max-height"
+        ]
+      },
+      {
+        "groupName": "Box Model",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": [
+          "margin",
+          "margin-top",
+          "margin-right",
+          "margin-bottom",
+          "margin-left",
+          "border",
+          "border-top",
+          "border-right",
+          "border-bottom",
+          "border-left",
+          "border-radius",
+          "padding",
+          "padding-top",
+          "padding-right",
+          "padding-bottom",
+          "padding-left",
+          "outline",
+          "box-sizing",
+          "box-shadow",
+          "overflow",
+          "overflow-x",
+          "overflow-y",
+          "overscroll-behavior"
+        ]
+      },
+      {
+        "groupName": "Typography",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": [
+          "font-family",
+          "font-display",
+          "font-size",
+          "font-weight",
+          "line-height",
+          "letter-spacing",
+          "color",
+          "text-align",
+          "white-space",
+          "word-break",
+          "text-overflow",
+          "text-decoration"
+        ]
+      },
+      {
+        "groupName": "Background",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": [
+          "background",
+          "background-color",
+          "background-image",
+          "background-repeat",
+          "background-size",
+          "background-position"
+        ]
+      },
+      {
+        "groupName": "Other",
+        "emptyLineBefore": "never",
+        "noEmptyLineBetween": true,
+        "properties": [
+          "transform",
+          "transition",
+          "animation",
+          "will-change",
+          "pointer-events",
+          "user-select",
+          "cursor",
+          "opacity",
+          "clip",
+          "visibility",
+          "z-index",
+          "-ms-overflow-style",
+          "scrollbar-width"
+        ]
+      }
+    ]
+  }
+}

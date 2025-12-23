@@ -8,7 +8,7 @@ import { resources } from "~assets";
 
 import App from "./App";
 
-initI18n(resources);
+initI18n({ initLanguage: "lo", resources });
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,

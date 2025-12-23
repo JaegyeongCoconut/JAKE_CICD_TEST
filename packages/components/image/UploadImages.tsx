@@ -3,7 +3,7 @@ import React from "react";
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
-import { extractS3ImageKey } from "@repo/utils/image";
+import { extractS3ImageKey } from "@repo/utils/image/common";
 
 import * as S from "./UploadImages.styled";
 import ImagesRowPreview from "./containers/rowPreview/ImagesRowPreview";
@@ -49,15 +49,15 @@ const UploadImages = ({
         <S.FormatInfo>
           <li>
             ㆍ
-            {defaultLanguage(
-              LANGUAGE_LABEL.SUPPORT_FILE_PNG_JPEG_JPG_LIMIT_0_5MB_PER_FILE,
-            )}
+            {defaultLanguage({
+              text: LANGUAGE_LABEL.SUPPORT_FILE_PNG_JPEG_JPG_LIMIT_0_5MB_PER_FILE,
+            })}
           </li>
           <li>
             ㆍ
-            {defaultLanguage(
-              LANGUAGE_LABEL.PLEASE_UPLOAD_A_PHOTO_WITH_A_16_9_RATIO_AND_LANDSCAPE_ORIENTATION,
-            )}
+            {defaultLanguage({
+              text: LANGUAGE_LABEL.PLEASE_UPLOAD_A_PHOTO_WITH_A_16_9_RATIO_AND_LANDSCAPE_ORIENTATION,
+            })}
           </li>
         </S.FormatInfo>
       )}

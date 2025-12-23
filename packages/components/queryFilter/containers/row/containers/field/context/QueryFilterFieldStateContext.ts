@@ -9,6 +9,13 @@ interface QueryFilterFieldStateContextProps {
   onSetError: () => void;
 }
 
-export const QueryFilterFieldStateContext = createContext(
-  {} as QueryFilterFieldStateContextProps,
-);
+export const defaultValue: QueryFilterFieldStateContextProps = {
+  hasError: false,
+  isFocused: false,
+  handleBlur: () => {},
+  handleErrorClear: () => {},
+  handleFocus: () => {},
+  onSetError: () => {},
+};
+
+export const QueryFilterFieldStateContext = createContext(defaultValue);

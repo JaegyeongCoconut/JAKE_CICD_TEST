@@ -13,23 +13,35 @@ import type { DropdownOptionType, Languages } from "@repo/types";
 import * as S from "./Dropdown.styled";
 import DropdownOptionSkeleton from "./containers/optionSkeleton/DropdownOptionSkeleton";
 
-interface DropdownProps {
+interface BaseDropdownProps {
   className?: string;
-  disabled?: boolean;
-  hasError?: boolean;
-  isLoading?: boolean;
-  Icon?: React.FC<React.SVGProps<SVGSVGElement>>;
-  options: readonly DropdownOptionType<Languages>[];
-  placeholder?: Languages;
-  selectedOption: DropdownOptionType<Languages>;
-  handleConditionBlur?: (e?: React.FocusEvent<HTMLInputElement>) => void;
-  handleConditionFocus?: (e?: React.FocusEvent<HTMLInputElement>) => void;
-  handleSelect?: (value: string) => void;
+  Icon?: React.FC<React.SVGProps<SVGSVGElement>>; // NOTE: 공용 Header 언어 변경 Dropdown에서만 사용하기 때문에 옵셔널 설정
+  placeholder: Languages;
 }
+
+interface DisabledDropdownProps extends BaseDropdownProps {
+  disabled: true;
+  hasError?: never;
+  isLoading?: never;
+  options?: never;
+  selectedOption?: never;
+  handleSelect?: never;
+}
+
+interface EnabledDropdownProps extends BaseDropdownProps {
+  disabled: boolean;
+  hasError: boolean;
+  isLoading: boolean;
+  options: readonly DropdownOptionType<Languages>[];
+  selectedOption: DropdownOptionType<Languages>;
+  handleSelect: (value: string) => void;
+}
+
+type DropdownProps = EnabledDropdownProps | DisabledDropdownProps;
 
 const Dropdown = ({
   className,
-  isLoading = false,
+  isLoading,
   disabled,
   hasError,
   options,
@@ -37,18 +49,14 @@ const Dropdown = ({
   selectedOption,
   Icon = DownIcon,
   handleSelect,
-  handleConditionFocus,
-  handleConditionBlur,
 }: DropdownProps) => {
   const id = uuidv4();
   const { defaultLanguage } = useDefaultLanguage();
 
   const { dropdownRef, optionsRef, isOpen, handleOpener, handleOptionClick } =
     useDropdown({
-      tagValue: selectedOption.key,
+      tagValue: selectedOption?.key ?? "",
       handleSelect,
-      handleConditionFocus,
-      handleConditionBlur,
     });
 
   return (
@@ -63,11 +71,13 @@ const Dropdown = ({
       >
         {selectedOption?.label ? (
           <S.SelectedValue>
-            {defaultLanguage(selectedOption.label)}
+            {defaultLanguage({ text: selectedOption.label })}
           </S.SelectedValue>
         ) : (
           placeholder && (
-            <S.Placeholder>{defaultLanguage(placeholder)}</S.Placeholder>
+            <S.Placeholder>
+              {defaultLanguage({ text: placeholder })}
+            </S.Placeholder>
           )
         )}
         <Icon />
@@ -79,15 +89,15 @@ const Dropdown = ({
               <DropdownOptionSkeleton />
             </S.Option>
           ))
-        ) : options.length === 0 ? (
+        ) : options?.length === 0 ? (
           <S.NoOptionData>
             <WarningIcon css={S.noOptionIcon} />
             <S.noOptionDataMessage>
-              {defaultLanguage(LANGUAGE_LABEL.NO_HISTORY)}
+              {defaultLanguage({ text: LANGUAGE_LABEL.NO_HISTORY })}
             </S.noOptionDataMessage>
           </S.NoOptionData>
         ) : (
-          options.map(({ key, label }, i) => {
+          options?.map(({ key, label }, i) => {
             const isSelected = selectedOption?.key === key;
 
             return (
@@ -98,7 +108,9 @@ const Dropdown = ({
                   onClick={handleOptionClick(key)}
                 >
                   <span>
-                    {label === "English" ? label : defaultLanguage(label)}
+                    {label === "English"
+                      ? label
+                      : defaultLanguage({ text: label })}
                   </span>
                   <CheckIcon css={S.singleDropdownCheckIcon(isSelected)} />
                 </S.OptionButton>

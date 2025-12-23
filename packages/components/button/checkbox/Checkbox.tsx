@@ -3,21 +3,30 @@ import React, { useId } from "react";
 
 import * as S from "./Checkbox.styled";
 
-interface CheckboxProps {
+interface BaseCheckboxProps {
   className?: string;
-  disabled?: boolean;
-  isChecked?: boolean;
   label?: string;
-  handleCheck?: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+
+interface DisabledCheckboxProps extends BaseCheckboxProps {
+  disabled: true;
+  isChecked?: never;
+  handleCheck?: never;
+}
+
+interface EnabledCheckboxProps extends BaseCheckboxProps {
+  disabled: boolean;
+  isChecked: boolean;
+  handleCheck: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Checkbox = ({
   className,
   label,
-  isChecked = false,
-  disabled = false,
+  isChecked,
+  disabled,
   handleCheck,
-}: CheckboxProps) => {
+}: DisabledCheckboxProps | EnabledCheckboxProps) => {
   const uuid = useId();
 
   return (
@@ -32,8 +41,7 @@ const Checkbox = ({
           onChange={handleCheck}
         />
         <S.Checkbox htmlFor={uuid} tabIndex={0} />
-        {/* TODO: label이 없을 경우 span 비가시화 처리 조건 필요 */}
-        <span>{label}</span>
+        {label && <span>{label}</span>}
       </S.Label>
     </S.Wrapper>
   );

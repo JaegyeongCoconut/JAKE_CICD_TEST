@@ -1,23 +1,19 @@
-import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
-import { useRoutePath } from "@repo/contexts/RoutePathProvider";
 import usePreventDuplicateMutation from "@repo/hooks/usePreventDuplicateMutation";
-import type { RecursiveUndefined } from "@repo/types";
+import { navigateByRef } from "@repo/utils/navigateService";
+import pathStorage from "@repo/utils/pathStorage";
 
 import { loginAPI, logoutAPI } from "~apis";
 import { PATH } from "~constants";
-import { useAuth } from "~contexts";
+import { useAuthStore } from "~stores";
 import type { ApiErrorType, LoginQueryModel, LoginServerModel } from "~types";
 
 export const useLogin = () => {
-  const navigate = useNavigate();
-
-  const { auth } = useAuth();
-  const { redirectPathStorage } = useRoutePath();
+  const signIn = useAuthStore((state) => state.signIn);
 
   return usePreventDuplicateMutation<
-    RecursiveUndefined<LoginServerModel>,
+    LoginServerModel,
     ApiErrorType,
     LoginQueryModel
   >({
@@ -25,36 +21,26 @@ export const useLogin = () => {
     mutationFn: loginAPI,
     options: {
       onSuccess: (res) => {
-        if (!res || !res.accessToken || !res.refreshToken)
-          return navigate(PATH.ROOT);
+        const redirectPage = pathStorage.getPath(PATH.INSPECTION); // TODO: 추후 PATH 수정 필요
 
-        const { accessToken, refreshToken } = res;
-
-        // TODO: 추후 PATH 수정 필요
-        const redirectPage = redirectPathStorage.getPath(PATH.INSPECTION);
-
-        auth.signIn({ accessToken, refreshToken });
-
-        navigate(redirectPage);
+        signIn(res);
+        navigateByRef(redirectPage);
       },
     },
   });
 };
 
 export const useLogout = () => {
-  const navigate = useNavigate();
-
-  const { auth } = useAuth();
-  const { redirectPathStorage } = useRoutePath();
+  const signOut = useAuthStore((state) => state.signOut);
 
   return usePreventDuplicateMutation<unknown, ApiErrorType, void>({
     mutationKey: [uuidv4()],
     mutationFn: logoutAPI,
     options: {
       onSuccess: () => {
-        redirectPathStorage.setPath(PATH.INSPECTION);
-        auth.onSignOut();
-        navigate("/");
+        pathStorage.setPath(PATH.INSPECTION);
+        signOut();
+        navigateByRef("/");
       },
     },
   });

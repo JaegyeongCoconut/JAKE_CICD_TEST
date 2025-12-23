@@ -54,7 +54,7 @@ const Input = ({
       className={className}
       autoComplete={autoComplete}
       maxLength={20}
-      placeholder={defaultLanguage(placeholder)}
+      placeholder={defaultLanguage({ text: placeholder })}
       type={isShow ? "text" : "password"}
       {...register}
     />

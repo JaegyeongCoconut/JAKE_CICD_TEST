@@ -1,14 +1,19 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import type { RecursiveUndefined } from "@repo/types";
 
 import type {
   CarInspectionClientItem,
-  FormInspectionCheckItems,
   GetInspectionChecklistClientModel,
 } from "~types";
 
-const INIT_FORM = {
+import {
+  schema,
+  type CheckListFormSchema,
+} from "../schema/checkListForm.schema";
+
+const INIT_FORM: CheckListFormSchema = {
   isCompleted: true,
   exteriorCount: 0,
   interiorCount: 0,
@@ -33,11 +38,11 @@ const useTabPanel = ({ data }: UseInspectionCheckItemsPanelProps) => {
     return list.filter((item) => !!item?.status).length;
   };
 
-  const formMethod = useForm<FormInspectionCheckItems>({
+  const formMethod = useForm<CheckListFormSchema>({
     defaultValues: INIT_FORM,
     values: data
       ? {
-          isCompleted: true,
+          isCompleted: INIT_FORM.isCompleted,
           exteriorCount: filteredStatusCount(data.exteriorChecklist),
           interiorCount: filteredStatusCount(data.interiorChecklist),
           undersideCount: filteredStatusCount(data.undersideChecklist),
@@ -51,7 +56,7 @@ const useTabPanel = ({ data }: UseInspectionCheckItemsPanelProps) => {
               photos: list?.photos
                 ? list.photos.filter((photo) => photo !== undefined)
                 : [],
-              status: list?.status ?? "",
+              status: list?.status ?? null,
               remark: list?.remark ?? "",
               isVisible:
                 list?.isVisible === undefined || list.isVisible === null
@@ -67,7 +72,7 @@ const useTabPanel = ({ data }: UseInspectionCheckItemsPanelProps) => {
               photos: list?.photos
                 ? list.photos.filter((photo) => photo !== undefined)
                 : [],
-              status: list?.status ?? "",
+              status: list?.status ?? null,
               remark: list?.remark ?? "",
               isVisible:
                 list?.isVisible === undefined || list.isVisible === null
@@ -83,7 +88,7 @@ const useTabPanel = ({ data }: UseInspectionCheckItemsPanelProps) => {
               photos: list?.photos
                 ? list.photos.filter((photo) => photo !== undefined)
                 : [],
-              status: list?.status ?? "",
+              status: list?.status ?? null,
               remark: list?.remark ?? "",
               isVisible:
                 list?.isVisible === undefined || list.isVisible === null
@@ -99,7 +104,7 @@ const useTabPanel = ({ data }: UseInspectionCheckItemsPanelProps) => {
               photos: list?.photos
                 ? list.photos.filter((photo) => photo !== undefined)
                 : [],
-              status: list?.status ?? "",
+              status: list?.status ?? null,
               remark: list?.remark ?? "",
               isVisible:
                 list?.isVisible === undefined || list.isVisible === null
@@ -110,6 +115,7 @@ const useTabPanel = ({ data }: UseInspectionCheckItemsPanelProps) => {
       : INIT_FORM,
     // NOTE: completed 버튼이 눌리고 로직을 검사하는 것이 맞다고 판단하여 onSubmit
     mode: "onSubmit",
+    resolver: zodResolver(schema),
   });
 
   return { formMethod };

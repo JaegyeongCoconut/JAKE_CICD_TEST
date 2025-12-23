@@ -12,27 +12,26 @@ import { useModalStore } from "@repo/stores/modal";
 interface PrivateRouteLayoutProps {
   hasUser: boolean;
   isAccessiblePage: boolean;
-  initializing: boolean;
   navigatePath: string;
 }
 
 const CommonPrivateRoute = ({
   hasUser,
-  initializing,
   isAccessiblePage,
   navigatePath,
 }: PrivateRouteLayoutProps) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const handleModalClear = useModalStore((state) => state.handleModalClear);
+  const handleModalAllClose = useModalStore(
+    (state) => state.handleModalAllClose,
+  );
 
   useEffect(() => {
-    handleModalClear();
+    handleModalAllClose();
     document.body.style.cssText = "overflow: auto";
   }, [location.pathname, searchParams]);
 
-  if (initializing) return null;
   if (!hasUser) return <Navigate to="/" />;
   if (!isAccessiblePage && navigatePath !== "")
     return <Navigate to={navigatePath} />;

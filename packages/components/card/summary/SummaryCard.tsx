@@ -5,37 +5,18 @@ import type { Languages } from "@repo/types";
 
 import * as S from "./SummaryCard.styled";
 
-interface CommonProps {
+interface SummaryCardProps {
   className?: string;
+  title: Readonly<Languages>;
   children: React.ReactNode;
 }
 
-interface Title extends CommonProps {
-  labelComponent?: never;
-  title: Readonly<Languages>;
-}
-
-interface LabelComponent extends CommonProps {
-  labelComponent: React.ReactNode;
-  title?: never;
-}
-
-type SummaryCardProps = Title | LabelComponent;
-
-const SummaryCard = ({
-  className,
-  children,
-  title,
-  labelComponent,
-}: SummaryCardProps) => {
+const SummaryCard = ({ className, children, title }: SummaryCardProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   return (
     <S.SummaryCard className={className}>
-      <div>
-        {title && <S.Title>{defaultLanguage(title)} </S.Title>}
-        {labelComponent && labelComponent}
-      </div>
+      <S.Title>{defaultLanguage({ text: title })} </S.Title>
       <S.Content>{children}</S.Content>
     </S.SummaryCard>
   );

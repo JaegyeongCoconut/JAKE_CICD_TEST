@@ -36,13 +36,13 @@ export const chevronRight = (theme: Theme) => css`
 `;
 
 interface ContentProps {
-  color: "black" | "gray";
+  hasLabel: boolean;
 }
 
 export const Content = styled.span<ContentProps>`
-  ${({ theme, color }) => css`
+  ${({ theme, hasLabel }) => css`
     ${theme.font.regular_14};
-    color: ${color === "black" ? theme.color.gray_90 : theme.color.gray_40};
+    color: ${hasLabel ? theme.color.gray_90 : theme.color.gray_40};
     text-align: left;
   `}
 `;

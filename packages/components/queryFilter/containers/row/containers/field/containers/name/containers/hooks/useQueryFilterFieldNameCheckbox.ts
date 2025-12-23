@@ -1,5 +1,5 @@
 import type { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateMaped } from "@repo/types";
 
 interface UseQueryFilterFieldNameCheckboxProps<T extends string> {
@@ -11,12 +11,17 @@ interface UseQueryFilterFieldNameCheckboxProps<T extends string> {
 const useQueryFilterFieldNameCheckbox = <T extends string>({
   queryFilter,
 }: UseQueryFilterFieldNameCheckboxProps<T>) => {
-  const { updateTagValue } = useQueryFilterHooks();
+  const updateTagValue = useQueryFilterStateStore(
+    (state) => state.onUpdateTagValue,
+  );
 
   const queryFilterSelections = queryFilter?.selections ?? [];
-  const isAllChecked = queryFilterSelections?.every(({ key }) =>
-    queryFilter?.tagValue.includes(key),
-  );
+  const isAllChecked =
+    queryFilterSelections.length > 0
+      ? queryFilterSelections.every(({ key }) =>
+          queryFilter?.tagValue.includes(key),
+        )
+      : false;
 
   const handleAllCheckboxClick = (queryKey: T) => (): void => {
     if (!queryFilter) return;
@@ -27,7 +32,7 @@ const useQueryFilterFieldNameCheckbox = <T extends string>({
 
     const allValues = isAllChecked ? [] : queryFilterSelectionAllKeys;
 
-    updateTagValue({ queryKey, selectedKey: allValues });
+    updateTagValue({ queryKey, options: "array", selectedKey: allValues });
   };
 
   return { isAllChecked, handleAllCheckboxClick };

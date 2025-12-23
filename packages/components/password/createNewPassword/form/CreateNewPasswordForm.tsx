@@ -6,7 +6,7 @@ import { useFormContext } from "react-hook-form";
 
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { FormResetPassword } from "@repo/types";
+import type { ResetPasswordFormSchema } from "@repo/schemas/resetPasswordForm.schema";
 
 import * as S from "./CreateNewPasswordForm.styled";
 import Button from "../../../button/Button";
@@ -16,7 +16,7 @@ import PasswordCondition from "../../../passwordCondition/PasswordCondition";
 interface CreateNewPasswordFormProps {
   className?: string;
   isLoading: boolean;
-  handlePasswordChange: (data: FormResetPassword) => void;
+  handlePasswordChange: (data: ResetPasswordFormSchema) => void;
 }
 
 const CreateNewPasswordForm = ({
@@ -33,7 +33,7 @@ const CreateNewPasswordForm = ({
     setValue,
     trigger,
     watch,
-  } = useFormContext<FormResetPassword>();
+  } = useFormContext<ResetPasswordFormSchema>();
 
   const handleNewPasswordChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setValue("newPassword", e.target.value.trim());
@@ -45,7 +45,9 @@ const CreateNewPasswordForm = ({
 
   return (
     <S.CreateNewPasswordSection className={className}>
-      <S.Title>{defaultLanguage(LANGUAGE_LABEL.CREATE_A_NEW_PASSWORD)}</S.Title>
+      <S.Title>
+        {defaultLanguage({ text: LANGUAGE_LABEL.CREATE_A_NEW_PASSWORD })}
+      </S.Title>
       <S.HideSubmitButton disabled type="button" />
       <AccountInput
         css={S.accountLabelInput}

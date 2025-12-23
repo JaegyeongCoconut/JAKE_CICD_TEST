@@ -34,6 +34,7 @@
     "@repo/contexts": "workspace:*",
     "@repo/hooks": "workspace:*",
     "@repo/services": "workspace:*",
+    "@repo/settings": "workspace:*",
     "@repo/stores": "workspace:*",
     "@repo/styles": "workspace:*",
     "@repo/types": "workspace:*",

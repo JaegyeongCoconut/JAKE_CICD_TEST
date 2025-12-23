@@ -1,25 +1,27 @@
 import { useContext, useState } from "react";
 
 import type { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateMaped } from "@repo/types";
 
 import { QueryFilterFieldStateContext } from "../../../../../context/QueryFilterFieldStateContext";
 
 interface UseQueryFilterFieldDropdownProps<T extends string> {
-  querFilter:
+  queryFilter:
     | QueryFilterStateMaped<T>[typeof QUERY_FILTER_TYPE.DROPDOWN]
     | undefined;
 }
 
 const useQueryFilterFieldDropdown = <T extends string>({
-  querFilter,
+  queryFilter,
 }: UseQueryFilterFieldDropdownProps<T>) => {
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
 
   const { handleBlur, handleFocus } = useContext(QueryFilterFieldStateContext);
 
-  const { updateTagValue } = useQueryFilterHooks();
+  const updateTagValue = useQueryFilterStateStore(
+    (state) => state.onUpdateTagValue,
+  );
 
   const handleDropdownClose = (): void => {
     handleBlur();
@@ -30,9 +32,9 @@ const useQueryFilterFieldDropdown = <T extends string>({
     setIsOpenDropdown(true);
   };
   const handleDropdownOptionClick = (queryKey: T, key: string) => (): void => {
-    if (!querFilter) return;
+    if (!queryFilter) return;
 
-    updateTagValue({ queryKey, selectedKey: key });
+    updateTagValue({ queryKey, options: "single", selectedKey: key });
     handleDropdownClose();
   };
 

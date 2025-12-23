@@ -24,9 +24,16 @@ interface OnUpdateQueryKeyProps {
   queryKey: string;
 }
 
-interface OnUpdateTagValueProps {
+interface OnUpdateSingleTagValueProps {
+  options: "single";
   queryKey: string;
-  selectedKey: string | string[];
+  selectedKey: string;
+}
+
+interface OnUpdateArrayTagValueProps {
+  options: "array";
+  queryKey: string;
+  selectedKey: string[];
 }
 
 interface QueryFilterStoreProps {
@@ -41,13 +48,15 @@ interface QueryFilterStoreProps {
     inputValue,
   }: OnUpdateInputValueProps) => void;
   onUpdateQueryKey: ({ queryKey, key }: OnUpdateQueryKeyProps) => void;
-  onUpdateTagValue: ({ queryKey, selectedKey }: OnUpdateTagValueProps) => void;
+  // NOTE:: 오버로드는 화살표 함수로 표기할 수 없음
+  onUpdateTagValue(args: OnUpdateArrayTagValueProps): void;
+  onUpdateTagValue(args: OnUpdateSingleTagValueProps): void;
 }
 
 const useQueryFilterStateStore = create<QueryFilterStoreProps>()(
   immer((set) => ({
     queryFilters: {},
-    onSetQueryFilters: ({ constructor, searchParams }) => {
+    onSetQueryFilters: ({ constructor, searchParams }): void => {
       const newFilters = Object.entries(constructor).reduce<
         Record<string, QueryFilterStateUnion>
       >((acc, [key, value]) => {
@@ -119,7 +128,7 @@ const useQueryFilterStateStore = create<QueryFilterStoreProps>()(
 
       set(() => ({ queryFilters: newFilters }));
     },
-    onUpdateQueryKey: ({ queryKey, key }) => {
+    onUpdateQueryKey: ({ queryKey, key }): void => {
       set((state) => {
         const filter = state.queryFilters[queryKey];
         if (!filter) return;
@@ -127,7 +136,7 @@ const useQueryFilterStateStore = create<QueryFilterStoreProps>()(
         filter.queryKey = key;
       });
     },
-    onUpdateInputValue: ({ queryKey, inputValue }) => {
+    onUpdateInputValue: ({ queryKey, inputValue }): void => {
       set((state) => {
         const filter = state.queryFilters[queryKey];
         if (!filter) return;
@@ -141,15 +150,33 @@ const useQueryFilterStateStore = create<QueryFilterStoreProps>()(
         }
       });
     },
-    onUpdateTagValue: ({ queryKey, selectedKey: tagValue }) => {
+    onUpdateTagValue: (args): void => {
       set((state) => {
-        const filter = state.queryFilters[queryKey];
+        const filter = state.queryFilters[args.queryKey];
         if (!filter) return;
 
-        filter.tagValue = tagValue;
+        if (args.options === "array") {
+          if (
+            filter.type !== QUERY_FILTER_TYPE.CALENDAR &&
+            filter.type !== QUERY_FILTER_TYPE.CHECKBOX
+          )
+            return;
+
+          filter.tagValue = args.selectedKey;
+
+          return;
+        }
+
+        if (
+          filter.type === QUERY_FILTER_TYPE.CALENDAR ||
+          filter.type === QUERY_FILTER_TYPE.CHECKBOX
+        )
+          return;
+
+        filter.tagValue = args.selectedKey;
       });
     },
-    onResetAllValues: () => {
+    onResetAllValues: (): void => {
       set((state) => {
         Object.entries(state.queryFilters).forEach(([key, filter]) => {
           switch (filter.type) {

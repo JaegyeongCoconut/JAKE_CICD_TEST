@@ -1,7 +1,10 @@
 import { is, validate } from "typia";
 
-import { apiDebug } from "@repo/stores/apiDebug";
-import { sanitizeTypiaErrors } from "@repo/utils/api";
+import {
+  clearTypiaLog,
+  sanitizeTypiaErrors,
+  setTypiaLog,
+} from "@repo/utils/api";
 
 import { ax } from "~apis";
 import type {
@@ -24,9 +27,7 @@ export const getInspectionAPI = async (req: GetInspectionQueryModel) => {
   const isMatched = is<GetInspectionServerModel>(data);
 
   if (isMatched) {
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onClearLog(path);
-
+    clearTypiaLog(path);
     return data;
   }
 
@@ -39,9 +40,7 @@ export const getInspectionAPI = async (req: GetInspectionQueryModel) => {
       errors: response.errors,
     });
 
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onSetLog({ path, errors: response.errors });
-
+    setTypiaLog({ path, errors: response.errors });
     return sanitizedData;
   }
 };
@@ -56,9 +55,7 @@ export const getInspectionDetailAPI = async (inspectionId: string) => {
   const isMatched = is<GetInspectionDetailServerModel>(data);
 
   if (isMatched) {
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onClearLog(path);
-
+    clearTypiaLog(path);
     return data;
   }
 
@@ -71,9 +68,7 @@ export const getInspectionDetailAPI = async (inspectionId: string) => {
       errors: response.errors,
     });
 
-    process.env.NODE_ENV === "development" &&
-      apiDebug.getState().onSetLog({ path, errors: response.errors });
-
+    setTypiaLog({ path, errors: response.errors });
     return sanitizedData;
   }
 };

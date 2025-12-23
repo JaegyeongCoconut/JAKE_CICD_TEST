@@ -16,30 +16,30 @@ interface VersionCardProps {
 const VersionCard = ({ version }: VersionCardProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
+  const versions = [
+    { name: LANGUAGE_LABEL.FIRST_VERSION, versionContent: version?.old },
+    { name: LANGUAGE_LABEL.LAST_VERSION, versionContent: version?.new },
+    { name: LANGUAGE_LABEL.REVIEW_VERSION, versionContent: version?.test },
+  ];
+
   return (
     <S.Wrapper>
       <S.Header>
-        <S.Title>{`${version?.serviceName} (${version?.os})`}</S.Title>
+        <S.Title>{`${version?.serviceName ?? "-"} (${version?.os ?? "-"})`}</S.Title>
         {version?.to && (
           <Link css={S.link} to={version.to}>
-            <span>{defaultLanguage(LANGUAGE_LABEL.EDIT)}</span>
+            <span>{defaultLanguage({ text: LANGUAGE_LABEL.EDIT })}</span>
             <DownIcon css={S.icon} />
           </Link>
         )}
       </S.Header>
       <S.Body>
-        <S.Item>
-          <S.Name>{defaultLanguage(LANGUAGE_LABEL.FIRST_VERSION)}</S.Name>
-          <S.VersionContent>{version?.old}</S.VersionContent>
-        </S.Item>
-        <S.Item>
-          <S.Name>{defaultLanguage(LANGUAGE_LABEL.LAST_VERSION)}</S.Name>
-          <S.VersionContent>{version?.new}</S.VersionContent>
-        </S.Item>
-        <S.Item>
-          <S.Name>{defaultLanguage(LANGUAGE_LABEL.REVIEW_VERSION)}</S.Name>
-          <S.VersionContent>{version?.test}</S.VersionContent>
-        </S.Item>
+        {versions.map(({ name, versionContent }) => (
+          <S.Item key={name}>
+            <S.Name>{defaultLanguage({ text: name })}</S.Name>
+            <S.VersionContent>{versionContent || "-"}</S.VersionContent>
+          </S.Item>
+        ))}
       </S.Body>
     </S.Wrapper>
   );

@@ -1,6 +1,7 @@
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import "./dayjsSetup";
+
+import "@repo/settings/dayjsSetup";
 
 type DateArgs = Dayjs | string | number | Date;
 
@@ -11,14 +12,6 @@ interface BaseFormatTimeProps {
 
 const calcHourDiffICTWithUTC0 = () =>
   dayjs.utc().tz("Asia/Vientiane").utcOffset() / 60;
-
-export const isElapsed = (date: string): boolean => {
-  const PICK_UP_BEFORE_MIN = -30;
-  const now = dayjs().utc();
-  const elapsedTime = now.diff(date, "m");
-
-  return elapsedTime > PICK_UP_BEFORE_MIN ? true : false;
-};
 
 interface FormatUnixToLocalDateTimeProps
   extends Omit<BaseFormatTimeProps, "date"> {

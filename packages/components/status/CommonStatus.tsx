@@ -1,21 +1,21 @@
 import React from "react";
 
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { Languages } from "@repo/types";
+import type { Languages, StatusColorType } from "@repo/types";
 
 import * as S from "./CommonStatus.styled";
 
 interface CommonStatusProps {
   className?: string;
-  variant: "orange" | "green" | "blue" | "gray" | "red";
-  hasBg?: boolean;
+  variant: StatusColorType;
+  hasBg: boolean;
   status: Languages;
 }
 
 const CommonStatus = ({
   className,
-  hasBg,
   variant,
+  hasBg,
   status,
 }: CommonStatusProps) => {
   const { defaultLanguage } = useDefaultLanguage();
@@ -23,37 +23,37 @@ const CommonStatus = ({
   switch (variant) {
     case "orange":
       return (
-        <S.OrangeLabel className={className} hasBg={hasBg}>
-          {defaultLanguage(status)}
-        </S.OrangeLabel>
+        <S.Label className={className} variant={variant} hasBg={hasBg}>
+          {defaultLanguage({ text: status })}
+        </S.Label>
       );
 
     case "green":
       return (
-        <S.GreenLabel className={className} hasBg={hasBg}>
-          {defaultLanguage(status)}
-        </S.GreenLabel>
+        <S.Label className={className} variant={variant} hasBg={hasBg}>
+          {defaultLanguage({ text: status })}
+        </S.Label>
       );
 
     case "blue":
       return (
-        <S.BlueLabel className={className} hasBg={hasBg}>
-          {defaultLanguage(status)}
-        </S.BlueLabel>
+        <S.Label className={className} variant={variant} hasBg={hasBg}>
+          {defaultLanguage({ text: status })}
+        </S.Label>
       );
 
     case "gray":
       return (
-        <S.GrayLabel className={className} hasBg={hasBg}>
-          {defaultLanguage(status)}
-        </S.GrayLabel>
+        <S.Label className={className} variant={variant} hasBg={hasBg}>
+          {defaultLanguage({ text: status })}
+        </S.Label>
       );
 
     case "red":
       return (
-        <S.RedLabel className={className} hasBg={hasBg}>
-          {defaultLanguage(status)}
-        </S.RedLabel>
+        <S.Label className={className} variant={variant} hasBg={hasBg}>
+          {defaultLanguage({ text: status })}
+        </S.Label>
       );
   }
 };

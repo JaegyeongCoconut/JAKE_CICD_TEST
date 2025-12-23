@@ -3,13 +3,13 @@ import { v4 as uuidv4 } from "uuid";
 import { postOrsRouteAPI } from "@repo/apis/ors";
 import { COMMON_TOAST_MESSAGE } from "@repo/constants/toast";
 import usePreventDuplicateMutation from "@repo/hooks/usePreventDuplicateMutation";
-import useToast from "@repo/hooks/useToast";
+import { useToastStore } from "@repo/stores/toast";
 import type { LatLng, OrsRes } from "@repo/types";
 
 export const useMutateOrsRoute = (
   displayOrsPolylinesInGoogleMap: (orsRoutes: OrsRes) => void,
 ) => {
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   return usePreventDuplicateMutation<
     OrsRes,

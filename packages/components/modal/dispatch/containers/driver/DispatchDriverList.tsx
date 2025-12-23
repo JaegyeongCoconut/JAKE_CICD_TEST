@@ -51,7 +51,11 @@ const DispatchDriverList = ({
       </S.SearchHeader>
       <S.SearchBody>
         {!filteredDrivers?.length ? (
-          <NoResult css={S.noResult} contents={["No results found"]} />
+          <NoResult
+            css={S.noResult}
+            contents={[LANGUAGE_LABEL.NO_RESULTS_FOUND]}
+            type="search"
+          />
         ) : (
           <S.Ul>
             {filteredDrivers.map((driver, i) => (

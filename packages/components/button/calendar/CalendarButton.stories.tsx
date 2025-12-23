@@ -22,15 +22,15 @@ const meta = {
   args: {
     children: <CalendarIcon css={{ width: "24px" }} />,
     disabled: false,
-    handleOpen: () => {},
     onPopup: (dialogRef, isDialogOpen, handleDialogClose) => (
       <Calendar
         ref={dialogRef}
-        as="dialog"
         isDialogOpen={isDialogOpen}
         dialogPosition="down"
         selectedDate={[]}
         type="date"
+        handleConditionBlur={() => {}}
+        handleConditionFocus={() => {}}
         handleDateChange={() => {}}
         handleDialogClose={handleDialogClose}
       />
@@ -44,11 +44,6 @@ const meta = {
       table: { type: { summary: "React.ReactNode" } },
     },
     disabled: { description: "`CalendarButton`을 비활성화 처리합니다." },
-    handleOpen: {
-      description:
-        "`CalendarButton` 클릭 시 호출되어 `Calendar` 컴포넌트를 열어주는 handler 함수입니다.",
-      table: { type: { summary: "(state: boolean) => void" } },
-    },
     onPopup: {
       description:
         "`CalendarButton` 클릭 시 열리는 `Calendar` 컴포넌트를 렌더링하고 제어하는 함수입니다.",

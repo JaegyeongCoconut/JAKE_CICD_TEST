@@ -1,14 +1,16 @@
-import type { Theme } from "@emotion/react";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-import { fillCheckboxSVG } from "@repo/utils/fill";
-
 import type { LabelContentType } from "./LabelContentTable";
 
-export const LabelContentTableWrapper = styled.div<{ marginBottom?: number }>`
-  ${({ marginBottom }) => css`
-    margin-bottom: ${marginBottom ?? 40}px;
+interface LabelContentTableWrapperProps {
+  hasDefaultMarginBottom: boolean;
+  marginBottom: number;
+}
+
+export const LabelContentTableWrapper = styled.div<LabelContentTableWrapperProps>`
+  ${({ hasDefaultMarginBottom, marginBottom }) => css`
+    margin-bottom: ${hasDefaultMarginBottom ? 40 : marginBottom}px;
   `}
 `;
 
@@ -24,15 +26,17 @@ export const SubjectWrapper = styled(SubjectComponentWrapper)`
   `}
 `;
 
-export const Row = styled.div<{
-  variant?: LabelContentType;
-  hasError?: boolean;
-  marginTop?: number;
-  partition: number;
-}>`
-  ${({ theme, variant, partition, marginTop, hasError }) => css`
+interface RowProps {
+  variant: LabelContentType | undefined;
+  hasError: boolean;
+  hasPartition: boolean;
+  marginTop: number;
+}
+
+export const Row = styled.div<RowProps>`
+  ${({ theme, variant, hasPartition, marginTop, hasError }) => css`
     display: grid;
-    grid-template-columns: repeat(${partition}, 1fr);
+    grid-template-columns: repeat(${hasPartition ? 2 : 1}, 1fr);
     margin-top: ${marginTop && `${marginTop}px`};
     border: ${variant === "bg" && `1px solid ${theme.color.gray_20}`};
     border-bottom: ${hasError
@@ -45,18 +49,11 @@ export const Row = styled.div<{
   `}
 `;
 
-export const ContentWrapper = styled.div<{
-  variant?: LabelContentType;
-  labelWidth?: number;
-}>`
-  ${({ theme, variant, labelWidth }) => css`
+export const ContentWrapper = styled.div<{ labelWidth: number }>`
+  ${({ theme, labelWidth }) => css`
     ${theme.font.regular_14};
     display: grid;
-    grid-template-columns: ${labelWidth
-        ? `${labelWidth}px`
-        : variant === "empty"
-          ? "200px"
-          : "210px"} 1fr;
+    grid-template-columns: ${labelWidth}px 1fr;
     word-break: break-all;
   `}
 `;
@@ -65,8 +62,13 @@ export const NameWrapper = styled.div`
   height: 100%;
 `;
 
-const mixin_name =
-  (variant?: LabelContentType, hasError?: boolean) => (theme: Theme) => css`
+interface NameLabelProps {
+  variant: LabelContentType | undefined;
+  hasError: boolean;
+}
+
+export const Name = styled.div<NameLabelProps>`
+  ${({ theme, variant, hasError }) => css`
     ${variant === "bg" ? theme.font.medium_14 : theme.font.regular_14};
     display: flex;
     align-items: center;
@@ -84,72 +86,17 @@ const mixin_name =
     background-color: ${hasError
       ? theme.color.red_20
       : variant === "bg" && theme.color.gray_10};
-  `;
+  `}
+`;
 
-export const Name = styled.span<{
-  variant?: LabelContentType;
-  hasError?: boolean;
-}>`
+export const Label = styled.span<NameLabelProps>`
   ${({ theme, variant, hasError }) => css`
-    ${mixin_name(variant, hasError)(theme)}
-  `}
-`;
-
-export const CheckboxLabel = styled.label<{
-  variant?: LabelContentType;
-  disabled?: boolean;
-  hasError?: boolean;
-}>`
-  ${({ theme, variant, hasError, disabled }) => css`
-    ${mixin_name(variant, hasError)(theme)};
-
-    & > input[type="checkbox"] {
-      display: none;
-    }
-
-    :hover {
-      cursor: ${disabled ? "not-allowed" : "pointer"};
-
-      input[type="checkbox"]:enabled + label {
-        border: 1px solid ${theme.color.blue_60};
-        cursor: pointer;
-      }
-    }
-
-    input[type="checkbox"]:checked + label {
-      border: 1px solid ${theme.color.blue_60};
-      background: ${theme.color.blue_60} no-repeat center;
-      background-image: url(${fillCheckboxSVG(theme.color.blue_60)});
-    }
-
-    input[type="checkbox"]:disabled + label {
-      :hover {
-        cursor: not-allowed;
-      }
-    }
-
-    input[type="checkbox"]:disabled + label {
-      border: 1px solid ${theme.color.gray_30};
-      background-color: ${theme.color.gray_10};
-    }
-
-    input[type="checkbox"]:checked:disabled + label {
-      border: 1px solid ${theme.color.gray_30};
-      background: no-repeat center;
-      background-color: ${theme.color.gray_10};
-      background-image: url(${fillCheckboxSVG(theme.color.gray_40)});
-    }
-  `}
-`;
-
-export const Checkbox = styled.label`
-  ${({ theme }) => css`
-    display: block;
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-    border: 1px solid ${theme.color.gray_30};
-    border-radius: 2px;
+    ${variant === "bg" ? theme.font.medium_14 : theme.font.regular_14};
+    color: ${hasError
+      ? theme.color.red_50
+      : variant === "empty" || variant === "underline"
+        ? theme.color.gray_90
+        : theme.color.gray_60};
   `}
 `;
 
@@ -161,11 +108,7 @@ export const Required = styled.span`
   `}
 `;
 
-export const TooltipWrapper = styled.div`
-  margin-left: 4px;
-`;
-
-export const Content = styled.div<{ variant?: LabelContentType }>`
+export const Content = styled.div<{ variant: LabelContentType | undefined }>`
   ${({ theme, variant }) => css`
     display: flex;
     align-items: center;

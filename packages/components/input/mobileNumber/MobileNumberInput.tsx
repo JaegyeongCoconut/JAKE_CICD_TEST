@@ -17,6 +17,7 @@ interface BaseMobileNumberInputProps {
 interface DisabledMobileNumberInputProps extends BaseMobileNumberInputProps {
   disabled: true;
   hasError?: never;
+  value: string;
   maxLength?: never;
   register?: never;
 }
@@ -24,6 +25,7 @@ interface DisabledMobileNumberInputProps extends BaseMobileNumberInputProps {
 interface AbledMobileNumberInputProps extends BaseMobileNumberInputProps {
   disabled: false;
   hasError: boolean;
+  value?: never;
   maxLength: number;
   register: UseFormRegisterReturn<string>;
 }
@@ -33,6 +35,7 @@ function MobileNumberInput({
   disabled,
   hasError,
   dial,
+  value,
   placeholder,
   maxLength,
   register,
@@ -43,7 +46,7 @@ function MobileNumberInput({
       {disabled ? (
         <DisabledInput
           css={S.mobileNumberInput}
-          value=""
+          value={value}
           placeholder={placeholder}
         />
       ) : (

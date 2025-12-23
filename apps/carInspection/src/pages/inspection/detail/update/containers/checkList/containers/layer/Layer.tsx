@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 
 import { FormProvider } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
 import useTab from "@repo/hooks/useTab";
@@ -9,6 +8,7 @@ import useTab from "@repo/hooks/useTab";
 import { INSPECTION_CHECKLIST_TABS } from "~assets";
 import { Header } from "~components";
 import { LANGUAGE_LABEL, PATH } from "~constants";
+import { useServiceTranslation } from "~hooks";
 import { useGetInspectionCarCheckList } from "~services";
 
 import * as S from "./Layer.styled";
@@ -19,12 +19,12 @@ import InteriorPanel from "./containers/panel/interior/InteriorPanel";
 import UndersidePanel from "./containers/panel/underside/UndersidePanel";
 
 const Layer = () => {
-  const { t } = useTranslation();
   const { inspectionId } = useParams();
 
-  const { selectedTab } = useTab(INSPECTION_CHECKLIST_TABS);
   const { data } = useGetInspectionCarCheckList(inspectionId!);
 
+  const { defaultLanguage } = useServiceTranslation();
+  const { selectedTab } = useTab(INSPECTION_CHECKLIST_TABS);
   const { formMethod } = useCheckListForm({ data });
 
   const panelRender = {
@@ -73,7 +73,7 @@ const Layer = () => {
                 replace
                 to={`?tab=${key}`}
               >
-                <span>{`${t(label)}${tabCounter[key]}`}</span>
+                <span>{`${defaultLanguage({ text: label })}${tabCounter[key]}`}</span>
               </Link>
             </S.Tab>
           ))}

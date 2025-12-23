@@ -18,28 +18,35 @@ import Portal from "../../portal/Portal";
 
 interface CheckTableProps {
   className?: string;
-  isAllChecked: boolean;
-  isInitQueryFilter?: boolean;
-  isLoading?: boolean;
-  selectedCount?: number;
+  isInitQueryFilter: boolean;
+  isLoading: boolean;
+  selectedCount: number;
   tableHeaderInfos: TableHeaderInfo;
-  title?: string;
-  toolButtons?: React.ReactNode;
-  handleAllCheck?: () => void;
-  handleAllUnCheck?: () => void;
+  title: string;
+  toolButtons: React.ReactNode | undefined;
   children: React.ReactNode;
+}
+
+interface EnabledAllCheckTableProps extends CheckTableProps {
+  isAllChecked: boolean;
+  handleAllCheck: () => void;
+  handleAllUnCheck: () => void;
+}
+
+interface DisabledAllCheckTableProps extends CheckTableProps {
+  isAllChecked?: never;
+  handleAllCheck?: never;
+  handleAllUnCheck?: never;
 }
 
 interface RowProps {
   className?: string;
-  handleMouseLeave?: React.MouseEventHandler<HTMLElement>;
-  handleMouseOver?: React.MouseEventHandler<HTMLElement>;
   children: React.ReactNode;
 }
 
 interface SelectRowProps extends RowProps {
   id: string;
-  isSelected?: boolean;
+  isSelected: boolean;
   handleSelect: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -65,7 +72,7 @@ const CheckTable = ({
   isAllChecked,
   handleAllCheck,
   handleAllUnCheck,
-}: CheckTableProps) => {
+}: EnabledAllCheckTableProps | DisabledAllCheckTableProps) => {
   const { defaultLanguage } = useDefaultLanguage();
   const { tableRef, toolBoxRef } = useTableScrollTop();
 
@@ -80,7 +87,8 @@ const CheckTable = ({
         <S.ToolBoxWrapper ref={toolBoxRef}>
           <S.ToolBox>
             <S.SelectedCount>
-              {selectedCount} {defaultLanguage(LANGUAGE_LABEL.SELECTED)}
+              {selectedCount}{" "}
+              {defaultLanguage({ text: LANGUAGE_LABEL.SELECTED })}
             </S.SelectedCount>
             {toolButtons && toolButtons}
           </S.ToolBox>
@@ -104,6 +112,7 @@ const CheckTable = ({
             <S.CheckTh>
               {handleAllCheck && (
                 <Checkbox
+                  disabled={false}
                   isChecked={isAllChecked}
                   handleCheck={handleAllCheck}
                 />
@@ -111,7 +120,7 @@ const CheckTable = ({
             </S.CheckTh>
             {tableHeaderInfos.map(({ key, label }, i) => (
               <S.Th key={i} title={key}>
-                {defaultLanguage(label)}
+                {defaultLanguage({ text: label })}
               </S.Th>
             ))}
           </S.HeadRow>
@@ -130,29 +139,16 @@ const CheckTable = ({
   );
 };
 
-CheckTable.Row = function Row({
-  className,
-  children,
-  handleMouseOver,
-  handleMouseLeave,
-}: RowProps) {
-  return (
-    <S.Row
-      className={className}
-      onMouseEnter={handleMouseOver}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-    </S.Row>
-  );
+CheckTable.Row = function Row({ className, children }: RowProps) {
+  return <S.Row className={className}>{children}</S.Row>;
 };
 
 CheckTable.SelectRow = function SelectRow({
   className,
   children,
   id,
-  isSelected = false,
-  handleSelect: selectCb,
+  isSelected,
+  handleSelect,
 }: SelectRowProps) {
   const { domReady } = useDomReady();
 
@@ -170,7 +166,7 @@ CheckTable.SelectRow = function SelectRow({
       </S.SelectRow>
       <Portal container={`#${rowId}`} mounted={domReady}>
         <td>
-          <S.RowButton type="button" onClick={selectCb}>
+          <S.RowButton type="button" onClick={handleSelect}>
             <span className="a11y">select row</span>
           </S.RowButton>
         </td>
@@ -222,7 +218,7 @@ CheckTable.NoData = function NoData() {
     <S.NoData>
       <td>
         <WarningIcon css={S.noneSearchIcon} />
-        {defaultLanguage(LANGUAGE_LABEL.NO_RESULTS_FOUND)}
+        {defaultLanguage({ text: LANGUAGE_LABEL.NO_RESULTS_FOUND })}
       </td>
     </S.NoData>
   );
@@ -235,7 +231,9 @@ CheckTable.InitData = function InitData() {
     <S.NoData>
       <td>
         <WebSearchIcon css={S.noneSearchIcon} />
-        {defaultLanguage(LANGUAGE_LABEL.PLEASE_APPLY_THE_FILTER_TO_SEARCH)}
+        {defaultLanguage({
+          text: LANGUAGE_LABEL.PLEASE_APPLY_THE_FILTER_TO_SEARCH,
+        })}
       </td>
     </S.NoData>
   );

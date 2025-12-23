@@ -17,14 +17,25 @@ export const GhostButton = styled.button<GhostButtonProps>`
     ${variant === "ghost_blue" && theme.button.ghost_blue};
     ${variant === "ghost_red" && theme.button.ghost_red};
     pointer-events: ${isLoading && "none"};
+
+    span {
+      visibility: ${isLoading ? "hidden" : "visible"};
+    }
   `}
 `;
 
 export const loadingSpinner = css`
   position: absolute;
   top: 50%;
-  left: 100%;
+  left: 50%;
   width: 12px;
   height: 12px;
-  transform: translate(50%, -50%);
+  transform: translate(-50%, -50%);
+`;
+
+export const Content = styled.span`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: 4px;
 `;

@@ -32,20 +32,20 @@ const CalendarSelectedInput = ({
         <>
           <time>
             {startSelectedDate?.format("DD/MM/YYYY") ||
-              defaultLanguage(LANGUAGE_LABEL.FROM)}
+              defaultLanguage({ text: LANGUAGE_LABEL.FROM })}
           </time>
           ~
           <time>
             {endSelectedDate
               ? endSelectedDate.format("DD/MM/YYYY")
               : startSelectedDate?.format("DD/MM/YYYY") ||
-                defaultLanguage(LANGUAGE_LABEL.TO)}
+                defaultLanguage({ text: LANGUAGE_LABEL.TO })}
           </time>
         </>
       ) : type === "date" ? (
         <time>
           {startSelectedDate?.format("DD/MM/YYYY") ||
-            defaultLanguage(LANGUAGE_LABEL.SELECT_THE_DATE)}
+            defaultLanguage({ text: LANGUAGE_LABEL.SELECT_THE_DATE })}
         </time>
       ) : null}
     </S.SelectedDates>

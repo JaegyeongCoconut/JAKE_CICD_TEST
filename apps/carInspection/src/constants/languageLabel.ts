@@ -14,6 +14,7 @@ export const LANGUAGE_LABEL = {
   ENGINE_NUMBER: "Engine number",
   ENGINE: "Engine",
   ENTER_THE_ENGINE_NUMBER: "Enter the engine number",
+  ENTER_THE_FRAME_NUMBER: "Enter the frame number",
   ENTER_THE_INSPECTION_CODE: "Enter the inspection code",
   ENTER_THE_MILEAGE: "Enter the mileage" as CarInspectionLanguages, // TODO: 문구 확인 필요
   ENTER_THE_MODEL: "Enter the model",
@@ -51,7 +52,6 @@ export const LANGUAGE_LABEL = {
   UNDERSIDE: "Underside",
   UPLOAD_PHOTO: "Upload photo",
   YEAR: "Year",
-  YOU_CAN_UPLOAD_UP_TO_3_FILES_AT_A_TIME:
-    "You can upload up to 3 files at a time.",
+  YOU_CAN_UPLOAD_UP_TO_3_FILES_AT_A_TIME: "You can upload up to 3 files at a time.",
   YOU_CAN_UPLOAD_UP_TO_3_PHOTOS: "You can upload up to 3 photos.",
 } satisfies Record<string, CarInspectionLanguages>;

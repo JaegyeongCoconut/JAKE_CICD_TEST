@@ -4,10 +4,12 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./GoogleMapProvider": "./GoogleMapProvider.tsx",
-    "./RoutePathProvider": "./RoutePathProvider.tsx"
+    "./Auth": "./Auth.tsx"
   },
   "dependencies": {
+    "@repo/assets": "workspace:*",
+    "@repo/hooks": "workspace:*",
+    "@repo/stores": "workspace:*",
     "@repo/utils": "workspace:*"
   },
   "devDependencies": {

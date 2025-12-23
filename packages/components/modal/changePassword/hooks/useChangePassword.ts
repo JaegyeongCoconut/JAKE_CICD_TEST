@@ -1,34 +1,61 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { UseMutateFunction } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { object } from "yup";
 
 import { COMMON_ERROR_CODE } from "@repo/constants/error/code";
 import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
-import useModal from "@repo/hooks/modal/useModal";
-import useToast from "@repo/hooks/useToast";
 import useUnexpectedApiError from "@repo/hooks/useUnexpectedApiError";
+import { useModalStore } from "@repo/stores/modal";
+import { useToastStore } from "@repo/stores/toast";
 import type {
   CommonApiErrorType,
   ChangeAccountPasswordQueryModel,
   Languages,
 } from "@repo/types";
-import { SCHEMA } from "@repo/utils/yup/schema";
-import { TEST } from "@repo/utils/yup/yupTest";
+import { checkPasswordLength, checkPasswordType } from "@repo/utils/validation";
+import { SCHEMA } from "@repo/utils/zod/schema";
 
-interface Form {
+import type { ChangePasswordFormSchema } from "../schema/changePassword.schema";
+
+interface FormChangePassword {
   confirmPassword: string;
   currentPassword: string;
   newPassword: string;
 }
 
-const schema = object({
-  currentPassword: SCHEMA.REQUIRED_STRING(),
-  newPassword: SCHEMA.REQUIRED_STRING()
-    .test(TEST.PASSWORD.TYPE)
-    .test(TEST.PASSWORD.LENGTH)
-    .test(TEST.PASSWORD.NEW),
-  confirmPassword: SCHEMA.REQUIRED_STRING().test(TEST.PASSWORD.CONFIRM),
+const schema = SCHEMA.OBJECT.DEFAULT({
+  currentPassword: SCHEMA.STRING.REQUIRED,
+  newPassword: SCHEMA.STRING.REQUIRED,
+  confirmPassword: SCHEMA.STRING.REQUIRED,
+}).superRefine((value, context) => {
+  const isCheckedPasswordType = checkPasswordType(value.newPassword);
+  const isCheckedPasswordLength = checkPasswordLength(value.newPassword);
+
+  if (value.currentPassword === value.newPassword) {
+    context.addIssue({
+      code: "custom",
+      message: COMMON_ERROR_MESSAGE.CANNOT_UPDATE_PASSWORD,
+      path: ["newPassword"],
+    });
+  }
+
+  if (!isCheckedPasswordType || !isCheckedPasswordLength) {
+    context.addIssue({
+      code: "custom",
+      message: !isCheckedPasswordType
+        ? COMMON_ERROR_MESSAGE.PASSWORD_TYPE
+        : COMMON_ERROR_MESSAGE.PASSWORD_LENGTH,
+      path: ["newPassword"],
+    });
+  }
+
+  if (value.newPassword !== value.confirmPassword) {
+    context.addIssue({
+      code: "custom",
+      message: COMMON_ERROR_MESSAGE.PASSWORD_CONFIRM,
+      path: ["confirmPassword"],
+    });
+  }
 });
 
 interface UseChangePasswordProps {
@@ -42,21 +69,26 @@ interface UseChangePasswordProps {
   >;
 }
 
-const initForm = { currentPassword: "", newPassword: "", confirmPassword: "" };
+const INIT_FORM: ChangePasswordFormSchema = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+};
 
 const useChangePassword = ({
   successToast,
   onChangeAccountPasswordMutate,
   handleEncryptPassword,
 }: UseChangePasswordProps) => {
-  const formMethod = useForm<Form>({
-    defaultValues: initForm,
+  const formMethod = useForm<FormChangePassword>({
+    defaultValues: INIT_FORM,
     mode: "onTouched",
-    resolver: yupResolver(schema),
+    resolver: zodResolver(schema),
   });
 
-  const { handleModalClose } = useModal();
-  const { addToast } = useToast();
+  const handleModalClose = useModalStore((state) => state.handleModalClose);
+  const addToast = useToastStore((state) => state.addToast);
+
   const { showAlert } = useUnexpectedApiError();
 
   const handlePasswordChange = formMethod.handleSubmit(
@@ -104,10 +136,7 @@ const useChangePassword = ({
     },
   );
 
-  return {
-    formMethod,
-    handlePasswordChange,
-  };
+  return { formMethod, handlePasswordChange };
 };
 
 export default useChangePassword;

@@ -2,7 +2,7 @@ import React from "react";
 
 import { ReactComponent as CopyIcon } from "@repo/assets/icon/ic_copy.svg";
 import { COMMON_TOAST_MESSAGE } from "@repo/constants/toast";
-import useToast from "@repo/hooks/useToast";
+import { useToastStore } from "@repo/stores/toast";
 
 import * as S from "./CopyButton.styled";
 import Button from "../Button";
@@ -23,7 +23,7 @@ interface CopyButtonProps {
 }
 
 const CopyButton = ({ className, copyText, serviceType }: CopyButtonProps) => {
-  const { addToast } = useToast();
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleTextCopy =
     (copyText: string) =>
@@ -35,14 +35,12 @@ const CopyButton = ({ className, copyText, serviceType }: CopyButtonProps) => {
         switch (serviceType) {
           case "car":
           case "move":
-            addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_DRIVER_MOBILE);
-            break;
-          case "kokkok_support":
-            addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_LINK);
-            break;
           case "kokkok_food":
           case "kokkok_mart":
             addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_MOBILE);
+            break;
+          case "kokkok_support":
+            addToast(COMMON_TOAST_MESSAGE.SUCCESS.COPY_LINK);
             break;
           case "password":
             addToast(COMMON_TOAST_MESSAGE.SUCCESS.PASSWORD_COPIED);

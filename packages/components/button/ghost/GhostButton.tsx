@@ -17,27 +17,31 @@ export type ButtonVariant =
 interface GhostButtonProps {
   className?: string;
   variant: ButtonVariant;
-  disabled?: boolean;
-  isLoading?: boolean;
-  icon?: {
-    position: "left" | "right";
-    component: React.ReactNode;
-  };
+  Icon?: React.ReactNode; // NOTE: 사용하는곳이 많지 않아 Optional 설정
   label: Languages;
-  type?: "button" | "submit" | "reset";
-  handleButtonClick?: (e: React.MouseEvent) => void;
+}
+
+interface DisabledGhostButtonProps extends GhostButtonProps {
+  disabled: true;
+  isLoading?: never;
+  handleButtonClick?: never;
+}
+
+interface EnabledGhostButtonProps extends GhostButtonProps {
+  disabled: false;
+  isLoading: boolean;
+  handleButtonClick: (e: React.MouseEvent) => void;
 }
 
 const GhostButton = ({
   className,
-  disabled,
-  isLoading = false,
-  icon,
-  label,
-  type = "button",
   variant,
+  disabled,
+  isLoading,
+  Icon,
+  label,
   handleButtonClick,
-}: GhostButtonProps) => {
+}: DisabledGhostButtonProps | EnabledGhostButtonProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   return (
@@ -45,19 +49,16 @@ const GhostButton = ({
       className={className}
       variant={variant}
       disabled={disabled}
-      isLoading={isLoading}
-      type={type}
-      onClick={handleButtonClick}
+      isLoading={!!isLoading}
+      tabIndex={isLoading ? -1 : 0}
+      type="button"
+      onClick={isLoading ? () => {} : handleButtonClick}
     >
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          {icon?.position === "left" && icon.component}
-          {defaultLanguage(label)}
-          {icon?.position === "right" && icon.component}
-        </>
-      )}
+      {isLoading && <LoadingSpinner css={S.loadingSpinner} />}
+      <S.Content>
+        {Icon && Icon}
+        {defaultLanguage({ text: label })}
+      </S.Content>
     </S.GhostButton>
   );
 };

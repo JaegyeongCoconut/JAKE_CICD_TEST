@@ -1,13 +1,13 @@
 import React from "react";
 
-import type { FormResetPassword } from "@repo/types";
+import type { ResetPasswordFormSchema } from "@repo/schemas/resetPasswordForm.schema";
 
 import CreateNewPasswordForm from "./form/CreateNewPasswordForm";
 
 interface CommonCreateNewPasswordProps {
   className?: string;
   isLoading: boolean;
-  handlePasswordChange: (data: FormResetPassword) => void;
+  handlePasswordChange: (data: ResetPasswordFormSchema) => void;
 }
 
 const CommonCreateNewPassword = ({

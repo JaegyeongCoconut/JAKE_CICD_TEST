@@ -5,7 +5,8 @@ import { useFormContext } from "react-hook-form";
 import { VERSION_OS, VERSION_PLATFORM } from "@repo/assets/static/version";
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useNavigationBlocking from "@repo/hooks/useNavigationBlocking";
-import type { FormVersion, Languages } from "@repo/types";
+import type { VersionFormSchema } from "@repo/schemas/versionForm.schema";
+import type { Languages } from "@repo/types";
 
 import * as S from "./VersionForm.styled";
 import Button from "../../button/Button";
@@ -17,15 +18,15 @@ import ErrorMessage from "../../message/ErrorMessage";
 interface VersionFormProps {
   className?: string;
   isLoading: boolean;
-  posButtonLabel: Languages;
+  positiveButtonLabel: Languages;
   handleCancelClick: () => void;
-  handleVersionSubmit: (data: FormVersion) => void;
+  handleVersionSubmit: (data: VersionFormSchema) => void;
 }
 
 const VersionForm = ({
   className,
   isLoading,
-  posButtonLabel,
+  positiveButtonLabel,
   handleCancelClick,
   handleVersionSubmit,
 }: VersionFormProps) => {
@@ -34,7 +35,7 @@ const VersionForm = ({
     watch,
     register,
     handleSubmit,
-  } = useFormContext<FormVersion>();
+  } = useFormContext<VersionFormSchema>();
 
   useNavigationBlocking(isDirty && !isLoading);
 
@@ -47,9 +48,16 @@ const VersionForm = ({
         css={S.labelContent}
         className={className}
         variant="empty"
+        hasDefaultMarginBottom
+        subject={null}
       >
-        <LabelContentTable.Row>
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
           <LabelContentTable.Content
+            hasError={false}
             isRequired
             label={LANGUAGE_LABEL.OS}
             labelWidth={210}
@@ -61,8 +69,13 @@ const VersionForm = ({
             />
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row>
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
           <LabelContentTable.Content
+            hasError={false}
             isRequired
             label={LANGUAGE_LABEL.PLATFORM_TYPE}
             labelWidth={210}
@@ -74,8 +87,13 @@ const VersionForm = ({
             />
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row>
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
           <LabelContentTable.Content
+            hasError={false}
             isRequired
             label={LANGUAGE_LABEL.FIRST_VERSION}
             labelWidth={210}
@@ -98,8 +116,13 @@ const VersionForm = ({
             </div>
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row>
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
           <LabelContentTable.Content
+            hasError={false}
             isRequired
             label={LANGUAGE_LABEL.LAST_VERSION}
             labelWidth={210}
@@ -122,8 +145,13 @@ const VersionForm = ({
             </div>
           </LabelContentTable.Content>
         </LabelContentTable.Row>
-        <LabelContentTable.Row>
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
           <LabelContentTable.Content
+            hasError={false}
             isRequired
             label={LANGUAGE_LABEL.REVIEW_VERSION}
             labelWidth={210}
@@ -152,7 +180,7 @@ const VersionForm = ({
           variant="primary"
           disabled={!!Object.keys(errors).length}
           isLoading={isLoading}
-          label={posButtonLabel}
+          label={positiveButtonLabel}
           type="submit"
           handleButtonClick={handleSubmit(handleVersionSubmit)}
         />

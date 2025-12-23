@@ -28,11 +28,11 @@ const ApiError = ({ path, errorMessage, onResetErrorState }: ApiErrorProps) => {
       <S.Container>
         <WarningIcon css={S.icon} />
         <S.Title>{errorMessage}</S.Title>
-        <S.Desc>
+        <S.Description>
           An error has occurred while processing your request.
           <br />
           Please try again later.
-        </S.Desc>
+        </S.Description>
         <InternalLinkButton
           variant="secondary"
           hasBoth={false}

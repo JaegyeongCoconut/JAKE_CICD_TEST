@@ -83,7 +83,7 @@ PasswordCondition.lengthCondition = function lengthCondition() {
   return (
     <S.PasswordCondition hasError={isLengthError}>
       <CheckIcon />
-      {defaultLanguage(COMMON_ERROR_MESSAGE.PASSWORD_LENGTH)}
+      {defaultLanguage({ text: COMMON_ERROR_MESSAGE.PASSWORD_LENGTH })}
     </S.PasswordCondition>
   );
 };
@@ -105,7 +105,7 @@ PasswordCondition.textTypeCondition = function textTypeCondition() {
   return (
     <S.PasswordCondition hasError={isTypeError}>
       <CheckIcon />
-      {defaultLanguage(COMMON_ERROR_MESSAGE.PASSWORD_TYPE)}
+      {defaultLanguage({ text: COMMON_ERROR_MESSAGE.PASSWORD_TYPE })}
     </S.PasswordCondition>
   );
 };
@@ -129,7 +129,7 @@ PasswordCondition.passwordCondition = function passwordCondition() {
   return (
     <S.PasswordCondition hasError={isSameError}>
       <CheckIcon />
-      {defaultLanguage(COMMON_ERROR_MESSAGE.CANNOT_UPDATE_PASSWORD)}
+      {defaultLanguage({ text: COMMON_ERROR_MESSAGE.CANNOT_UPDATE_PASSWORD })}
     </S.PasswordCondition>
   );
 };
@@ -153,7 +153,7 @@ PasswordCondition.checkConfirmPassword = function checkConfirmPassword() {
   return (
     <S.PasswordCondition hasError={hasConfirmError}>
       <CheckIcon />
-      {defaultLanguage(COMMON_ERROR_MESSAGE.PASSWORD_CONFIRM)}
+      {defaultLanguage({ text: COMMON_ERROR_MESSAGE.PASSWORD_CONFIRM })}
     </S.PasswordCondition>
   );
 };

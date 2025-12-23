@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
-import type { FormLogin } from "@repo/types";
+import type { LoginFormSchema } from "@repo/schemas/loginForm.schema";
 
 import * as S from "./LoginForm.styled";
 import Button from "../../button/Button";
@@ -18,8 +18,8 @@ interface LoginFormProps {
   className?: string;
   isLoading: boolean;
   logoIcon: React.ReactNode;
-  resetPasswordPath?: string;
-  handleLogin: (data: FormLogin) => void;
+  resetPasswordPath: string | null;
+  handleLogin: (data: LoginFormSchema) => void;
 }
 
 const LoginForm = ({
@@ -37,7 +37,7 @@ const LoginForm = ({
     register,
     setValue,
     trigger,
-  } = useFormContext<FormLogin>();
+  } = useFormContext<LoginFormSchema>();
 
   return (
     <S.LoginSection>
@@ -92,7 +92,7 @@ const LoginForm = ({
         />
         {resetPasswordPath && (
           <Link css={S.resetPasswordLink} to={resetPasswordPath}>
-            {defaultLanguage(LANGUAGE_LABEL.RESET_PASSWORD)}
+            {defaultLanguage({ text: LANGUAGE_LABEL.RESET_PASSWORD })}
           </Link>
         )}
       </S.Form>

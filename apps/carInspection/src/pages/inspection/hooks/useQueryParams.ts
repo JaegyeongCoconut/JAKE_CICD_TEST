@@ -3,13 +3,18 @@ import { useEffect } from "react";
 import { isEmpty } from "lodash-es";
 
 import useQueryFilterParams from "@repo/hooks/queryFilter/useQueryFilterParams";
-import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
+import { useQueryFilterStore } from "@repo/stores/queryFilter";
 
 import { INSPECTION_QUERY_FILTERS } from "~assets";
 import type { GetInspectionQueryModel } from "~types";
 
 const useQueryParams = () => {
-  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
+  const isInitQueryFilter = useQueryFilterStore(
+    (state) => state.isInitQueryFilter,
+  );
+  const setIsInitQueryFilter = useQueryFilterStore(
+    (state) => state.setIsInitQueryFilter,
+  );
 
   const { queryFilters } = useQueryFilterParams<
     GetInspectionQueryModel["query"]

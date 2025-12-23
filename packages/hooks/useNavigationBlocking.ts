@@ -26,12 +26,12 @@ const useNavigationBlocking = (isDirty: boolean) => {
 
   const { handleNavigationBlockingModalOpen } = useNavigationBlockingModal();
 
-  const handleBeforeUnload = (event: Event) => {
+  const handleBeforeUnload = (event: Event): void => {
     event.preventDefault();
     event.returnValue = false;
   };
 
-  const handleConfirmNavigation = () => {
+  const handleConfirmNavigation = (): void => {
     setIsConfirmedNavigation(true);
   };
 
@@ -41,7 +41,9 @@ const useNavigationBlocking = (isDirty: boolean) => {
   }
 
   const handleNavigationBlock = useCallback(
-    ({ currentLocation, nextLocation }: NavigationBlockerParams) => {
+    ({ currentLocation, nextLocation }: NavigationBlockerParams): boolean => {
+      if (!isDirty) return false;
+
       if (isConfirmedNavigation) return false; //NOTE: 이동허용
 
       const currentLocationPath = `${currentLocation.pathname}${currentLocation.search}`;
@@ -55,18 +57,23 @@ const useNavigationBlocking = (isDirty: boolean) => {
 
       return false;
     },
-    [isConfirmedNavigation, handleConfirmNavigation, isDirty],
+    [
+      isConfirmedNavigation,
+      handleConfirmNavigation,
+      isDirty,
+      handleNavigationBlockingModalOpen,
+    ],
   );
 
-  const onPreventLeave = () => {
+  const onPreventLeave = (): void => {
     window.addEventListener("beforeunload", handleBeforeUnload);
   };
 
-  const offPreventLeave = () => {
+  const offPreventLeave = (): void => {
     window.removeEventListener("beforeunload", handleBeforeUnload);
   };
 
-  useBlocker(handleNavigationBlock);
+  useBlocker(isDirty ? handleNavigationBlock : false);
 
   useEffect(() => {
     setIsDirty(isDirty);

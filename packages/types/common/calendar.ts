@@ -7,8 +7,8 @@ export interface MonthYear {
   currentStartDate: Dayjs;
   currentYear: string;
   date: string;
-  firstDOW: number;
   firstWeekPrevMonthDate: Dayjs;
+  frstDayOfMonth: number;
   lastDate: number;
   month: string;
   nextMonthStartDate: Dayjs;

@@ -1,5 +1,6 @@
 import React from "react";
 
+import { useModalStore } from "@repo/stores/modal";
 import type { Languages } from "@repo/types";
 
 import * as S from "./DispatchModal.styled";
@@ -16,14 +17,17 @@ const DispatchModalSkeleton = React.forwardRef<
   HTMLDialogElement,
   DispatchModalSkeletonProps
 >(({ title, description }, ref) => {
+  const handleModalClose = useModalStore((state) => state.handleModalClose);
+
   return (
     <DetailModal
       css={S.detailModal}
       ref={ref}
-      isPosLoading={false}
-      desc={description}
-      posButtonName="Select"
+      isPositiveDisabled
+      description={description}
+      positiveButtonName="Select"
       title={title}
+      handleClose={handleModalClose}
     >
       <S.ListWrapper>
         <DispatchDriverListSkeleton />

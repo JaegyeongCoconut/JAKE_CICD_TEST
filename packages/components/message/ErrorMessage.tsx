@@ -15,7 +15,7 @@ const ErrorMessage = ({ className, message }: ErrorMessageProps) => {
 
   return (
     <S.ErrorMessage className={className} role="alert">
-      {defaultLanguage(message as Languages)}
+      {defaultLanguage({ text: message as Languages })}
     </S.ErrorMessage>
   );
 };

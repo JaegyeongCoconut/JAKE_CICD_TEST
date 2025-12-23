@@ -15,7 +15,6 @@ const useCheckTableWithCondition = <
 }: UseCheckTableWithConditionProps<T>) => {
   const [searchParams] = useSearchParams();
 
-  const [isCheckTable, setIsCheckTable] = useState(false);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
 
   const isChecked = (id: string | undefined): boolean => {
@@ -46,18 +45,10 @@ const useCheckTableWithCondition = <
   const handleAllCheck = (): void =>
     isAllChecked() ? setCheckedIds([]) : setCheckedIds(checkableIds);
 
-  const handleTransformCheckTable = (): void => {
-    setIsCheckTable(true);
-  };
-  const handleTransformTable = (): void => {
-    setIsCheckTable(false);
-  };
-
   const handleAllUnCheck = (): void => setCheckedIds([]);
 
   useEffect(() => {
     setCheckedIds([]);
-    setIsCheckTable(false);
   }, [searchParams.get("page")]);
 
   useEffect(() => {
@@ -69,7 +60,6 @@ const useCheckTableWithCondition = <
   }, []);
 
   return {
-    isCheckTable,
     isCheckable,
     isChecked,
     isAllChecked,
@@ -77,8 +67,6 @@ const useCheckTableWithCondition = <
     handleCheck,
     handleAllCheck,
     handleAllUnCheck,
-    handleTransformCheckTable,
-    handleTransformTable,
   };
 };
 

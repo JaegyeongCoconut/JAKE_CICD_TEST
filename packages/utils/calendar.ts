@@ -3,15 +3,15 @@ import dayjs from "dayjs";
 
 import type { MonthYear } from "@repo/types";
 
-interface GetMonthYearReturnType {
+export interface GetMonthYearReturnType {
   isCurrentMonthYear: boolean;
   value: Dayjs;
   currentMonth: string;
   currentStartDate: Dayjs;
   currentYear: string;
   date: string;
-  firstDOW: number;
   firstWeekPrevMonthDate: Dayjs;
+  frstDayOfMonth: number;
   lastDate: number;
   month: string;
   nextMonthStartDate: Dayjs;
@@ -33,14 +33,14 @@ export const getMonthYear = (initDate: Dayjs): GetMonthYearReturnType => {
   const currentStartDate = dayjs(`${currentYear}${currentMonth}`);
   const prevMonthStartDate = startDate.clone().subtract(1, "month");
   const nextMonthStartDate = startDate.clone().add(1, "month");
-  const firstDOW = Number(startDate.format("d"));
+  const frstDayOfMonth = Number(startDate.format("d"));
   const lastDate = Number(startDate.clone().endOf("month").format("DD"));
   const prevMonthLastDate = Number(
     prevMonthStartDate.endOf("month").format("DD"),
   );
   const firstWeekPrevMonthDate = prevMonthStartDate.set(
     "date",
-    prevMonthLastDate - firstDOW + 1,
+    prevMonthLastDate - frstDayOfMonth + 1,
   );
 
   return {
@@ -55,7 +55,7 @@ export const getMonthYear = (initDate: Dayjs): GetMonthYearReturnType => {
     currentStartDate,
     prevMonthStartDate,
     nextMonthStartDate,
-    firstDOW,
+    frstDayOfMonth,
     lastDate,
     prevMonthLastDate,
     firstWeekPrevMonthDate,

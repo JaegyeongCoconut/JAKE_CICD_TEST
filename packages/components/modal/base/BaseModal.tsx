@@ -4,7 +4,7 @@ import * as S from "./BaseModal.styled";
 
 interface BaseModalProps {
   className?: string;
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const BaseModal = React.forwardRef<HTMLDialogElement, BaseModalProps>(

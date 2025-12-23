@@ -7,7 +7,7 @@ interface HeadlessButtonProps {
   className?: string;
   disabled: boolean;
   isLoading: boolean;
-  type?: "button" | "submit" | "reset";
+  type?: "button" | "submit";
   handleButtonClick: (e: MouseEvent) => void;
   handleButtonMouseDown?: (e: MouseEvent<HTMLButtonElement>) => void;
   children: jsx.JSX.Element;

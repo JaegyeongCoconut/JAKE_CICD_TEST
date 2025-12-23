@@ -1,0 +1,19 @@
+{
+  "name": "@repo/schemas",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./loginForm.schema": "./loginForm.schema.ts",
+    "./resetPasswordForm.schema": "./resetPasswordForm.schema.ts",
+    "./versionForm.schema": "./versionForm.schema.ts"
+  },
+  "dependencies": {
+    "@repo/assets": "workspace:*",
+    "@repo/constants": "workspace:*",
+    "@repo/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

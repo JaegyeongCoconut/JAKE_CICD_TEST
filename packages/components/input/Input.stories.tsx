@@ -42,10 +42,7 @@ const meta = {
       description: "`Input`에 입력 값이 없을 때 표시되는 placeholder 입니다.",
       table: { type: { summary: "string" } },
     },
-    value: {
-      description: "`Input`에서 입력한 값입니다.",
-      control: false,
-    },
+    value: { description: "`Input`에서 입력한 값입니다.", control: false },
     handleBlur: {
       description:
         "`Input`에서 blur 이벤트가 발생했을 때 호출되는 handler 함수입니다.",

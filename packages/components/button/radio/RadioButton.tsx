@@ -7,10 +7,20 @@ import * as S from "./RadioButton.styled";
 
 interface RadioButtonProps<T extends string | number> {
   className?: string;
-  disabled?: boolean;
   radioList: readonly RadioType<T, Languages>[];
   radioState: T | null;
-  handleRadioButtonClick?: (key: T) => () => void;
+}
+
+interface DisabledRadioButtonProps<T extends string | number>
+  extends RadioButtonProps<T> {
+  disabled: true;
+  handleRadioButtonClick?: never;
+}
+
+interface EnabledRadioButtonProps<T extends string | number>
+  extends RadioButtonProps<T> {
+  disabled: false;
+  handleRadioButtonClick: (key: T) => () => void;
 }
 
 const RadioButton = <T extends string | number>({
@@ -19,7 +29,7 @@ const RadioButton = <T extends string | number>({
   radioList,
   radioState,
   handleRadioButtonClick,
-}: RadioButtonProps<T>) => {
+}: DisabledRadioButtonProps<T> | EnabledRadioButtonProps<T>) => {
   return (
     <HeadlessRadioButton
       css={S.radioButton}
@@ -31,7 +41,7 @@ const RadioButton = <T extends string | number>({
           disabled={disabled}
           radio={radio}
           radioState={radioState}
-          handleRadioButtonClick={handleRadioButtonClick}
+          handleRadioButtonClick={handleRadioButtonClick || (() => () => {})}
         />
       )}
     />

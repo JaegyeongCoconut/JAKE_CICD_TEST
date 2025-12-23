@@ -1,6 +1,7 @@
 import { cloneDeep } from "lodash-es";
 import type { IValidation } from "typia";
 
+import { apiDebug } from "@repo/stores/apiDebug";
 import type { RecursiveUndefined } from "@repo/types";
 
 const isNumericKey = (key: string): boolean => /^\d+$/.test(key);
@@ -79,4 +80,18 @@ export const sanitizeTypiaErrors = <T>({
   }
 
   return cloned as RecursiveUndefined<T>;
+};
+
+export const clearTypiaLog = (path: string): void => {
+  process.env.NODE_ENV === "development" &&
+    apiDebug.getState().onClearLog(path);
+};
+
+interface SetTypiaLogProps {
+  errors: IValidation.IError[];
+  path: string;
+}
+export const setTypiaLog = ({ path, errors }: SetTypiaLogProps): void => {
+  process.env.NODE_ENV === "development" &&
+    apiDebug.getState().onSetLog({ path, errors });
 };

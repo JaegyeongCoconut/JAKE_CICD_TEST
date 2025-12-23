@@ -5,31 +5,29 @@ import type {
   UseFormSetValue,
   UseFormWatch,
 } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 import UploadImages from "@repo/components/image";
 import DetailModal from "@repo/components/modal/detail";
-import useModal from "@repo/hooks/modal/useModal";
 import useUploadImages from "@repo/hooks/useUploadImages";
+import { useModalStore } from "@repo/stores/modal";
 import { makeNewImageFileName } from "@repo/utils/formatter/name";
-import { extractS3ImageKey } from "@repo/utils/image";
+import { extractS3ImageKey } from "@repo/utils/image/common";
 
 import { createS3PresignedUrlAPI } from "~apis";
 import { TOAST_MESSAGE, LANGUAGE_LABEL } from "~constants";
+import { useServiceTranslation } from "~hooks";
 import { useUpdateInspectionChecklist } from "~services";
-import type {
-  FormInspectionCheckItems,
-  UpdateInspectionChecklistQueryModel,
-} from "~types";
+import type { UpdateInspectionChecklistQueryModel } from "~types";
 
 import * as S from "./PhotoModal.styled";
+import type { CheckListFormSchema } from "../../../../../../../../../../../../schema/checkListForm.schema";
 
 const FILE_PREFIX = "inspection";
 
 interface PhotoModalProps {
   name: keyof Omit<
-    FormInspectionCheckItems,
+    CheckListFormSchema,
     | "isCompleted"
     | "exteriorCount"
     | "interiorCount"
@@ -38,25 +36,22 @@ interface PhotoModalProps {
   >;
   calculateIndex: number;
   listId: string;
-  resetField: UseFormResetField<FormInspectionCheckItems>;
-  setValue: UseFormSetValue<FormInspectionCheckItems>;
-  watch: UseFormWatch<FormInspectionCheckItems>;
+  resetField: UseFormResetField<CheckListFormSchema>;
+  setValue: UseFormSetValue<CheckListFormSchema>;
+  watch: UseFormWatch<CheckListFormSchema>;
 }
 
 const PhotoModal = React.forwardRef<HTMLDialogElement, PhotoModalProps>(
   ({ listId, name, calculateIndex, watch, setValue, resetField }, ref) => {
-    const { t } = useTranslation();
     const { inspectionId } = useParams();
 
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const handleModalClose = useModalStore((state) => state.handleModalClose);
 
-    const { mutate: updateInspectionChecklistMutate } =
-      useUpdateInspectionChecklist();
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const handleFormPhotoUpdate = (file: (string | File)[]) => {
       setValue(`${name}.${calculateIndex}.photos`, file);
     };
-    const { handleModalClose } = useModal();
     const { isLoading, uploadImages, handleImagesAdd, handleImageRemove } =
       useUploadImages({
         images: watch(`${name}.${calculateIndex}.photos`),
@@ -66,6 +61,10 @@ const PhotoModal = React.forwardRef<HTMLDialogElement, PhotoModalProps>(
         compressedMaxFileSize: 0.5,
         handleFormPhotoUpdate,
       });
+    const { mutate: updateInspectionChecklistMutate } =
+      useUpdateInspectionChecklist();
+
+    const { defaultLanguage } = useServiceTranslation();
 
     const handlePhotoUpload = async (): Promise<void> => {
       if (!inspectionId) return;
@@ -125,14 +124,15 @@ const PhotoModal = React.forwardRef<HTMLDialogElement, PhotoModalProps>(
       <DetailModal
         css={S.detailModal}
         ref={ref}
-        isPosDisabled={isLoading || isSubmitting}
-        isPosLoading={isLoading || isSubmitting}
-        posButtonName={LANGUAGE_LABEL.SAVE}
+        isPositiveDisabled={isLoading || isSubmitting}
+        isPositiveLoading={isLoading || isSubmitting}
+        description={undefined}
+        positiveButtonName={LANGUAGE_LABEL.SAVE}
         title={LANGUAGE_LABEL.UPLOAD_PHOTO}
         handleClose={handlePhotoModalClose}
-        handlePosButtonClick={handlePhotoUpload}
+        handlePositiveButtonClick={handlePhotoUpload}
       >
-        {t(LANGUAGE_LABEL.SUPPORT_FILE_PNG_JPEG_JPG)}
+        {defaultLanguage({ text: LANGUAGE_LABEL.SUPPORT_FILE_PNG_JPEG_JPG })}
         <UploadImages
           css={S.uploadImages}
           hasError={false}

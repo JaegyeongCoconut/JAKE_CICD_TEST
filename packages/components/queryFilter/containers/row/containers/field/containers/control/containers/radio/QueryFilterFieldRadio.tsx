@@ -44,7 +44,7 @@ const QueryFilterFieldRadio = <T extends string>({
               onChange={handleRadioButtonClick(key)}
             />
             <label htmlFor={uuid + i} tabIndex={0}>
-              {defaultLanguage(label as Languages)}
+              {defaultLanguage({ text: label as Languages })}
             </label>
           </S.QueryFilterFieldRadioButton>
         ))}

@@ -1,9 +1,6 @@
 import React from "react";
 
-import {
-  INIT_MAX_PAGE_COUNT,
-  INIT_PAGE_INFO,
-} from "@repo/constants/pagination";
+import { INIT_MAX_PAGE_COUNT } from "@repo/constants/pagination";
 import useQueryPagination from "@repo/hooks/pagination/useQueryPagination";
 import type { PageInfoType } from "@repo/types";
 
@@ -11,17 +8,10 @@ import Pagination from "./Pagination";
 
 interface QueryPaginationProps {
   className?: string;
-  hasDoubleButton?: boolean;
-  maxPageCount?: number;
-  pageInfo?: PageInfoType;
+  pageInfo: PageInfoType;
 }
 
-const QueryPagination = ({
-  className,
-  hasDoubleButton = true,
-  pageInfo = INIT_PAGE_INFO,
-  maxPageCount = INIT_MAX_PAGE_COUNT,
-}: QueryPaginationProps) => {
+const QueryPagination = ({ className, pageInfo }: QueryPaginationProps) => {
   const { totalPages } = pageInfo;
 
   const {
@@ -31,14 +21,13 @@ const QueryPagination = ({
     handleNextPageClick,
     handleLastPageClick,
     handleNumberClick,
-  } = useQueryPagination({ maxPageCount, totalPages });
+  } = useQueryPagination({ maxPageCount: INIT_MAX_PAGE_COUNT, totalPages });
 
   return (
     <Pagination
       className={className}
-      hasDoubleButton={hasDoubleButton}
       currentPage={currentPage}
-      maxPageCount={maxPageCount}
+      maxPageCount={INIT_MAX_PAGE_COUNT}
       totalPages={totalPages}
       handleFirstPageClick={handleFirstPageClick}
       handleLastPageClick={handleLastPageClick}

@@ -4,28 +4,38 @@ import { isEmpty } from "lodash-es";
 import { v4 as uuidv4 } from "uuid";
 
 import { ReactComponent as DownIcon } from "@repo/assets/icon/ic_down.svg";
+import { DEFAULT_COUNTRY_CODE_INFO } from "@repo/assets/static/phone";
 import useDropdown from "@repo/hooks/dropdown/useDropdown";
 import { useRecentSearchStore } from "@repo/stores/persist";
-import type { Country, GetCountriesClientModel } from "@repo/types";
+import type { CountryModel, Country } from "@repo/types";
 
 import * as S from "./CountryListDropdown.styled";
 
-export interface MemorizedCountryListDropdownProps {
+interface AbledMemorizedCountryListDropdownProps {
   className?: string;
-  disabled?: boolean;
-  hasError?: boolean;
-  countries?: GetCountriesClientModel;
+  disabled: boolean;
+  hasError: boolean;
+  country: CountryModel | undefined;
   selectedCountry: Country;
   handleCountryWithCodeSelect: (code: string) => void;
 }
 
-interface GetCountriesProps {
-  countryCodes: (keyof GetCountriesClientModel)[];
-  totalCountries: GetCountriesClientModel | undefined;
+interface DisabledMemorizedCountryListDropdownProps {
+  className?: string;
+  disabled: true;
+  hasError?: never;
+  country?: never;
+  selectedCountry: Country;
+  handleCountryWithCodeSelect?: never;
+}
+
+interface GetCountryProps {
+  countryCodes: (keyof CountryModel)[];
+  countryItem: CountryModel | undefined;
 }
 
 interface GetFilterCountriesProps {
-  countries: GetCountriesClientModel;
+  country: CountryModel;
   filterValues: string[];
 }
 
@@ -34,9 +44,11 @@ const MemorizedCountryListDropdown = ({
   disabled,
   hasError,
   selectedCountry,
-  countries,
+  country,
   handleCountryWithCodeSelect,
-}: MemorizedCountryListDropdownProps) => {
+}:
+  | AbledMemorizedCountryListDropdownProps
+  | DisabledMemorizedCountryListDropdownProps) => {
   const id = uuidv4();
   const fixedCountryCode = ["LA"];
   const [selectedOption, setSelectedOption] = useState("");
@@ -52,84 +64,83 @@ const MemorizedCountryListDropdown = ({
   const handleSelect = (code: string) => {
     addCountryCode(code);
     setSelectedOption(code);
-    handleCountryWithCodeSelect(code);
+    handleCountryWithCodeSelect && handleCountryWithCodeSelect(code);
   };
 
-  const getCountries = ({
+  const getCountry = ({
     countryCodes,
-    totalCountries,
-  }: GetCountriesProps): GetCountriesClientModel => {
-    if (!totalCountries) return {};
+    countryItem,
+  }: GetCountryProps): CountryModel => {
+    if (!countryItem) return {};
 
-    const newCountryList = countryCodes.reduce<GetCountriesClientModel>(
-      (acc, value) => {
-        if (value) {
-          const country = totalCountries[value];
-          if (country) {
-            acc[value] = country;
-          }
+    const newCountry = countryCodes.reduce<CountryModel>((acc, value) => {
+      if (value) {
+        const country = countryItem[value];
+        if (country) {
+          acc[value] = country;
         }
-        return acc;
-      },
-      {},
-    );
+      }
+      return acc;
+    }, {});
 
-    return newCountryList;
+    return newCountry;
   };
 
   const getFilterCountries = ({
-    countries,
+    country,
     filterValues,
-  }: GetFilterCountriesProps): Country[] =>
-    Object.values(countries)
-      ?.filter((country) => !filterValues.includes(country.code))
-      ?.filter(Boolean);
+  }: GetFilterCountriesProps): Country[] => {
+    if (!country) return [];
+
+    return Object.values(country).reduce<Country[]>((acc, value) => {
+      if (!filterValues.includes(value.code)) {
+        acc.push({ name: value.name, code: value.code, dial: value.dial });
+      }
+      return acc;
+    }, []);
+  };
 
   const { dropdownRef, optionsRef, isOpen, handleOpener, handleOptionClick } =
     useDropdown({
       tagValue: selectedOption,
       handleSelect,
-      handleConditionBlur: undefined,
-      handleConditionFocus: undefined,
     });
 
-  const fixedCountries = useMemo(
+  const fixedCountry = useMemo(
     () =>
-      getCountries({
+      getCountry({
         countryCodes: fixedCountryCode,
-        totalCountries: countries,
+        countryItem: country,
       }),
-    [countries],
+    [country],
   );
 
-  const recentCountries = useMemo(
-    () =>
-      getCountries({
-        countryCodes: countryCodes,
-        totalCountries: countries,
-      }),
-    [countryCodes, countries],
+  const recentCountry = useMemo(
+    () => getCountry({ countryCodes: countryCodes, countryItem: country }),
+    [countryCodes, country],
   );
 
   const filteredRecentCountries = useMemo(
     () =>
       getFilterCountries({
-        countries: recentCountries,
+        country: recentCountry,
         filterValues: fixedCountryCode,
       }),
-    [recentCountries],
+    [recentCountry],
   );
 
   const filteredRemainCountries = useMemo(
     () =>
-      countries
-        ? getFilterCountries({ countries, filterValues: countryCodes })
+      country
+        ? getFilterCountries({ country, filterValues: countryCodes })
         : [],
-    [countries, countryCodes],
+    [country, countryCodes],
   );
 
   useEffect(() => {
-    initializeCountryCodes(selectedCountry.code);
+    initializeCountryCodes(
+      selectedCountry?.code ?? DEFAULT_COUNTRY_CODE_INFO.code,
+    );
   }, []);
 
   useEffect(() => {
@@ -157,20 +168,20 @@ const MemorizedCountryListDropdown = ({
         aria-hidden={!isOpen}
         isOpen={isOpen}
       >
-        {Object.values(fixedCountries)
-          ?.filter(Boolean)
-          .map(({ code, name, dial }, i) => (
-            <S.CustomOption key={i}>
-              <S.CustomOptionButton
-                type="button"
-                onClick={handleOptionClick(code)}
-              >
-                <S.CountryCode>{code}</S.CountryCode>
-                <S.CountryInfo>{`${name} (${dial})`}</S.CountryInfo>
-              </S.CustomOptionButton>
-            </S.CustomOption>
-          ))}
-
+        {fixedCountry &&
+          Object.values(fixedCountry)
+            ?.filter(Boolean)
+            .map((country, i) => (
+              <S.CustomOption key={i}>
+                <S.CustomOptionButton
+                  type="button"
+                  onClick={handleOptionClick(country.code)}
+                >
+                  <S.CountryCode>{country.code}</S.CountryCode>
+                  <S.CountryInfo>{`${country.name} (${country.dial})`}</S.CountryInfo>
+                </S.CustomOptionButton>
+              </S.CustomOption>
+            ))}
         {filteredRecentCountries
           ?.filter(Boolean)
           .map(({ code, name, dial }, i) => (
@@ -184,8 +195,7 @@ const MemorizedCountryListDropdown = ({
               </S.CustomOptionButton>
             </S.CustomOption>
           ))}
-
-        {countries &&
+        {country &&
           filteredRemainCountries?.map(({ code, name, dial }, i) => {
             return (
               <S.CustomOption key={i}>

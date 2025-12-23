@@ -7,8 +7,8 @@ import {
   BREADCRUMB_ELLIPSIS_TRIGGER_THRESHOLD,
   BREADCRUMB_MAX_LENGTH,
 } from "@repo/constants/breadcrumb";
-import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
+import { useQueryFilterStore } from "@repo/stores/queryFilter";
 import type { BreadcrumbItemType } from "@repo/types";
 
 import * as S from "./Breadcrumb.styled";
@@ -25,13 +25,18 @@ const Breadcrumb = ({ className, breadcrumbs }: BreadcrumbProps) => {
   const breadcrumbRefs = useRef<(HTMLLIElement | null)[]>([]);
   const [hasDropdown, setHasDropdown] = useState(false);
 
-  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
+  const isInitQueryFilter = useQueryFilterStore(
+    (state) => state.isInitQueryFilter,
+  );
+  const setIsInitQueryFilter = useQueryFilterStore(
+    (state) => state.setIsInitQueryFilter,
+  );
 
   const lastIndex = breadcrumbs.length - 1;
 
   const translatedBreadcrumbs = (breadcrumb: BreadcrumbItemType): string =>
     breadcrumb.isTranslated
-      ? defaultLanguage(breadcrumb.name)
+      ? defaultLanguage({ text: breadcrumb.name })
       : breadcrumb.name;
 
   const handleBreadcrumbClick =

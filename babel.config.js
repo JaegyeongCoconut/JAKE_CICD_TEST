@@ -1,24 +1,10 @@
 const babelConfig = {
   plugins: [
     [
-      "@emotion/babel-plugin",
+      "@emotion/babel-plugin", // DESC: Emotion의 Babel 플러그인. 개발자 경험(DX) 개선을 위해 사용
       {
-        autoLabel: "dev-only",
-        labelFormat: "[filename]-[local]",
-      },
-    ],
-    [
-      "@emotion/babel-plugin-jsx-pragmatic",
-      {
-        export: "jsx",
-        import: "__to_avoid_prepending_/** @jsxImportSource @emotion/react */",
-        module: "@emotion/react",
-      },
-    ],
-    [
-      "@babel/plugin-transform-react-jsx",
-      {
-        pragma: "__to_avoid_prepending_/** @jsxImportSource @emotion/react */",
+        autoLabel: "dev-only", // DESC: 개발 환경(dev)에서만 자동 라벨링 활성화
+        labelFormat: "[filename]-[local]", // DESC: className 라벨 형식 지정
       },
     ],
   ],

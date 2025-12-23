@@ -23,7 +23,7 @@ const DisabledInput = ({
       className={className}
       disabled
       value={value}
-      placeholder={defaultLanguage(placeholder)}
+      placeholder={defaultLanguage({ text: placeholder })}
     />
   );
 };

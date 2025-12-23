@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useGoogleMap } from "@repo/contexts/GoogleMapProvider";
+import useGoogleMap from "@repo/hooks/useGoogleMap";
 
 import * as S from "./GoogleMap.styled";
 

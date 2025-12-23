@@ -14,6 +14,7 @@ import Dropdown from "../../dropdown/Dropdown";
 
 interface MainHeaderProps {
   className?: string;
+  isLoading: boolean;
   icon: React.ReactNode;
   iconWidth: string;
   handleLogout: () => void;
@@ -22,10 +23,11 @@ interface MainHeaderProps {
 
 const MainHeader = ({
   className,
+  isLoading,
   icon,
   iconWidth,
-  children,
   handleLogout,
+  children,
 }: MainHeaderProps) => {
   return (
     <S.MainHeader className={className} iconWidth={iconWidth}>
@@ -35,6 +37,8 @@ const MainHeader = ({
         <GhostButton
           css={S.logoutButton}
           variant="ghost"
+          disabled={false}
+          isLoading={isLoading}
           label={LANGUAGE_LABEL.SIGN_OUT}
           handleButtonClick={handleLogout}
         />
@@ -59,8 +63,12 @@ MainHeader.LanguageDropdown = function LanguageDropdown({
       <GlobalIcon css={S.translateIcon} />
       <Dropdown
         css={S.dropdown}
+        disabled={false}
+        hasError={false}
+        isLoading={false}
         Icon={PolygonDownIcon}
         options={options}
+        placeholder={"" as Languages}
         selectedOption={selectedOption}
         handleSelect={handleSelect}
       />
@@ -84,7 +92,7 @@ MainHeader.RankingLinkButton = function RankingLinkButton({
       variant="alert_gray"
     >
       <RankIcon />
-      {defaultLanguage(LANGUAGE_LABEL.RANK)}
+      {defaultLanguage({ text: LANGUAGE_LABEL.RANK })}
     </ExternalLinkButton>
   );
 };
@@ -101,8 +109,8 @@ MainHeader.UserInfoLabel = function UserInfoLabel({
   const { defaultLanguage } = useDefaultLanguage();
 
   return (
-    <S.UserInfoLabel>{`${defaultLanguage(branchName)} ・ ${defaultLanguage(
-      managerPosition,
+    <S.UserInfoLabel>{`${defaultLanguage({ text: branchName })} ・ ${defaultLanguage(
+      { text: managerPosition },
     )}`}</S.UserInfoLabel>
   );
 };

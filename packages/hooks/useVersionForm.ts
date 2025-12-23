@@ -1,42 +1,32 @@
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { mixed, object } from "yup";
 
 import type { VERSION_OS, VERSION_PLATFORM } from "@repo/assets/static/version";
-import { COMMON_ERROR_MESSAGE } from "@repo/constants/error/message";
-import type { AppVersion, FormVersion, RecursiveUndefined } from "@repo/types";
-import { checkVersion } from "@repo/utils/validation";
-import { SCHEMA } from "@repo/utils/yup/schema";
-import { TEST } from "@repo/utils/yup/yupTest";
+import {
+  versionSchema,
+  type VersionFormSchema,
+} from "@repo/schemas/versionForm.schema";
+import type { AppVersion, RecursiveUndefined } from "@repo/types";
 
-const TEST_VALID_VERSION = {
-  name: "versionValidation",
-  message: COMMON_ERROR_MESSAGE.VERSION_INCORRECT,
-  test: (value: string) => checkVersion(value),
+const INIT_FORM: VersionFormSchema = {
+  old: "",
+  new: "",
+  test: "",
+  os: null,
+  platform: null,
 };
 
-const schema = object({
-  os: mixed<keyof typeof VERSION_OS>().nullable().defined().test(TEST.TRIM()),
-  platform: mixed<keyof typeof VERSION_PLATFORM>()
-    .nullable()
-    .defined()
-    .test(TEST.TRIM()),
-  old: SCHEMA.REQUIRED_STRING().test(TEST_VALID_VERSION),
-  new: SCHEMA.REQUIRED_STRING().test(TEST_VALID_VERSION),
-  test: SCHEMA.REQUIRED_STRING().test(TEST_VALID_VERSION),
-});
-
-const INIT_FORM = { old: "", new: "", test: "", os: null, platform: null };
-
 interface UseVersionFormProps {
-  version: RecursiveUndefined<Omit<AppVersion, "serviceName" | "to" | "os">> & {
-    os: keyof typeof VERSION_OS | null;
-    platform: keyof typeof VERSION_PLATFORM | null;
-  };
+  version: RecursiveUndefined<
+    Omit<AppVersion, "serviceName" | "to" | "os"> & {
+      os: keyof typeof VERSION_OS | null;
+      platform: keyof typeof VERSION_PLATFORM | null;
+    }
+  >;
 }
 
 const useVersionForm = ({ version }: UseVersionFormProps) => {
-  const formMethod = useForm<FormVersion>({
+  const formMethod = useForm<VersionFormSchema>({
     mode: "onTouched",
     values: version
       ? {
@@ -47,7 +37,7 @@ const useVersionForm = ({ version }: UseVersionFormProps) => {
           platform: version.platform ?? INIT_FORM.platform,
         }
       : INIT_FORM,
-    resolver: yupResolver(schema),
+    resolver: zodResolver(versionSchema),
   });
 
   return { formMethod };

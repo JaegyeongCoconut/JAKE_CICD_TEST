@@ -1,6 +1,5 @@
 import React from "react";
 
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import TableSkeleton from "@repo/components/table/tableSkeleton";
@@ -12,12 +11,12 @@ import {
 } from "~assets";
 import { Header } from "~components";
 import { LANGUAGE_LABEL } from "~constants";
+import { useServiceTranslation } from "~hooks";
 
 import * as S from "./Layer.styled";
 
 const LayerSkeleton = () => {
-  const { t } = useTranslation();
-
+  const { defaultLanguage } = useServiceTranslation();
   const { selectedTab } = useTab(INSPECTION_CHECKLIST_TABS);
 
   return (
@@ -36,12 +35,13 @@ const LayerSkeleton = () => {
               replace
               to={`?tab=${key}`}
             >
-              <span>{`${t(label)}(0 / 0)`}</span>
+              <span>{`${defaultLanguage({ text: label })}(0 / 0)`}</span>
             </Link>
           </S.Tab>
         ))}
       </S.TabList>
       <TableSkeleton
+        rowCount={10}
         tableHeaderInfos={INSPECTION_CHECKLIST_TABLE_HEADER_INFOS}
       />
     </S.HeaderWrapper>

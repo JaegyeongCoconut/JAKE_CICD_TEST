@@ -1,5 +1,5 @@
 import type { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateMaped } from "@repo/types";
 
 interface UseFilterFieldRadioProps<T extends string> {
@@ -11,12 +11,18 @@ interface UseFilterFieldRadioProps<T extends string> {
 const useQueryFilterFieldRadio = <T extends string>({
   queryFilter,
 }: UseFilterFieldRadioProps<T>) => {
-  const { updateTagValue } = useQueryFilterHooks();
+  const updateTagValue = useQueryFilterStateStore(
+    (state) => state.onUpdateTagValue,
+  );
 
   const handleRadioButtonClick = (selectedKey: string) => (): void => {
     if (!queryFilter) return;
 
-    updateTagValue({ queryKey: queryFilter.queryKey, selectedKey });
+    updateTagValue({
+      queryKey: queryFilter.queryKey,
+      options: "single",
+      selectedKey,
+    });
   };
 
   return { handleRadioButtonClick };

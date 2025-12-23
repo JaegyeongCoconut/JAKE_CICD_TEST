@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-import "@repo/utils/dayjsSetup";
+import "@repo/settings/dayjsSetup";
 import type { CalendarType, FormatCalendar } from "@repo/types";
 
 interface useDateProps {

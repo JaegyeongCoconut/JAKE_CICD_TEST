@@ -1,48 +1,95 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DEFAULT_COUNTRY_CODE_INFO } from "@repo/assets/static/phone";
-import type { Country, GetCountriesClientModel } from "@repo/types";
+import type {
+  CountryModel,
+  Country,
+  GetCountriesClientModel,
+} from "@repo/types";
 
 interface UseCountryListProps {
-  countryCode?: keyof GetCountriesClientModel;
-  data?: GetCountriesClientModel;
+  countryCode: keyof CountryModel | undefined;
+  data: GetCountriesClientModel;
 }
 
 const useCountryList = ({ countryCode, data }: UseCountryListProps) => {
-  const [selectedCountry, setSelectedCountry] = useState<Country>(
-    !countryCode ? DEFAULT_COUNTRY_CODE_INFO : { code: "", name: "", dial: "" },
-  );
+  const getInitialCountry = useMemo((): Country => {
+    if (!countryCode || !data?.countries) {
+      return DEFAULT_COUNTRY_CODE_INFO;
+    }
+
+    const selected = data.countries.find(
+      (country) => country?.code === countryCode,
+    );
+
+    return {
+      name: selected?.name ?? DEFAULT_COUNTRY_CODE_INFO.name,
+      code: selected?.code ?? DEFAULT_COUNTRY_CODE_INFO.code,
+      dial: selected?.dial ?? DEFAULT_COUNTRY_CODE_INFO.dial,
+    };
+  }, [data, countryCode]);
+
+  const [userSelectedCountry, setUserSelectedCountry] =
+    useState<Country | null>(null);
+
+  const selectedCountry = useMemo(() => {
+    return userSelectedCountry ?? getInitialCountry;
+  }, [userSelectedCountry, getInitialCountry]);
 
   const handleCountryWithCodeSelect = useCallback(
-    (code: string) => {
+    (code: string): void => {
       if (!data) return;
-      const selected = data[code];
-      setSelectedCountry(selected);
+      const selected = data?.countries?.find(
+        (country) => country?.code === code,
+      );
+
+      const value = {
+        name: selected?.name ?? DEFAULT_COUNTRY_CODE_INFO.name,
+        code: selected?.code ?? DEFAULT_COUNTRY_CODE_INFO.code,
+        dial: selected?.dial ?? DEFAULT_COUNTRY_CODE_INFO.dial,
+      };
+
+      setUserSelectedCountry(value);
     },
     [data],
   );
 
   // TODO: API에서 Code를 받는 것으로 통일하면 해당 함수는 삭제할 예정
   const handleCountryWithDialSelect = useCallback(
-    (dial: string) => {
+    (dial: string): void => {
       if (!data) return;
 
-      const selectedCountryList = Object.values(data).filter(
-        (item) => item.dial === dial,
-      )[0];
+      const selected = data.countries?.find(
+        (country) => country?.dial === dial,
+      );
 
-      setSelectedCountry(selectedCountryList);
+      const value = {
+        name: selected?.name ?? DEFAULT_COUNTRY_CODE_INFO.name,
+        code: selected?.code ?? DEFAULT_COUNTRY_CODE_INFO.code,
+        dial: selected?.dial ?? DEFAULT_COUNTRY_CODE_INFO.dial,
+      };
+
+      setUserSelectedCountry(value);
     },
     [data],
   );
 
-  useEffect(() => {
-    if (!data || !countryCode) return;
-
-    setSelectedCountry(data[countryCode]);
-  }, [data, countryCode]);
+  const country = data?.countries?.reduce<Record<Country["code"], Country>>(
+    (acc, value) => {
+      if (value?.code && value?.name && value?.dial) {
+        acc[value.code] = {
+          code: value.code,
+          name: value.name,
+          dial: value.dial,
+        };
+      }
+      return acc;
+    },
+    {},
+  );
 
   return {
+    country,
     selectedCountry,
     handleCountryWithCodeSelect,
     handleCountryWithDialSelect,

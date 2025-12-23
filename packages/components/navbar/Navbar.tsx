@@ -1,10 +1,11 @@
 import type { FC, SVGProps } from "react";
 import React from "react";
 
-import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { NavLink, useLocation } from "react-router-dom";
 
-import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
+import { useQueryFilterStore } from "@repo/stores/queryFilter";
 import type { InaccessInfo, Languages } from "@repo/types";
 
 import * as S from "./Navbar.styled";
@@ -20,17 +21,8 @@ interface NavbarProps {
 }
 
 const Navbar = ({ navs, level, inaccessInfo }: NavbarProps) => {
-  useNavigate(); // IMPORTANT: useNavigate()를 호출하지만 반환값은 사용하지 않습니다. 이 훅은 반드시 이 컴포넌트 내에서 호출되어야 하며, 그 이유는 라이브러리 내부의 상태 공유로 인해 Navbar의 선택된 색상이 유지되기 때문입니다.
-
-  const { defaultLanguage } = useDefaultLanguage();
-
-  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
-
-  const handleNavLinkClick = () => {
-    if (isInitQueryFilter) return;
-
-    setIsInitQueryFilter(true);
-  };
+  const location = useLocation();
+  const { i18n } = useTranslation();
 
   const checkAccessDenied = (path: string): boolean => {
     if (inaccessInfo && level)
@@ -51,15 +43,13 @@ const Navbar = ({ navs, level, inaccessInfo }: NavbarProps) => {
           if (paths.some(checkAccessDenied)) return null;
 
           return (
-            <li key={paths[0]}>
-              <NavLink
-                css={S.link({ content: defaultLanguage(content), isActive })}
-                to={paths[0]}
-                onClick={handleNavLinkClick}
-              >
-                <Icon />
-              </NavLink>
-            </li>
+            <NavItem
+              key={`${content}-${i18n.language}`}
+              isActive={isActive}
+              content={content}
+              Icon={Icon}
+              path={paths[0]}
+            />
           );
         })}
       </ul>
@@ -68,3 +58,49 @@ const Navbar = ({ navs, level, inaccessInfo }: NavbarProps) => {
 };
 
 export default Navbar;
+
+interface NavItemProps {
+  isActive: boolean;
+  content: Languages;
+  Icon: FC<SVGProps<SVGSVGElement>>;
+  path: string;
+}
+
+const NavItem = React.memo(
+  ({ isActive, content, Icon, path }: NavItemProps) => {
+    const isInitQueryFilter = useQueryFilterStore(
+      (state) => state.isInitQueryFilter,
+    );
+    const setIsInitQueryFilter = useQueryFilterStore(
+      (state) => state.setIsInitQueryFilter,
+    );
+
+    const { defaultLanguage } = useDefaultLanguage();
+
+    const handleNavLinkClick = () => {
+      if (isInitQueryFilter) return;
+
+      setIsInitQueryFilter(true);
+    };
+
+    return (
+      <li>
+        <NavLink
+          css={S.link({
+            content: defaultLanguage({ text: content }),
+            isActive,
+          })}
+          to={path}
+          onClick={handleNavLinkClick}
+        >
+          <Icon />
+        </NavLink>
+      </li>
+    );
+  },
+  (prevProps, nextProps) => {
+    return prevProps.isActive === nextProps.isActive;
+  },
+);
+
+NavItem.displayName = "NavItem";

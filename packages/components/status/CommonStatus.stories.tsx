@@ -57,11 +57,11 @@ export const Default: Story = {
           <CommonStatus variant="red" hasBg status="Deactivated" />
         </div>
         <div style={{ display: "flex", columnGap: "44px" }}>
-          <CommonStatus variant="orange" status="Pending" />
-          <CommonStatus variant="green" status="Available" />
-          <CommonStatus variant="blue" status="Activated" />
-          <CommonStatus variant="gray" status="Canceled" />
-          <CommonStatus variant="red" status="Deactivated" />
+          <CommonStatus variant="orange" hasBg={false} status="Pending" />
+          <CommonStatus variant="green" hasBg={false} status="Available" />
+          <CommonStatus variant="blue" hasBg={false} status="Activated" />
+          <CommonStatus variant="gray" hasBg={false} status="Canceled" />
+          <CommonStatus variant="red" hasBg={false} status="Deactivated" />
         </div>
       </div>
     );

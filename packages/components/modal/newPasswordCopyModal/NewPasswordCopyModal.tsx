@@ -21,13 +21,27 @@ const NewPasswordCopyModal = React.forwardRef<
     <DetailModal
       css={S.detailModal}
       ref={ref}
-      isPosLoading={false}
+      description={undefined}
       title={LANGUAGE_LABEL.PASSWORD_HAS_BEEN_RESET}
       handleClose={handleClose}
     >
-      <LabelContentTable variant="bg" marginBottom={20}>
-        <LabelContentTable.Row>
-          <LabelContentTable.Content label={LANGUAGE_LABEL.NEW_PASSWORD}>
+      <LabelContentTable
+        variant="bg"
+        hasDefaultMarginBottom={false}
+        marginBottom={20}
+        subject={null}
+      >
+        <LabelContentTable.Row
+          hasError={false}
+          hasPartition={false}
+          marginTop={0}
+        >
+          <LabelContentTable.Content
+            hasError={false}
+            isRequired={false}
+            label={LANGUAGE_LABEL.NEW_PASSWORD}
+            labelWidth={210}
+          >
             <S.Content>
               {renderDefault(newPassword)}
               <CopyButton

@@ -10,10 +10,13 @@ import logisticsEn from "./files/logisticsAdmin/logisticsAdmin-en.json";
 import logisticsLo from "./files/logisticsAdmin/logisticsAdmin-lo.json";
 import adminEn from "./files/moveAdmin/moveAdmin-en.json";
 import adminLo from "./files/moveAdmin/moveAdmin-lo.json";
+import packagesEn from "./files/packages/packages-en.json";
+import packagesLo from "./files/packages/packages-lo.json";
 
 export const fallbackLng = "en";
 
 const combinedEn = {
+  ...packagesEn,
   ...adminEn,
   ...logisticsEn,
   ...carAdminEn,
@@ -22,6 +25,7 @@ const combinedEn = {
   ...deliveryEn,
 };
 const combinedLo = {
+  ...packagesLo,
   ...adminLo,
   ...logisticsLo,
   ...carAdminLo,
@@ -29,6 +33,11 @@ const combinedLo = {
   ...kokkokAdminLo,
   ...deliveryLo,
 };
+
+export const packagesResources = {
+  en: { translation: packagesEn },
+  lo: { translation: packagesLo },
+} as const;
 
 export const resources = {
   en: { translation: combinedEn },

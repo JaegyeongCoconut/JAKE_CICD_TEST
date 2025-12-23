@@ -17,7 +17,7 @@ export const Title = styled.h3`
   `}
 `;
 
-export const Desc = styled.pre`
+export const Description = styled.pre`
   ${({ theme }) => css`
     ${theme.font.regular_13};
     margin-bottom: 20px;

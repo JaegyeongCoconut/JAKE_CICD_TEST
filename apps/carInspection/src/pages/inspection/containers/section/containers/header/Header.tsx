@@ -1,11 +1,10 @@
 import React from "react";
 
-import { useTranslation } from "react-i18next";
-
 import { formatICTDateTime } from "@repo/utils/date";
 
 import { RefreshIcon } from "~assets";
 import { LANGUAGE_LABEL } from "~constants";
+import { useServiceTranslation } from "~hooks";
 
 import * as S from "./Header.styled";
 
@@ -16,14 +15,14 @@ interface HeaderProps {
 }
 
 const Header = ({ length, dataUpdatedAt, onRefetch }: HeaderProps) => {
-  const { t } = useTranslation();
+  const { defaultLanguage } = useServiceTranslation();
 
   return (
     <S.HeaderWapper>
-      <S.HeaderTitle>{`${t(LANGUAGE_LABEL.LIST)} (${length})`}</S.HeaderTitle>
+      <S.HeaderTitle>{`${defaultLanguage({ text: LANGUAGE_LABEL.LIST })} (${length})`}</S.HeaderTitle>
       {!!dataUpdatedAt && (
         <>
-          <S.HeaderSubTitle>{`${t(LANGUAGE_LABEL.LAST_UPDATED)}:`}</S.HeaderSubTitle>
+          <S.HeaderSubTitle>{`${defaultLanguage({ text: LANGUAGE_LABEL.LAST_UPDATED })}:`}</S.HeaderSubTitle>
           <S.UpdatedDate>
             {formatICTDateTime({ date: dataUpdatedAt })}
           </S.UpdatedDate>

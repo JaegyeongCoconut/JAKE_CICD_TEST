@@ -1,10 +1,9 @@
 import type { ChangeEvent } from "react";
 import { useState } from "react";
 
+import { useToastStore } from "@repo/stores/toast";
 import type { ToastType } from "@repo/types";
-import { appendValidFiles, compressionImage } from "@repo/utils/image";
-
-import useToast from "./useToast";
+import { appendValidFiles, compressionImage } from "@repo/utils/image/common";
 
 interface UseUploadImagesBaseProps {
   isNeedCompress: boolean;
@@ -32,12 +31,12 @@ const useUploadImages = ({
   compressedMaxFileSize,
   handleFormPhotoUpdate,
 }: UseUploadImagesCompressProps | UseUploadImagesNotCompressProps) => {
+  const addToast = useToastStore((state) => state.addToast);
+
   const [isLoading, setIsLoading] = useState(false);
   const [uploadImages, setUploadImages] = useState<
     (string | File)[] | undefined | null
   >(images);
-
-  const { addToast } = useToast();
 
   const handleImagesAdd = async (
     e: ChangeEvent<HTMLInputElement>,
@@ -54,7 +53,7 @@ const useUploadImages = ({
     const validFiles = appendValidFiles({
       sortedImageFiles,
       currentFiles: uploadImages,
-      hasLimit: false,
+      hasLimit: false, //TODO: carAdmin(신차> 이미지 업로드)에 필요하나 false로 고정되어있어 에러메세지 미발생 < 수정필요
       maxFileCount,
       maxFileCountLabel,
       handleToastAdd: addToast,
@@ -76,6 +75,7 @@ const useUploadImages = ({
 
     const updatedImages = [...uploadImages, ...convertFiles];
     setUploadImages(updatedImages);
+
     handleFormPhotoUpdate(updatedImages);
     setIsLoading(false);
 

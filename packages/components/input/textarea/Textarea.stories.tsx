@@ -51,10 +51,7 @@ const meta = {
       description: "`Textarea` 필드 클릭 및 입력을 비활성화합니다.",
       defaultValue: { summary: "false" },
     },
-    value: {
-      description: "`Textarea`에서 입력한 값입니다.",
-      control: false,
-    },
+    value: { description: "`Textarea`에서 입력한 값입니다.", control: false },
     handleBlur: {
       description:
         "`Textarea`에서 blur 이벤트가 발생했을 때 호출되는 handler 함수입니다.",

@@ -4,8 +4,8 @@ import { useSearchParams } from "react-router-dom";
 
 import { QUERY_FILTER_TYPE } from "@repo/assets/static/queryFilter";
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
-import useQueryInitFilterHooks from "@repo/hooks/queryFilter/useQueryInitFilterHooks";
+import { useQueryFilterStore } from "@repo/stores/queryFilter";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 
 import * as S from "./QueryFilterActionButtons.styled";
 import Button from "../../../button/Button";
@@ -23,8 +23,16 @@ const QueryFilterActionButtons = ({
 }: QueryFilterActionButtonsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { queryFilters, resetAllValues } = useQueryFilterHooks();
-  const { isInitQueryFilter, setIsInitQueryFilter } = useQueryInitFilterHooks();
+  const queryFilters = useQueryFilterStateStore((state) => state.queryFilters);
+  const resetAllValues = useQueryFilterStateStore(
+    (state) => state.onResetAllValues,
+  );
+  const isInitQueryFilter = useQueryFilterStore(
+    (state) => state.isInitQueryFilter,
+  );
+  const setIsInitQueryFilter = useQueryFilterStore(
+    (state) => state.setIsInitQueryFilter,
+  );
 
   const isResetButtonDisabled = Object.entries(queryFilters).every(
     ([_, { tagValue }]) => tagValue.length === 0,

@@ -2,10 +2,7 @@ import React from "react";
 
 import type { Meta, StoryObj } from "@storybook/react";
 
-import type { Languages } from "@repo/types";
-
 import PageHeader from "./PageHeader";
-import Button from "../../button/Button";
 
 const meta = {
   title: "KOKKOK/Header/PageHeader",
@@ -20,33 +17,26 @@ const meta = {
   },
   tags: ["autodocs"],
   args: {
-    marginBottom: 50,
+    hasMarginBottom: true,
+    marginBottom: 40,
     heading: "Client",
-    button: (
-      <Button
-        variant="ghost_blue"
-        disabled={false}
-        isLoading={false}
-        label={"Payment gateway : BCEL" as Languages}
-        handleButtonClick={() => {}}
-      />
-    ),
   },
   argTypes: {
     className: {
+      description: "PageHeader 컴포넌트의 스타일을 커스텀하기 위해 사용합니다.",
       control: false,
-      description: "PageHeader 스타일을 커스텀하기 위해 사용합니다.",
+    },
+    hasMarginBottom: {
+      description: "PageHeader 컴포넌트의 하단 여백 적용 여부를 결정합니다.",
     },
     marginBottom: {
-      description: "PageHeader의 아래 간격을 조절하기 위해 사용합니다.",
+      description: "PageHeader 컴포넌트의 하단 여백 값을 직접 지정합니다.",
+      type: { required: true, name: "number" },
+      if: { arg: "hasMarginBottom", neq: false },
     },
     heading: {
-      description: "현재 페이지의 타이틀을 입력합니다.",
+      description: "PageHeader 컴포넌트에 표시할 타이틀 문구를 입력합니다.",
       table: { type: { summary: "string" } },
-    },
-    button: {
-      description: "PageHeader와 동위선상에 나타낼 버튼을 포함합니다.",
-      control: false,
     },
   },
   decorators: [

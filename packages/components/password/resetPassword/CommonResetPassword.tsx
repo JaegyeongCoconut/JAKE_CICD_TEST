@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { FormResetPassword } from "@repo/types";
+import type { ResetPasswordFormSchema } from "@repo/schemas/resetPasswordForm.schema";
 
 import AccountIdForm from "./form/accountId/AccountIdForm";
 import ResetPasswordForm from "./form/resetPassword/ResetPasswordForm";
@@ -10,8 +10,8 @@ interface CommonResetPasswordProps {
   className?: string;
   isTimeStart: boolean;
   initTime: number;
-  handleEmailSend: (data: FormResetPassword) => void;
-  handleVerificationCheck: (data: FormResetPassword) => void;
+  handleEmailSend: (data: ResetPasswordFormSchema) => void;
+  handleVerificationCheck: (data: ResetPasswordFormSchema) => void;
 }
 
 const CommonResetPassword = ({

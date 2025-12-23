@@ -25,6 +25,8 @@ const FormModalButton = ({
 }: FormModalButtonProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
+  const hasLabel = !!label.trim();
+
   return (
     <S.FormModalButton
       className={className}
@@ -33,8 +35,8 @@ const FormModalButton = ({
       type="button"
       onClick={handleModalOpen}
     >
-      <S.Content color={label?.trim() ? "black" : "gray"}>
-        {label ? label : defaultLanguage(placeholder)}
+      <S.Content hasLabel={hasLabel}>
+        {hasLabel ? label : defaultLanguage({ text: placeholder })}
       </S.Content>
       <DownIcon css={S.chevronRight} />
     </S.FormModalButton>

@@ -27,7 +27,7 @@ const CalendarWeek = ({ type, datePicker, calendar }: CalendarWeekProps) => {
       <S.WeekRow>
         {WEEKS.map((week, i) => (
           <li key={`${week["shortenDay"]}-${i}`}>
-            {defaultLanguage(week["shortenDay"])}
+            {defaultLanguage({ text: week["shortenDay"] })}
           </li>
         ))}
       </S.WeekRow>
@@ -37,7 +37,9 @@ const CalendarWeek = ({ type, datePicker, calendar }: CalendarWeekProps) => {
       <GhostButton
         css={S.todayButton}
         variant="ghost"
-        icon={{ component: <S.CircleBox />, position: "left" }}
+        disabled={false}
+        isLoading={false}
+        Icon={<S.CircleBox />}
         label={LANGUAGE_LABEL.TODAY}
         handleButtonClick={calendar.handleMoveToday}
       />

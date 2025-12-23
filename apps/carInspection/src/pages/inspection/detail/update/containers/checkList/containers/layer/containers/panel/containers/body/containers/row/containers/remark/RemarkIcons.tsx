@@ -3,14 +3,15 @@ import React from "react";
 import { useFormContext } from "react-hook-form";
 
 import Button from "@repo/components/button";
-import useModal from "@repo/hooks/modal/useModal";
+import { useModalStore } from "@repo/stores/modal";
 
 import { PhotoIcon, RemarkIcon } from "~assets";
-import type { ChecklistType, FormInspectionCheckItems } from "~types";
+import type { ChecklistType } from "~types";
 
 import * as S from "./RemarkIcons.styled";
 import PhotoModal from "./containers/modal/photoModal/PhotoModal";
 import RemarkModal from "./containers/modal/remarkModal/RemarkModal";
+import type { CheckListFormSchema } from "../../../../../../../../../schema/checkListForm.schema";
 
 interface RemarkIconsProps {
   listId: string;
@@ -18,10 +19,10 @@ interface RemarkIconsProps {
 }
 
 const RemarkIcons = ({ listId, type }: RemarkIconsProps) => {
-  const { control, watch, setValue, resetField } =
-    useFormContext<FormInspectionCheckItems>();
+  const handleModalOpen = useModalStore((state) => state.handleModalOpen);
 
-  const { handleModalOpen } = useModal();
+  const { control, watch, setValue, resetField } =
+    useFormContext<CheckListFormSchema>();
 
   const accumulatedLength = {
     exterior: 0,
@@ -40,7 +41,7 @@ const RemarkIcons = ({ listId, type }: RemarkIconsProps) => {
     <S.RemarkIconWrapper>
       <Button
         css={S.button(
-          !!watch(`${type}Checklist.${calculateIndex}.photos`).length,
+          !!watch(`${type}Checklist.${calculateIndex}.photos`)?.length,
         )}
         variant="iconOnly"
         disabled={false}

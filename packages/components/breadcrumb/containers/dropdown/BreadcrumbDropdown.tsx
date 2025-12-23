@@ -52,11 +52,14 @@ const BreadcrumbDropdown = ({
       {clicked && (
         <S.BreadcrumbDropdownUl>
           {breadcrumbs.map(({ isTranslated, name, path }) => {
-            const breadcrumbName = isTranslated ? defaultLanguage(name) : name;
+            const breadcrumbName = isTranslated
+              ? defaultLanguage({ text: name })
+              : name;
 
             return (
               <S.BreadcrumbDropdownLi
                 key={name}
+                data-show-tooltip={showTooltip}
                 content={breadcrumbName}
                 showTooltip={showTooltip}
               >

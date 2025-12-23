@@ -26,13 +26,13 @@ const QueryFilterFieldDropdown = <T extends string>({
 }: QueryFilterFieldDropdownProps<T>) => {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const querFilter = useTypedQueryFilterState({ type, queryKey });
+  const queryFilter = useTypedQueryFilterState({ type, queryKey });
   const {
     isOpenDropdown,
     handleDropdownOpen,
     handleDropdownOptionClick,
     handleDropdownClose,
-  } = useQueryFilterFieldDropdown({ querFilter });
+  } = useQueryFilterFieldDropdown({ queryFilter });
 
   const { defaultLanguage } = useDefaultLanguage();
 
@@ -42,9 +42,9 @@ const QueryFilterFieldDropdown = <T extends string>({
     exceptEl: undefined,
   });
 
-  if (!querFilter) return null;
+  if (!queryFilter) return null;
 
-  const { tagValue } = querFilter;
+  const { tagValue } = queryFilter;
 
   return (
     <S.QueryFilterFieldDropdown ref={dropdownRef}>
@@ -55,10 +55,11 @@ const QueryFilterFieldDropdown = <T extends string>({
         onClick={isOpenDropdown ? handleDropdownClose : handleDropdownOpen}
       >
         <S.SelectQueryFilterFieldDropdown isSelected={!!tagValue}>
-          {defaultLanguage(
-            selections.find(({ key }) => key === tagValue)?.label ??
-              querFilter.placeholder,
-          )}
+          {defaultLanguage({
+            text:
+              selections.find(({ key }) => key === tagValue)?.label ??
+              queryFilter.placeholder,
+          })}
         </S.SelectQueryFilterFieldDropdown>
         <DownIcon />
       </S.QueryFilterFieldDropdownOpenButton>
@@ -71,7 +72,7 @@ const QueryFilterFieldDropdown = <T extends string>({
                 type="button"
                 onClick={handleDropdownOptionClick(queryKey, key)}
               >
-                {defaultLanguage(label)}
+                {defaultLanguage({ text: label })}
                 {key === tagValue && <CheckIcon css={S.checkeIcon} />}
               </S.QueryFilterFieldDropdownItem>
             </li>

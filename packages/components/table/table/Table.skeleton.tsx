@@ -10,16 +10,14 @@ import * as S from "./Table.styled";
 
 interface TableSkeletonProps {
   className?: string;
-  height?: number;
-  rowCount?: number;
+  rowCount: number;
   tableHeaderInfos: TableHeaderInfo;
 }
 
 const TableSkeleton = ({
   className,
   tableHeaderInfos,
-  rowCount = 10,
-  height = 40,
+  rowCount,
 }: TableSkeletonProps) => {
   const gridTemplateColumns = calcTableWidth({ tableHeaderInfos });
 
@@ -37,7 +35,7 @@ const TableSkeleton = ({
       <Table.Header tableHeaderInfos={tableHeaderInfos} />
       <tbody>
         {[...Array(rowCount)].map((_, i) => (
-          <S.Row key={i} height={height}>
+          <S.Row key={i}>
             {Array(skeletonCount)
               .fill(0)
               .map((_, j) => (

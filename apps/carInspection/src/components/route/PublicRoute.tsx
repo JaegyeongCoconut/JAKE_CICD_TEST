@@ -3,17 +3,15 @@ import React from "react";
 import CommonPublicRoute from "@repo/components/route/public";
 
 import { PATH } from "~constants";
-import { useAuth } from "~contexts";
+import { useAuthStore } from "~stores";
 
 const PublicRoute = () => {
-  const { user, initializing } = useAuth();
-
-  if (initializing) return null;
+  const user = useAuthStore.getState().user;
 
   return (
     <CommonPublicRoute
       hasUser={!!user}
-      paddingTop="76px"
+      forceLaoLanguage={false}
       navigatePath={PATH.INSPECTION}
     />
   );

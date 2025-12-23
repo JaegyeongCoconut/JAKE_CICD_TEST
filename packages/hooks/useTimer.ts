@@ -25,20 +25,27 @@ const useTimer = (initTime: number) => {
     if (!isTimeStart) return;
 
     const interval = setInterval(() => {
-      if (limitTime === 0) {
-        clearInterval(interval);
-      } else {
-        setLimitTime(limitTime - 1);
-        setMin(Math.floor((limitTime - 1) / 60));
-        setSec((limitTime - 1) % 60);
-        if (limitTime - 1 === 0) {
+      setLimitTime((prev) => {
+        const next = prev - 1;
+
+        if (next <= 0) {
+          setMin(0);
+          setSec(0);
           setTimeOut(true);
           clearInterval(interval);
+
+          return 0;
         }
-      }
+
+        setMin(Math.floor(next / 60));
+        setSec(next % 60);
+
+        return next;
+      });
     }, 1000);
+
     return () => clearInterval(interval);
-  });
+  }, [isTimeStart]);
 
   useEffect(() => {
     setLimitTime(initTime);

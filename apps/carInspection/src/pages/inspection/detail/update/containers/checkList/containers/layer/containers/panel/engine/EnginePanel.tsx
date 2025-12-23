@@ -4,35 +4,34 @@ import { useFormContext } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Button from "@repo/components/button";
-import useToast from "@repo/hooks/useToast";
+import { useToastStore } from "@repo/stores/toast";
 
 import { TOAST_MESSAGE, LANGUAGE_LABEL, PATH } from "~constants";
 import { useUpdateInspectionCompleted } from "~services";
-import type { FormInspectionCheckItems } from "~types";
 
 import * as S from "./EnginePanel.styled";
+import type { CheckListFormSchema } from "../../../../schema/checkListForm.schema";
 import Body from "../containers/body/Body";
 import Header from "../containers/header/Header";
 
 const EnginePanel = () => {
   const navigate = useNavigate();
   const { inspectionId } = useParams();
-
   const { watch, setValue, resetField, handleSubmit } =
-    useFormContext<FormInspectionCheckItems>();
+    useFormContext<CheckListFormSchema>();
+
+  const addToast = useToastStore((state) => state.addToast);
 
   const { isLoading, mutate: updateInspectionCompletedMutate } =
     useUpdateInspectionCompleted();
 
-  const { addToast } = useToast();
-
-  const checklistCompleted = (data: FormInspectionCheckItems): boolean =>
+  const checklistCompleted = (data: CheckListFormSchema): boolean =>
     data.exteriorChecklist.every(({ status }) => !!status) &&
     data.interiorChecklist.every(({ status }) => !!status) &&
     data.undersideChecklist.every(({ status }) => !!status) &&
     data.engineChecklist.every(({ status }) => !!status);
 
-  const handleCompletedButtonClick = (data: FormInspectionCheckItems): void => {
+  const handleCompletedButtonClick = (data: CheckListFormSchema): void => {
     if (!inspectionId) return;
 
     if (!checklistCompleted(data)) {

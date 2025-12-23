@@ -30,7 +30,7 @@ const QueryFilterFieldName = <T extends string>({
       hasError={hasError}
       isFocused={isFocused}
     >
-      <span>{defaultLanguage(label)}</span>
+      <span>{defaultLanguage({ text: label })}</span>
       {isRequired && <S.Required>*</S.Required>}
       {isMultiSelect && <QueryFilterFieldNameCheckbox queryKey={queryKey} />}
     </S.QueryFilterFeildName>

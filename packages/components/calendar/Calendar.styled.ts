@@ -1,16 +1,11 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-interface RootProps {
-  as?: string;
-  dialogPosition: "up" | "down" | "center";
-}
-
 const CALENDAR_HEIGHT = "522px";
 
-export const Root = styled.dialog<RootProps>`
-  ${({ theme, as, dialogPosition }) => css`
-    position: ${as === "dialog" ? "absolute" : "static"};
+export const Root = styled.dialog<{ dialogPosition: "up" | "down" | "center" }>`
+  ${({ theme, dialogPosition }) => css`
+    position: absolute;
     top: ${dialogPosition === "up"
       ? `calc(-${CALENDAR_HEIGHT} - 4px)`
       : dialogPosition === "center"

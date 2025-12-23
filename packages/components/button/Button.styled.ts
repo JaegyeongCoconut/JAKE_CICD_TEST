@@ -10,8 +10,14 @@ const mixinContents = css`
   column-gap: 8px;
 `;
 
+interface ButtonProps {
+  variant: ButtonVariant;
+  isLoading: boolean;
+}
+
 export const button =
-  (isLoading: boolean, variant: ButtonVariant) => (theme: Theme) => css`
+  ({ variant, isLoading }: ButtonProps) =>
+  (theme: Theme) => css`
     ${mixinContents};
     ${variant === "error" && theme.button.error};
     ${variant === "filled_gray_blue" && theme.button.filled_gray_blue};

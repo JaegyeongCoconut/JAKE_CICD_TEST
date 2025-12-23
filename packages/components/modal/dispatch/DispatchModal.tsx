@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
-import useModal from "@repo/hooks/modal/useModal";
-import useToast from "@repo/hooks/useToast";
+import { useModalStore } from "@repo/stores/modal";
+import { useToastStore } from "@repo/stores/toast";
 import type {
   Languages,
   DispatchDriver,
@@ -20,7 +20,7 @@ interface DispatchModalProps {
   selectedDriverId: string | null;
   selectedVehicleId: string | null;
   title: Languages;
-  toastMessage?: Omit<ToastType, "id">;
+  toastMessage: Omit<ToastType, "id"> | undefined;
   vehicleList: DispatchVehicle[];
   handleDriverSelect: (drivers: DispatchDriver[], driverId: string) => void;
   handleVehicleSelect: (vehicles: DispatchVehicle[], vehicleId: string) => void;
@@ -41,6 +41,9 @@ const DispatchModal = React.forwardRef<HTMLDialogElement, DispatchModalProps>(
     },
     ref,
   ) => {
+    const handleModalClose = useModalStore((state) => state.handleModalClose);
+    const addToast = useToastStore((state) => state.addToast);
+
     const [searchedDriverName, setSearchedDriverName] = useState<string | null>(
       null,
     );
@@ -53,9 +56,6 @@ const DispatchModal = React.forwardRef<HTMLDialogElement, DispatchModalProps>(
     const [selectedVehicle, setSelectedVehicle] = useState<string | null>(
       selectedVehicleId || null,
     );
-
-    const { handleModalClose } = useModal();
-    const { addToast } = useToast();
 
     const handleDriverNameSearch = (searchedDriverName: string): void => {
       setSearchedDriverName(searchedDriverName);
@@ -88,12 +88,13 @@ const DispatchModal = React.forwardRef<HTMLDialogElement, DispatchModalProps>(
       <DetailModal
         css={S.detailModal}
         ref={ref}
-        isPosDisabled={!selectedDriver || !selectedVehicle}
-        isPosLoading={false}
-        desc={description}
-        posButtonName="Select"
+        isPositiveDisabled={!selectedDriver || !selectedVehicle}
+        isPositiveLoading={false}
+        description={description}
+        positiveButtonName="Select"
         title={title}
-        handlePosButtonClick={handleDriverVehicleSelect}
+        handleClose={handleModalClose}
+        handlePositiveButtonClick={handleDriverVehicleSelect}
       >
         <S.ListWrapper>
           <DispatchDriverList

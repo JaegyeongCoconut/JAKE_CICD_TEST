@@ -16,10 +16,10 @@ const PageNotFound = ({ path }: PageNotFoundProps) => {
       <S.Container>
         <WarningIcon css={S.icon} />
         <S.Title>Page not found</S.Title>
-        <S.Desc>
+        <S.Description>
           The requested page could not be found. <br />
           Please check that the address on the page you entered is correct
-        </S.Desc>
+        </S.Description>
         <InternalLinkButton
           variant="secondary"
           hasBoth={false}

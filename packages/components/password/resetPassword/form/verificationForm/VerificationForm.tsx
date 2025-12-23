@@ -5,8 +5,8 @@ import { useFormContext } from "react-hook-form";
 
 import { LANGUAGE_LABEL } from "@repo/constants/languageLabel";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
+import type { ResetPasswordFormSchema } from "@repo/schemas/resetPasswordForm.schema";
 import { useTimerStore } from "@repo/stores/timer";
-import type { FormResetPassword } from "@repo/types";
 import { numericOnly } from "@repo/utils/formatter/number";
 
 import * as S from "./VerificationForm.styled";
@@ -16,7 +16,7 @@ import Timer from "../../../../timer/Timer";
 
 interface VerificationFormProps {
   initTime: number;
-  handleVerificationCheck: (data: FormResetPassword) => void;
+  handleVerificationCheck: (data: ResetPasswordFormSchema) => void;
 }
 
 const VerificationForm = ({
@@ -33,7 +33,7 @@ const VerificationForm = ({
     handleSubmit,
     register,
     setValue,
-  } = useFormContext<FormResetPassword>();
+  } = useFormContext<ResetPasswordFormSchema>();
 
   return (
     <S.VerificationSection>
@@ -74,7 +74,7 @@ const VerificationForm = ({
         type="submit"
         onClick={handleSubmit(handleVerificationCheck)}
       >
-        {defaultLanguage(LANGUAGE_LABEL.NEXT)}
+        {defaultLanguage({ text: LANGUAGE_LABEL.NEXT })}
       </S.NextStepButton>
     </S.VerificationSection>
   );

@@ -68,3 +68,38 @@ export const generateDefaultPagination = (
         totalPages: pageInfo.totalPages ?? INIT_PAGE_INFO.totalPages,
       }
     : INIT_PAGE_INFO;
+
+interface MockPaginatedResponseProps<T, K extends string> {
+  data: T[];
+  dataKey: K;
+  dataPerPage: number;
+  page: string;
+}
+
+export const mockPaginatedResponse = <T, K extends string>({
+  data,
+  page,
+  dataPerPage,
+  dataKey,
+}: MockPaginatedResponseProps<T, K>): { [key in K]: T[] } & {
+  pageInfo: PageInfoType;
+} => {
+  const sanitizedDataPerPage = dataPerPage <= 0 ? 10 : dataPerPage; //NOTE: 음수,0 일 경우 10으로 초기화(미설정 시 이슈 발생)
+
+  const totalData = data.length;
+  const totalPages = Math.max(1, Math.ceil(totalData / sanitizedDataPerPage));
+  const currentPage = Math.min(Math.max(1, +page), totalPages);
+  const startRow = (currentPage - 1) * sanitizedDataPerPage;
+  const pageData = data.slice(startRow, startRow + sanitizedDataPerPage);
+
+  return {
+    [dataKey]: pageData,
+    pageInfo: {
+      currentPage,
+      dataPerPage: sanitizedDataPerPage,
+      totalData,
+      totalPages,
+      startRow,
+    },
+  } as { [key in K]: T[] } & { pageInfo: PageInfoType };
+};

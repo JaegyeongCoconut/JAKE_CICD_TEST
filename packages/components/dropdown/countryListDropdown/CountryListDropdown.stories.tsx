@@ -2,15 +2,24 @@ import React, { useState } from "react";
 
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { LAOS_COUNTRY_DIAL } from "@repo/assets/static/phone";
-import { COUNTRY_CODES } from "@repo/constants/countryCode";
-import type { Country } from "@repo/types";
+import { DEFAULT_COUNTRY_CODE_INFO } from "@repo/assets/static/phone";
+import { COUNTRY_CODE } from "@repo/constants/countryCode";
+import type { Country, CountryModel } from "@repo/types";
 
 import CountryListDropdown from "./CountryListDropdown";
 
+// DESC: 타입 강제 지정, CountryListDropdown의 타입이 union이라 storybook 에서 args를 never로 추론됨
+interface StoryCountryListDropdownProps {
+  className?: string;
+  disabled: boolean;
+  hasError: boolean;
+  country: CountryModel | undefined;
+  selectedCountry: Country;
+  handleCountryWithCodeSelect: (code: string) => void;
+}
+
 const meta = {
   title: "KOKKOK/Dropdown/CountryListDropdown",
-  component: CountryListDropdown,
   parameters: {
     docs: {
       description: {
@@ -24,7 +33,7 @@ const meta = {
     disabled: false,
     hasError: false,
     selectedCountry: { code: "", name: "", dial: "" },
-    countries: COUNTRY_CODES,
+    country: COUNTRY_CODE,
     handleCountryWithCodeSelect: () => {},
   },
   argTypes: {
@@ -34,11 +43,14 @@ const meta = {
     },
     disabled: {
       description: "`CountryListDropdown` 기능을 비활성화 처리합니다.",
+      type: { required: true, name: "boolean" },
       defaultValue: { summary: "false" },
     },
     hasError: {
       description: "`CountryListDropdown` 에러 스타일 적용 여부를 나타냅니다.",
+      type: { required: true, name: "boolean" },
       defaultValue: { summary: "false" },
+      if: { arg: "disabled", neq: true },
     },
     selectedCountry: {
       description: "`CountryListDropdown`에서 선택한 옵션의 값이 노출됩니다.",
@@ -56,7 +68,7 @@ const meta = {
         type: { summary: "{ code : string, name : string, dial: string }" },
       },
     },
-    countries: {
+    country: {
       description: "`CountryListDropdown`에 표시할 옵션 목록입니다.",
       control: false,
       table: {
@@ -65,6 +77,7 @@ const meta = {
             "[key: string]:{ code : string, name : string, dial: string }",
         },
       },
+      if: { arg: "disabled", neq: true },
     },
     handleCountryWithCodeSelect: {
       description:
@@ -72,6 +85,7 @@ const meta = {
       control: false,
       type: { required: true, name: "function" },
       table: { type: { summary: " (code: string) => void" } },
+      if: { arg: "disabled", neq: true },
     },
   },
   decorators: [
@@ -83,25 +97,29 @@ const meta = {
       );
     },
   ],
-} satisfies Meta<typeof CountryListDropdown>;
+} satisfies Meta<StoryCountryListDropdownProps>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => {
-    const [selectedOption, setSelectedOption] = useState<Country>({
-      code: "LA",
-      dial: LAOS_COUNTRY_DIAL,
-      name: "Laos",
-    });
+    const [selectedOption, setSelectedOption] = useState<Country>(
+      DEFAULT_COUNTRY_CODE_INFO,
+    );
 
     const handleSelect = (code: string): void => {
-      const selected = COUNTRY_CODES[code as keyof typeof COUNTRY_CODES];
+      const selected = COUNTRY_CODE[code as keyof typeof COUNTRY_CODE];
+
       setSelectedOption(selected);
     };
 
-    return (
+    return args.disabled ? (
+      <CountryListDropdown
+        disabled
+        selectedCountry={DEFAULT_COUNTRY_CODE_INFO}
+      />
+    ) : (
       <CountryListDropdown
         {...args}
         selectedCountry={selectedOption}

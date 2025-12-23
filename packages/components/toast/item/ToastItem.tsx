@@ -25,7 +25,7 @@ const ToastItem = ({ type, id, content }: ToastItemProps) => {
     <S.ToastItem isClosing={isClosing}>
       <S.Item data-type={type} toastType={type}>
         <div>{type === "success" ? <CheckCircleIcon /> : <WarningIcon />}</div>
-        <p>{defaultLanguage(content)}</p>
+        <p>{defaultLanguage({ text: content })}</p>
       </S.Item>
     </S.ToastItem>
   );

@@ -5,24 +5,22 @@ import type { Languages } from "@repo/types";
 
 import * as S from "./LabelContent.styled";
 
-interface CommonProps {
+interface BaseLabelContentProps {
   className?: string;
-  isRequired?: boolean;
+  isRequired: boolean;
   label: Languages;
   children: React.ReactNode;
 }
 
-interface Horizontal extends CommonProps {
+interface HorizontalLabelContentProps extends BaseLabelContentProps {
   columnWidth: number;
   direction: "horizontal";
 }
 
-interface Vertical extends CommonProps {
+interface VerticalLabelContentProps extends BaseLabelContentProps {
   columnWidth?: never;
   direction: "vertical";
 }
-
-type LabelContentProps = Horizontal | Vertical;
 
 const LabelContent = ({
   className,
@@ -31,7 +29,7 @@ const LabelContent = ({
   direction,
   columnWidth,
   children,
-}: LabelContentProps) => {
+}: HorizontalLabelContentProps | VerticalLabelContentProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
   return (
@@ -41,7 +39,9 @@ const LabelContent = ({
       direction={direction}
     >
       <S.LabelWrapper>
-        <S.Label isRequired={isRequired}>{defaultLanguage(label)}</S.Label>
+        <S.Label isRequired={isRequired}>
+          {defaultLanguage({ text: label })}
+        </S.Label>
       </S.LabelWrapper>
       {children}
     </S.Wrapper>

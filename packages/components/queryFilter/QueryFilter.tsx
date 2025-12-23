@@ -3,8 +3,8 @@ import React, { useEffect } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
 import { useQueryFilterStore } from "@repo/stores/queryFilter";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterConstructorItem } from "@repo/types";
 
 import * as S from "./QueryFilter.styled";
@@ -32,7 +32,10 @@ const QueryFilter = ({
 }: QueryFilterProps) => {
   const [searchParams] = useSearchParams();
 
-  const { queryFilters, setQueryFilters } = useQueryFilterHooks();
+  const queryFilters = useQueryFilterStateStore((state) => state.queryFilters);
+  const setQueryFilters = useQueryFilterStateStore(
+    (state) => state.onSetQueryFilters,
+  );
   const setIsInitQueryFilter = useQueryFilterStore(
     (state) => state.setIsInitQueryFilter,
   );

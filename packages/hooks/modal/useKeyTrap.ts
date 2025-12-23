@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 
 const useKeyTrap = (element: HTMLElement | null, handleClose: () => void) => {
   const handleKeyTrap = useCallback(
-    (e: KeyboardEvent) => {
+    (e: KeyboardEvent): void => {
       if (!element) return;
 
       const focusableNodeList = element.querySelectorAll(
@@ -18,16 +18,22 @@ const useKeyTrap = (element: HTMLElement | null, handleClose: () => void) => {
 
       if (e.shiftKey && element !== e.target) {
         lastFocusableNode.focus();
+
+        return;
       }
 
       if (e.shiftKey && isFirstFocusableNode) {
         e.preventDefault();
         lastFocusableNode.focus();
+
+        return;
       }
 
       if (!e.shiftKey && isLastFocusableNode) {
         e.preventDefault();
         firstFocusableNode.focus();
+
+        return;
       }
     },
     [element],
@@ -42,7 +48,7 @@ const useKeyTrap = (element: HTMLElement | null, handleClose: () => void) => {
       ["Tab", handleKeyTrap],
     ]);
 
-    const handleKeyListener = (e: KeyboardEvent) => {
+    const handleKeyListener = (e: KeyboardEvent): void => {
       const listener = keyListenerMap.get(e.key);
       typeof listener === "function" && listener(e);
     };

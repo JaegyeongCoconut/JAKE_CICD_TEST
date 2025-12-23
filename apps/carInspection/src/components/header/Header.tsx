@@ -1,11 +1,11 @@
 import React from "react";
 
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import useNavigationBlockingModal from "@repo/hooks/modal/useNavigationBlockingModal";
 
 import { LeftArrowIcon, LogoutIcon } from "~assets";
+import { useServiceTranslation } from "~hooks";
 import { useLogout } from "~services";
 import type { CarInspectionLanguages } from "~types";
 
@@ -36,11 +36,11 @@ interface HeaderTitleProps {
 }
 
 Header.Title = function Title({ title }: HeaderTitleProps) {
-  const { t } = useTranslation();
+  const { defaultLanguage } = useServiceTranslation();
 
   return (
     <S.TitleContainer>
-      <S.Title>{t(title)}</S.Title>
+      <S.Title>{defaultLanguage({ text: title })}</S.Title>
     </S.TitleContainer>
   );
 };

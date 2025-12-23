@@ -39,23 +39,24 @@ const meta = {
     disabled: { description: "`RadioButton`을 비활성화합니다." },
     radioList: {
       description: "`RadioButton`에서 선택할 수 있는 옵션 목록입니다.",
-      table: { type: { summary: "string | number | null" } },
-    },
-    radioState: {
-      description: "`RadioButton`에서 선택된 옵션의 값을 나타냅니다.",
       table: {
         type: {
           summary:
-            "{ Icon?: FC<SVGProps<SVGSVGElement>>; key: T; label: string; }[]",
+            "{  Icon?: FC<SVGProps<SVGSVGElement>>; key: string | number; label: string; }[]",
         },
       },
+    },
+    radioState: {
+      description: "`RadioButton`에서 선택된 옵션의 값을 나타냅니다.",
+      table: { type: { summary: "string | number | null" } },
     },
     handleRadioButtonClick: {
       description:
         "`RadioButton`에서 옵션을 선택했을 때 호출되는 handler 함수입니다.",
-      table: {
-        type: { summary: "(key: string | number | null) => () => void;" },
-      },
+      type: { required: true, name: "function" },
+      table: { type: { summary: "(key: string | number) => () => void;" } },
+      if: { arg: "disabled", neq: true },
+      control: false,
     },
   },
 } satisfies Meta<typeof RadioButton>;
@@ -72,6 +73,7 @@ export const Default: Story = {
     return (
       <RadioButton
         {...args}
+        disabled={false}
         radioState={radioState}
         handleRadioButtonClick={handleRadioButtonClick}
       />

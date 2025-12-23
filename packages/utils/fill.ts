@@ -1,4 +1,10 @@
-export const fillCheckboxSVG = (color: string) => {
+export const fillCheckboxSVG = (color: string): string => {
+  const regEx = /^#([0-9A-Fa-f]{6})$/;
+
+  if (!regEx.test(color)) {
+    throw Error("#이 포함된 6자리 Hex code를 파라미터로 전달 받아야 함.");
+  }
+
   const svgPrefix =
     "data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='16' height='16' rx='2' fill='%23";
   const colorWithoutHash = color.replace("#", "");

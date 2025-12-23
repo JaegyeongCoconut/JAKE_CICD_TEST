@@ -1,32 +1,40 @@
 import type { CommonUnitType, CurrencyUnitType } from "@repo/types";
 
-export const comma = (str: string | number): string => {
-  if (typeof str !== "string") str = `${str}`;
+export const comma = (str: string | number | undefined | null): string => {
+  if (typeof str === "undefined" || str === null) return "";
 
-  if (!str) return "";
+  const input = typeof str === "string" ? str.trim() : `${str}`;
 
-  return `${str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, "$1,")}`;
+  if (!input) return "";
+
+  return `${input.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, "$1,")}`;
 };
 
-export const removeComma = (str: string | number): string => {
-  if (typeof str !== "string") str = `${str}`;
+export const removeComma = (
+  str: string | number | undefined | null,
+): string => {
+  if (typeof str === "undefined" || str === null) return "";
 
-  if (!str) return "";
+  const input = typeof str === "string" ? str.trim() : `${str}`;
 
-  return str.replaceAll(/,/g, "");
+  if (!input) return "";
+
+  return input.replaceAll(/,/g, "");
 };
 
 interface CommaWithUnitProps {
-  value: string | number;
+  value: string | number | undefined | null;
   unit: CommonUnitType;
 }
 
 export const commaWithUnit = ({ value, unit }: CommaWithUnitProps): string => {
-  if (typeof value !== "string") value = `${value}`;
+  if (typeof value === "undefined" || value === null) return "";
 
-  if (!value) return "";
+  const input = typeof value === "string" ? value.trim() : `${value}`;
 
-  return `${comma(value)} ${unit || ""}`;
+  if (!input) return "";
+
+  return `${comma(input)} ${unit}`;
 };
 
 interface CommaWithCurrencyUnitProps {
@@ -40,15 +48,18 @@ export const commaWithCurrencyUnit = ({
   currencyUnit,
   showPlusSign,
 }: CommaWithCurrencyUnitProps): string => {
-  if (typeof price === "number") price = `${price}`;
+  if (typeof price === "undefined" || price === null)
+    return `${currencyUnit} 0`;
 
-  if (!price) return `${currencyUnit} 0`;
+  const input = typeof price === "string" ? price.trim() : `${price}`;
 
-  if (+price < 0) {
-    return `- ${currencyUnit} ${comma(Math.abs(+price))}`;
+  if (!input) return `${currencyUnit} 0`;
+
+  if (+input < 0) {
+    return `- ${currencyUnit} ${comma(Math.abs(+input))}`;
   } else {
     return showPlusSign
-      ? `+ ${currencyUnit} ${comma(+price)}`
-      : `${currencyUnit} ${comma(+price)}`;
+      ? `+ ${currencyUnit} ${comma(input)}`
+      : `${currencyUnit} ${comma(input)}`;
   }
 };

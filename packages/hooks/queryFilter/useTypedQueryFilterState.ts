@@ -1,4 +1,4 @@
-import useQueryFilterHooks from "@repo/hooks/queryFilter/useQueryFilterHooks";
+import { useQueryFilterStateStore } from "@repo/stores/queryFilterState";
 import type { QueryFilterStateUnion } from "@repo/types";
 
 interface UseTypedQueryFilterStateProps<
@@ -18,7 +18,7 @@ const useTypedQueryFilterState = <
 }: UseTypedQueryFilterStateProps<ControlType, QueryKeyType>):
   | Extract<QueryFilterStateUnion, { type: ControlType }>
   | undefined => {
-  const { queryFilters } = useQueryFilterHooks();
+  const queryFilters = useQueryFilterStateStore((state) => state.queryFilters);
 
   if (queryFilters[queryKey]?.type !== type) return undefined;
 

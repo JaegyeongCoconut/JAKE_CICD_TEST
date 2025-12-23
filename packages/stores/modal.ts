@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, MouseEvent } from "react";
 
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -6,20 +6,27 @@ import { immer } from "zustand/middleware/immer";
 interface ModalState {
   modals: ReactNode[];
   handleModalAdd: (modal: ReactNode) => void;
-  handleModalClear: () => void;
-  handleModalRemove: () => void;
+  handleModalAllClose: () => void;
+  handleModalClose: () => void;
+  handleModalOpen: (modal: ReactNode) => (e?: MouseEvent<Element>) => void;
 }
 
 const useModalStore = create<ModalState>()(
-  immer((set) => ({
+  immer((set, get) => ({
     modals: [],
-    handleModalAdd: (modal) =>
+    handleModalAdd: (modal): void =>
       set((state) => {
         state.modals.push(modal);
 
         document.body.style.cssText = "overflow: hidden";
       }),
-    handleModalRemove: () =>
+    handleModalOpen:
+      (modal: ReactNode) =>
+      (e?: MouseEvent<Element>): void => {
+        e?.stopPropagation();
+        get().handleModalAdd(modal);
+      },
+    handleModalClose: (): void =>
       set((state) => {
         state.modals.pop();
 
@@ -27,7 +34,7 @@ const useModalStore = create<ModalState>()(
           document.body.style.cssText = "overflow: auto";
         }
       }),
-    handleModalClear: () =>
+    handleModalAllClose: (): void =>
       set((state) => {
         state.modals.splice(0);
 

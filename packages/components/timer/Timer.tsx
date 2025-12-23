@@ -24,7 +24,7 @@ const Timer = ({ className, initTime }: TimerProps) => {
 
   return (
     <S.Time className={className} isTimeOver={limitTime <= 60}>
-      {defaultLanguage(LANGUAGE_LABEL.EXPIRATION_TIME)}{" "}
+      {defaultLanguage({ text: LANGUAGE_LABEL.EXPIRES_IN })}{" "}
       {addZeroFirstString(min)}:{addZeroFirstString(sec)}
     </S.Time>
   );

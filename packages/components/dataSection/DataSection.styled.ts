@@ -2,12 +2,12 @@ import type { Theme } from "@emotion/react";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-export const Header = styled.header`
-  ${({ theme }) => css`
+export const Header = styled.header<{ hasOnlyButton: boolean }>`
+  ${({ theme, hasOnlyButton }) => css`
     position: sticky;
     top: ${theme.size.HEADER_HEIGHT};
     display: flex;
-    justify-content: space-between;
+    justify-content: ${hasOnlyButton ? "flex-end" : "space-between"};
     align-items: center;
     height: 100%;
     padding-bottom: 12px;
@@ -64,11 +64,6 @@ export const resetIcon = (theme: Theme) => css`
   & > path {
     fill: ${theme.color.gray_70};
   }
-`;
-
-export const ActiveWrapper = styled.div`
-  display: flex;
-  column-gap: 8px;
 `;
 
 export const excelDownloadButton = (theme: Theme) => css`

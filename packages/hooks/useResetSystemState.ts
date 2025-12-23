@@ -1,40 +1,28 @@
-import type { Dispatch, SetStateAction } from "react";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { useModalStore } from "@repo/stores/modal";
 import { useRecentSearchStore } from "@repo/stores/persist";
 
-import useModal from "./modal/useModal";
 import useNavigationBlockingModal from "./modal/useNavigationBlockingModal";
 
-interface UseResetSystemStateLoginUserProps<T> {
+interface UseResetSystemStateProps {
   hasClearCountryCode: boolean;
-  hasSetUser: true;
   hasTranslation: boolean;
-  onSetUser: Dispatch<SetStateAction<T | null>>;
 }
 
-interface UseResetSystemStatusNonLoginUserProps {
-  hasClearCountryCode: boolean;
-  hasSetUser: false;
-  hasTranslation: boolean;
-  onSetUser: never;
-}
-
-const useResetSystemState = <T>({
+const useResetSystemState = ({
   hasClearCountryCode,
-  hasSetUser,
-  onSetUser,
   hasTranslation,
-}:
-  | UseResetSystemStateLoginUserProps<T>
-  | UseResetSystemStatusNonLoginUserProps) => {
+}: UseResetSystemStateProps) => {
   const queryClient = useQueryClient();
   const { i18n } = useTranslation();
 
+  const handleModalAllClose = useModalStore(
+    (state) => state.handleModalAllClose,
+  );
+
   const { handleNavigationBlockingModalClose } = useNavigationBlockingModal();
-  const { handleModalAllClose } = useModal();
   const clearCountryCodes = useRecentSearchStore(
     (state) => state.onClearCountryCodes,
   );
@@ -43,7 +31,6 @@ const useResetSystemState = <T>({
     queryClient.clear();
     handleModalAllClose();
     handleNavigationBlockingModalClose();
-    hasSetUser && onSetUser(null);
     hasClearCountryCode && clearCountryCodes();
     hasTranslation && i18n.changeLanguage("lo");
   };

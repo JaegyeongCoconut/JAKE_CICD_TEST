@@ -1,6 +1,6 @@
 import type { Country } from "@repo/types";
 
-export const COUNTRY_CODES = {
+export const COUNTRY_CODE = {
   AD: {
     code: "AD",
     name: "Andorra",

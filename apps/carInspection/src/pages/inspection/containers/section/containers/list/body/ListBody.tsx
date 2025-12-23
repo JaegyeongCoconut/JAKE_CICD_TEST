@@ -7,6 +7,7 @@ import { renderCommaUnit, renderDefault } from "@repo/utils/render";
 
 import { DashboardIcon, TransmissionIcon } from "~assets";
 import { LANGUAGE_LABEL, PATH } from "~constants";
+import { useServiceTranslation } from "~hooks";
 import type { GetInspectionsClientModel } from "~types";
 
 import * as S from "./ListBody.styled";
@@ -19,7 +20,9 @@ interface ListBodyProps {
 
 const ListBody = React.forwardRef<HTMLAnchorElement, ListBodyProps>(
   ({ data }, ref) => {
-    const { t, i18n } = useTranslation();
+    const { i18n } = useTranslation();
+
+    const { defaultLanguage } = useServiceTranslation();
 
     return (
       <Link
@@ -29,11 +32,11 @@ const ListBody = React.forwardRef<HTMLAnchorElement, ListBodyProps>(
       >
         <S.IdentificationNo>
           <p>
-            {t(LANGUAGE_LABEL.FRAME_NUMBER)}.{" "}
+            {defaultLanguage({ text: LANGUAGE_LABEL.FRAME_NUMBER })}.{" "}
             {data?.usedCarStock?.frameNo ?? "-"}
           </p>
           <p>
-            {t(LANGUAGE_LABEL.ENGINE_NUMBER)}.{" "}
+            {defaultLanguage({ text: LANGUAGE_LABEL.ENGINE_NUMBER })}.{" "}
             {data?.usedCarStock?.engineNo ?? "-"}
           </p>
         </S.IdentificationNo>

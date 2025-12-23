@@ -11,15 +11,14 @@ import Checkbox from "../../button/checkbox/Checkbox";
 
 interface CheckTableSkeletonProps {
   className?: string;
-  rowCount?: number;
+  rowCount: number;
   tableHeaderInfos: TableHeaderInfo;
 }
 
 const CheckTableSkeleton = ({
   className,
   tableHeaderInfos,
-
-  rowCount = 10,
+  rowCount,
 }: CheckTableSkeletonProps) => {
   const { defaultLanguage } = useDefaultLanguage();
 
@@ -33,11 +32,11 @@ const CheckTableSkeleton = ({
       <thead>
         <S.HeadRow>
           <S.CheckTh>
-            <Checkbox />
+            <Checkbox disabled />
           </S.CheckTh>
           {tableHeaderInfos.map(({ key, label }, i) => (
             <S.Th key={i} title={key}>
-              {defaultLanguage(label)}
+              {defaultLanguage({ text: label })}
             </S.Th>
           ))}
         </S.HeadRow>

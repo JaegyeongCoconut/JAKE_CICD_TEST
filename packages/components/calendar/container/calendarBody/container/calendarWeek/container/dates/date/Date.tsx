@@ -9,7 +9,6 @@ import useDate from "./hooks/useDate";
 
 interface DateProps {
   className?: string;
-  disabled?: boolean;
   isThisMonth: boolean;
   calendar: FormatCalendar["calendarDate"];
   date: dayjs.Dayjs;
@@ -19,11 +18,10 @@ interface DateProps {
 
 const Date = ({
   className,
-  disabled,
-  type,
   isThisMonth,
-  date,
   calendar,
+  date,
+  type,
   handleMonthChange,
 }: DateProps) => {
   const {
@@ -69,7 +67,6 @@ const Date = ({
       isToday={isToday}
     >
       <S.Button
-        disabled={disabled}
         type="button"
         onClick={handleClick(date)}
         onMouseEnter={handleMouseOver(date)}

@@ -15,12 +15,14 @@ const ResetPasswordForm = ({ className, children }: ResetPasswordFormProps) => {
 
   return (
     <S.ResetPasswordSection className={className}>
-      <S.Title>{defaultLanguage(LANGUAGE_LABEL.RESET_PASSWORD)}</S.Title>
+      <S.Title>
+        {defaultLanguage({ text: LANGUAGE_LABEL.RESET_PASSWORD })}
+      </S.Title>
       <S.DescriptionWrapper>
         <S.Description>
-          {defaultLanguage(
-            LANGUAGE_LABEL.ENTER_THE_EMAIL_OF_THE_ACCOUNT_THAT_YOU_WISH_TO_RESET_THE_PASSWORD_FOR_WE_LL_SEND_YOU_A_VERIFICATION_CODE,
-          )}
+          {defaultLanguage({
+            text: LANGUAGE_LABEL.ENTER_THE_EMAIL_OF_THE_ACCOUNT_THAT_YOU_WISH_TO_RESET_THE_PASSWORD_FOR_WE_LL_SEND_YOU_A_VERIFICATION_CODE,
+          })}
         </S.Description>
       </S.DescriptionWrapper>
       {children}

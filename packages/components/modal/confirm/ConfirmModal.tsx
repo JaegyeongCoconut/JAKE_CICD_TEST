@@ -1,6 +1,5 @@
 import React from "react";
 
-import useModal from "@repo/hooks/modal/useModal";
 import useDefaultLanguage from "@repo/hooks/useDefaultLanguage";
 import type { Languages } from "@repo/types";
 
@@ -12,13 +11,12 @@ interface ConfirmModalProps {
   className?: string;
   isLoading: boolean;
   activeButtonName: Languages;
-  buttonType?: "active" | "alert";
-  closeButtonName?: Languages;
-  desc: Languages;
-  noCloseButton?: boolean;
+  buttonType: "active" | "alert";
+  closeButtonName: Languages;
+  description: Languages;
   title: Languages;
-  handleActiveButtonClick?: () => void;
-  handleClose?: () => void;
+  handleActiveButtonClick: () => void;
+  handleClose: () => void;
 }
 
 const ConfirmModal = React.forwardRef<HTMLDialogElement, ConfirmModalProps>(
@@ -26,36 +24,37 @@ const ConfirmModal = React.forwardRef<HTMLDialogElement, ConfirmModalProps>(
     {
       className,
       isLoading,
-      noCloseButton = false,
-      buttonType = "active",
+      buttonType,
       title,
-      desc,
+      description,
       activeButtonName,
-      closeButtonName = "Cancel",
+      closeButtonName,
       handleActiveButtonClick,
       handleClose,
     },
     ref,
   ) => {
     const { defaultLanguage } = useDefaultLanguage();
-    const { handleModalClose } = useModal();
 
     return (
       <BaseModal css={S.baseModal} className={className} ref={ref}>
         <S.ConfirmHeader>
-          <S.Title>{defaultLanguage(title)}</S.Title>
-          <S.Desc>{defaultLanguage(desc)}</S.Desc>
+          <S.Title>{defaultLanguage({ text: title })}</S.Title>
+          <S.Description>
+            {defaultLanguage({ text: description })}
+          </S.Description>
         </S.ConfirmHeader>
         <S.ConfirmFooter>
-          {!noCloseButton && (
-            <GhostButton
-              variant="alert"
-              label={closeButtonName}
-              handleButtonClick={handleClose ?? handleModalClose}
-            />
-          )}
+          <GhostButton
+            variant="alert"
+            disabled={false}
+            isLoading={false}
+            label={closeButtonName}
+            handleButtonClick={handleClose}
+          />
           <GhostButton
             variant={buttonType === "active" ? "alert_blue" : "alert_red"}
+            disabled={false}
             isLoading={isLoading}
             label={activeButtonName}
             handleButtonClick={handleActiveButtonClick}

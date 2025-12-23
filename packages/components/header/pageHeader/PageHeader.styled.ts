@@ -2,12 +2,17 @@ import type { Theme } from "@emotion/react";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-export const PageHeader = styled.div<{ marginBottom?: number }>`
-  ${({ marginBottom }) => css`
+interface PageHeaderProps {
+  hasMarginBottom: boolean;
+  marginBottom: number;
+}
+
+export const PageHeader = styled.div<PageHeaderProps>`
+  ${({ hasMarginBottom, marginBottom }) => css`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: ${marginBottom ? `${marginBottom}px` : "12px"};
+    margin-bottom: ${hasMarginBottom ? marginBottom : 0}px;
   `}
 `;
 

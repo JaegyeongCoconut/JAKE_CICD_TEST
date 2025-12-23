@@ -11,10 +11,10 @@ interface Fn {
 }
 
 interface TokenServiceProps {
-  accessToken: string | undefined;
-  refreshToken: string | undefined;
-  onChangeAccessToken: (accessToken: string) => void;
-  onSignOut: () => void;
+  getAccessToken: () => string | undefined;
+  getRefreshToken: () => string | undefined;
+  setAccessToken: (token: string) => void;
+  signOut: () => void;
 }
 
 interface InstanceProps {
@@ -44,7 +44,8 @@ export class TokenService {
     try {
       const { response: errorResponse } = error;
 
-      const { refreshToken } = this.auth;
+      const { getRefreshToken } = this.auth;
+      const refreshToken = getRefreshToken();
       if (!refreshToken) {
         this.expireSession(errorResponse?.data.message);
         return await Promise.reject(error);
@@ -66,7 +67,7 @@ export class TokenService {
             return await Promise.reject(error);
           }
 
-          this.auth.onChangeAccessToken(tokens.accessToken);
+          this.auth.setAccessToken(tokens.accessToken);
 
           this.onAccessTokenFetched(tokens.accessToken);
         } catch (error: any) {
@@ -94,7 +95,7 @@ export class TokenService {
   }
 
   getAccessToken() {
-    return this.auth.accessToken;
+    return this.auth.getAccessToken();
   }
 
   onAccessTokenFetched(accessToken: string) {
@@ -107,7 +108,7 @@ export class TokenService {
   }
 
   expireSession(errorMessage: keyof typeof AUTH_ALERT_MESSAGE) {
-    this.auth.refreshToken && alert(AUTH_ALERT_MESSAGE[errorMessage]);
-    this.auth.onSignOut();
+    this.auth.getRefreshToken() && alert(AUTH_ALERT_MESSAGE[errorMessage]);
+    this.auth.signOut();
   }
 }

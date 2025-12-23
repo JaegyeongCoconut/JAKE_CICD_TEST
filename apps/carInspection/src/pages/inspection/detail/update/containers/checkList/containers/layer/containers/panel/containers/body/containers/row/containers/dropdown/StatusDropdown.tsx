@@ -1,7 +1,5 @@
 import React from "react";
 
-import { useTranslation } from "react-i18next";
-
 import useDropdown from "@repo/hooks/dropdown/useDropdown";
 
 import {
@@ -10,6 +8,7 @@ import {
   STATUS_ICONS,
   STATUS_ICON_COLOR,
 } from "~assets";
+import { useServiceTranslation } from "~hooks";
 import type { ChecklistType } from "~types";
 
 import * as S from "./StatusDropdown.styled";
@@ -21,15 +20,12 @@ interface StatusDropdownProps {
 }
 
 const StatusDropdown = ({ listId, type }: StatusDropdownProps) => {
-  const { t } = useTranslation();
-
+  const { defaultLanguage } = useServiceTranslation();
   const { selectedOption, handleSelect } = useStatusDropdown({ type, listId });
   const { dropdownRef, optionsRef, isOpen, handleOpener, handleOptionClick } =
     useDropdown({
       tagValue: selectedOption.key,
       handleSelect,
-      handleConditionBlur: undefined,
-      handleConditionFocus: undefined,
     });
 
   const SelectedIcon = selectedOption.key
@@ -49,7 +45,9 @@ const StatusDropdown = ({ listId, type }: StatusDropdownProps) => {
               )}
             />
           )}
-          {selectedOption.label ? t(selectedOption.label) : null}
+          {selectedOption.label
+            ? defaultLanguage({ text: selectedOption.label })
+            : null}
         </S.PlaceHolder>
         <DownIcon css={S.chevronDownIcon(isOpen)} />
       </S.OpenDropdownOptionButton>
@@ -64,7 +62,7 @@ const StatusDropdown = ({ listId, type }: StatusDropdownProps) => {
               onClick={handleOptionClick(key)}
             >
               <SelectedIcon css={S.resultIcon(STATUS_ICON_COLOR[key])} />
-              {t(label)}
+              {defaultLanguage({ text: label })}
             </S.OptionButton>
           );
         })}

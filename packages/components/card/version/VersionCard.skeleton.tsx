@@ -17,15 +17,21 @@ const VersionCardSkeleton = () => {
       </S.Header>
       <S.Body>
         <S.Item>
-          <S.Name>{defaultLanguage(LANGUAGE_LABEL.FIRST_VERSION)}</S.Name>
+          <S.Name>
+            {defaultLanguage({ text: LANGUAGE_LABEL.FIRST_VERSION })}
+          </S.Name>
           <Skeleton height={24} width={50} />
         </S.Item>
         <S.Item>
-          <S.Name>{defaultLanguage(LANGUAGE_LABEL.LAST_VERSION)}</S.Name>
+          <S.Name>
+            {defaultLanguage({ text: LANGUAGE_LABEL.LAST_VERSION })}
+          </S.Name>
           <Skeleton height={24} width={50} />
         </S.Item>
         <S.Item>
-          <S.Name>{defaultLanguage(LANGUAGE_LABEL.REVIEW_VERSION)}</S.Name>
+          <S.Name>
+            {defaultLanguage({ text: LANGUAGE_LABEL.REVIEW_VERSION })}
+          </S.Name>
           <Skeleton height={24} width={50} />
         </S.Item>
       </S.Body>

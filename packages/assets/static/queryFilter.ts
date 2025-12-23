@@ -3,18 +3,17 @@
  * 'date' 형태의 queryKey 종류는 하기와 같이 DATE_QUERY_KEYS 배열로 정의
  */
 export const DATE_QUERY_KEYS = [
-  "date",
-  "pickup",
-  "updated",
-  "created",
+  "bookingDate",
   "completed",
-  "purchaseDate",
   "contractDate",
-  "bookingDate",
+  "created",
+  "date",
   "onSaleDate",
-  "soldDate",
+  "pickup",
+  "purchaseDate",
   "salesDate",
-  "bookingDate",
+  "soldDate",
+  "updated",
 ] as const;
 
 export const SUFFIX_DATE_QUERY_KEYS = DATE_QUERY_KEYS.map((item) => ({
