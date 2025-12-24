@@ -86,9 +86,9 @@ jobs:
             aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/"
           fi
 
-          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사
+          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사 (버저닝 폴더와 스냅샷 폴더만 제외)
           aws s3 cp --recursive --region "$S3_REGION" "$S3_BUCKET" "${S3_BUCKET}/${SNAPSHOT_FOLDER}" \
-            --exclude "*-v*" \
+            --exclude "*-v*/*" \
             --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" || {
             printf "::warning:: ⚠️ 스냅샷 생성 중 일부 파일이 없을 수 있습니다. (최초 배포일 수 있음)\n"
           }
@@ -105,7 +105,7 @@ jobs:
           # NOTE: S3 루트의 모든 객체 목록 가져오기 (파일과 폴더)
           aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | while read -r object; do
             if [ -n "$object" ]; then
-              # NOTE: 버저닝 폴더(build*, *-v*), 스냅샷 폴더만 유지, 나머지 모두 삭제
+              # NOTE: 버저닝 폴더(build*, *-v*), 스냅샷 폴더만 유지, 나머지 모두 삭제 (이전 버전 .txt 파일 포함)
               if [[ "$object" == build*/* ]] || [[ "$object" == *-v*/* ]] || [[ "$object" == ${{ env.SNAPSHOT_PREFIX }}-*/* ]]; then
                 printf "::notice:: ⏩ 유지: %s\n" "$object"
               else
@@ -165,15 +165,6 @@ jobs:
           DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
           DEPLOY_USER="${{ github.actor }}"
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
-
-          # NOTE: 기존 버전 정보 파일 삭제 (루트의 모든 .txt 파일 중 버전 정보 파일만)
-          printf "::notice:: 🗑️ 기존 배포 버전 파일 삭제 중...\n"
-          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | grep "\.txt$" | grep "^${{ env.VERSION_FILE_PREFIX }}:" | while read -r file; do
-            if [ -n "$file" ]; then
-              printf "::notice:: 🗑️ 삭제: %s\n" "$file"
-              aws s3 rm "${S3_BUCKET}/${file}" --region "$S3_REGION" || true
-            fi
-          done
 
           # NOTE: 새로운 배포 버전 정보 파일 생성
           VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}: ${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
