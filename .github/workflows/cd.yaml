@@ -105,8 +105,8 @@ jobs:
           # NOTE: S3 루트의 모든 객체 목록 가져오기 (파일과 폴더)
           aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | while read -r object; do
             if [ -n "$object" ]; then
-              # NOTE: 버저닝 폴더(*-v*로 시작)와 스냅샷 폴더만 유지, 나머지 모두 삭제
-              if [[ "$object" == *-v*/* ]] || [[ "$object" == ${{ env.SNAPSHOT_PREFIX }}-*/* ]]; then
+              # NOTE: 버저닝 폴더(build*, *-v*), 스냅샷 폴더만 유지, 나머지 모두 삭제
+              if [[ "$object" == build*/* ]] || [[ "$object" == *-v*/* ]] || [[ "$object" == ${{ env.SNAPSHOT_PREFIX }}-*/* ]]; then
                 printf "::notice:: ⏩ 유지: %s\n" "$object"
               else
                 printf "::notice:: 🗑️ 삭제: %s\n" "$object"
@@ -166,9 +166,9 @@ jobs:
           DEPLOY_USER="${{ github.actor }}"
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
 
-          # NOTE: 기존 버전 정보 파일 삭제
+          # NOTE: 기존 버전 정보 파일 삭제 (루트의 모든 .txt 파일 중 버전 정보 파일만)
           printf "::notice:: 🗑️ 기존 배포 버전 파일 삭제 중...\n"
-          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | awk '{print $4}' | grep "^${{ env.VERSION_FILE_PREFIX }}:" | while read -r file; do
+          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | grep "\.txt$" | grep "^${{ env.VERSION_FILE_PREFIX }}:" | while read -r file; do
             if [ -n "$file" ]; then
               printf "::notice:: 🗑️ 삭제: %s\n" "$file"
               aws s3 rm "${S3_BUCKET}/${file}" --region "$S3_REGION" || true
