@@ -216,9 +216,9 @@ jobs:
         run: |
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          # NOTE: 빌드 폴더 이름 형식: build-{환경}-{서비스명}-{버전}
+          # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
-          BUILD_FOLDER="build-${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+          BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           printf "::notice:: 🔍 S3 버킷에서 기존 %s 폴더 확인 중\n" "$BUILD_FOLDER"
 
@@ -243,9 +243,9 @@ jobs:
           BUILD_DIR="dist"
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          # NOTE: 빌드 폴더 이름 형식: build-{환경}-{서비스명}-{버전}
+          # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
-          BUILD_FOLDER="build-${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+          BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           # NOTE: BUILD_DIR 존재 여부 확인
           if [ ! -d "$BUILD_DIR" ]; then
@@ -265,12 +265,3 @@ jobs:
           }
 
           printf "::notice:: ✅ 빌드 파일 업로드 완료: %s/%s\n" "${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}" "$BUILD_FOLDER"
-
-          # ✅ S3 루트에 index.html 업로드
-          printf "::notice:: ☁️ S3 루트에 index.html 업로드 중...\n"
-          aws s3 cp --region "$S3_REGION" "$BUILD_DIR/index.html" "${S3_BUCKET}/index.html" || {
-            printf "::error:: 🚨 S3 루트에 index.html 업로드 실패\n"
-            exit 1
-          }
-
-          printf "::notice:: ✅ index.html 업로드 완료: %s/index.html\n" "${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
