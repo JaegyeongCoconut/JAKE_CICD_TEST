@@ -172,7 +172,7 @@ jobs:
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
 
           # NOTE: 새로운 배포 버전 정보 파일 생성
-          VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}-${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
+          VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}: ${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
 
           # 파일 내용 생성
           cat > /tmp/version_info.txt << 'EOF_MARKER'
