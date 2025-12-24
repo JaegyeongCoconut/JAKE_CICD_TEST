@@ -21,10 +21,12 @@ on:
 run-name: "🧱 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
 
 env:
-  AWS_IAM_ROLE: ""
   CURRENT_BRANCH: ${{ github.ref_name }}
   AUTHORIZED_BRANCHES: "main" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
-  # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
+  PNPM_VERSION: "9.4.0"
+  NODE_VERSION: "20"
+
+  # NOTE: 서비스별 환경 변수 (Secrets 참조)
   ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
   ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
 
@@ -72,14 +74,13 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: "📦 pnpm 설치"
         with:
-          # NOTE: pnpm 버전은 package.json에 명시된 버전과 일치해야 함
-          version: 9.4.0
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: "🛠️ Node.js 설치 및 의존성 cache 사용"
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
 
       - name: "📦 패키지 설치 (pnpm i)"
@@ -213,11 +214,10 @@ jobs:
           printf "::notice:: ✅ AWS IAM ROLE 세팅 완료\n"
           printf "::notice:: 📍 AWS 내 설정: S3 버킷 / CloudFront ID\n"
 
-      - name: "🗑️ 같은 이름의 폴더 존재 여부 확인 및 삭제"
+      - name: "🗑️ S3 기존 빌드 폴더 확인 및 삭제"
         run: |
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
@@ -239,12 +239,11 @@ jobs:
             printf "::notice:: ✅ 기존 %s 폴더가 존재하지 않습니다. 바로 업로드를 진행합니다.\n" "$BUILD_FOLDER"
           fi
 
-      - name: "☁️ build 결과물 업로드 완료"
+      - name: "☁️ S3 빌드 결과물 업로드"
         run: |
           BUILD_DIR="dist"
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 

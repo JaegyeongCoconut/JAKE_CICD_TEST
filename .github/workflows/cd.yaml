@@ -21,8 +21,9 @@ on:
 run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 CD 실행"
 
 env:
-  AWS_IAM_ROLE: ""
-  BUILD_FOLDER: ""
+  # NOTE: Workflow 공통 설정
+  SNAPSHOT_PREFIX: "__snapshot"
+  VERSION_FILE_PREFIX: "현재 배포된 서비스"
 
 jobs:
   # NOTE: 1) validation.yaml 호출 - AWS Config 검증, 유효성 검증, AWS 인증 및 실존 리소스 검증
@@ -71,11 +72,11 @@ jobs:
           # NOTE: 다음 스텝에서 사용하기 위해 환경변수로 저장
           echo "BUILD_FOLDER=$BUILD_FOLDER" >> $GITHUB_ENV
 
-      - name: "📸 현재 배포 버전 스냅샷 생성 (__snapshot-${{ inputs.VERSION }})"
+      - name: "📸 현재 배포 버전 스냅샷 생성"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          SNAPSHOT_FOLDER="__snapshot-${{ inputs.VERSION }}"
+          SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}"
           printf "::notice:: 📸 현재 루트 파일들을 %s 폴더로 스냅샷 생성 중\n" "$SNAPSHOT_FOLDER"
 
           # NOTE: 기존 스냅샷 폴더가 있다면 삭제
@@ -84,16 +85,16 @@ jobs:
             aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/"
           fi
 
-          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사 (빌드 폴더들과 스냅샷 폴더 제외)
+          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사
           aws s3 cp --recursive --region "$S3_REGION" "$S3_BUCKET" "${S3_BUCKET}/${SNAPSHOT_FOLDER}" \
             --exclude "*-v*" \
-            --exclude "__snapshot-*/*" || {
+            --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" || {
             printf "::warning:: ⚠️ 스냅샷 생성 중 일부 파일이 없을 수 있습니다. (최초 배포일 수 있음)\n"
           }
 
           printf "::notice:: ✅ 스냅샷 생성 완료: %s\n" "$SNAPSHOT_FOLDER"
 
-      - name: "�️ S3 루트 정리 (스냅샷, .txt, 버저닝 폴더 제외하고 모두 삭제)"
+      - name: "S3 루트 정리 (스냅샷, .txt, 버저닝 폴더 제외하고 모두 삭제)"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
@@ -128,7 +129,7 @@ jobs:
             printf "::error:: 🚨 파일 복사 실패. 롤백을 시도합니다.\n"
             
             # NOTE: 롤백: 스냅샷에서 복구
-            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/__snapshot-${{ inputs.VERSION }}" "$S3_BUCKET" || {
+            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}" "$S3_BUCKET" || {
               printf "::error:: 🚨 롤백도 실패했습니다. 수동 복구가 필요합니다.\n"
               exit 1
             }
@@ -139,11 +140,11 @@ jobs:
 
           printf "::notice:: ✅ 파일 복사 완료: %s → S3 루트\n" "$BUILD_FOLDER"
 
-      - name: "✅ 정상 적용 확인 후 스냅샷 삭제"
+      - name: "✅ 배포 완료 후 스냅샷 정리"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          SNAPSHOT_FOLDER="__snapshot-${{ inputs.VERSION }}"
+          SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}"
 
           printf "::notice:: ✅ 배포가 정상적으로 완료되어 스냅샷 삭제 중\n"
 
@@ -164,17 +165,17 @@ jobs:
           DEPLOY_USER="${{ github.actor }}"
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
 
-          # NOTE: 기존 "현재 배포된 서비스: *.txt" 파일들 모두 삭제
+          # NOTE: 기존 버전 정보 파일 삭제
           printf "::notice:: 🗑️ 기존 배포 버전 파일 삭제 중...\n"
-          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | awk '{print $4}' | grep "^현재 배포된 서비스:" | while read -r file; do
+          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | awk '{print $4}' | grep "^${{ env.VERSION_FILE_PREFIX }}:" | while read -r file; do
             if [ -n "$file" ]; then
               printf "::notice:: 🗑️ 삭제: %s\n" "$file"
               aws s3 rm "${S3_BUCKET}/${file}" --region "$S3_REGION" || true
             fi
           done
 
-          # NOTE: 새로운 배포 버전 파일 생성 - 파일 이름만 보고도 버전 확인 가능
-          VERSION_FILE="현재 배포된 서비스: ${{env.BUILD_FOLDER}}.txt"
+          # NOTE: 새로운 배포 버전 정보 파일 생성
+          VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}: ${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
 
           # 파일 내용 생성
           cat > /tmp/version_info.txt << 'EOF_MARKER'
