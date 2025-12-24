@@ -57,7 +57,7 @@ jobs:
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
           # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
           ENV_PREFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
-          BUILD_FOLDER="${ENV_PREFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+          BUILD_FOLDER="__${ENV_PREFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           printf "::notice:: 🔍 S3 버킷에서 %s 폴더 존재 여부 확인 중\n" "$BUILD_FOLDER"
 
