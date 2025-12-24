@@ -86,10 +86,6 @@ export const generateViteConfig = ({
       },
     ],
 
-    // DESC: Base URL 설정. 개발 및 빌드 환경에 따라 기본 경로를 설정.
-    // NOTE: 현재 AWS 에서 배포할 때, /build 경로를 사용하기 때문에, build시, base 를 /build 로 설정함.
-    base: command.includes("dev") ? "/" : "/build",
-
     // DESC: 프로젝트의 루트 디렉토리 설정
     root,
 
