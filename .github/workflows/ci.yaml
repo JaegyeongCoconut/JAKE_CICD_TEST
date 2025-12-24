@@ -23,6 +23,7 @@ run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ in
 env:
   AWS_IAM_ROLE: ""
   CURRENT_BRANCH: ${{ github.ref_name }}
+  AUTHORIZED_BRANCHES: "main" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
   # NOTE: 서비스별 환경 변수 목록. Secrets에 저장된 환경 변수 이름을 작성
   ENV_MOVERANKING_DEV: ${{ secrets.ENV_MOVERANKING_DEV }}
   ENV_CARINSPECTION_DEV: ${{ secrets.ENV_CARINSPECTION_DEV }}
@@ -46,7 +47,7 @@ jobs:
     steps:
       - name: "🔍 실행 브랜치 유효성 검사"
         run: |
-          AUTHORIZED_BRANCHES="${{ needs.validate-ci.outputs.AUTHORIZED_BRANCHES }}"
+          AUTHORIZED_BRANCHES="${{ env.AUTHORIZED_BRANCHES }}"
           CURRENT_BRANCH="${{ env.CURRENT_BRANCH }}"
 
           printf "::notice:: 🔍 현재 브랜치: %s\n" "$CURRENT_BRANCH"

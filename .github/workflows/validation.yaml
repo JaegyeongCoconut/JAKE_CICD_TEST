@@ -21,9 +21,6 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
-      AUTHORIZED_BRANCHES:
-        description: "배포 가능한 브랜치 목록"
-        value: ${{ jobs.aws-config-setup.outputs.AUTHORIZED_BRANCHES }}
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
         value: ${{ jobs.aws-config-setup.outputs.S3_DEPLOY_BUCKET_REGION }}
@@ -47,7 +44,6 @@ jobs:
   aws-config-setup:
     runs-on: ubuntu-latest
     outputs:
-      AUTHORIZED_BRANCHES: ${{ env.AUTHORIZED_BRANCHES }}
       S3_DEPLOY_BUCKET_REGION: ${{ env.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}
     steps:
@@ -78,7 +74,6 @@ jobs:
           printf "::notice:: ✅ Output 설정 완료\n"
           printf "::notice::   - S3_BUCKET_NAME: %s\n" "$S3_BUCKET_NAME"
           printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ env.S3_DEPLOY_BUCKET_REGION }}"
-          printf "::notice::   - AUTHORIZED_BRANCHES: %s\n" "${{ env.AUTHORIZED_BRANCHES }}"
 
   # NOTE: 2) 유효성 검증
   validate-config:
