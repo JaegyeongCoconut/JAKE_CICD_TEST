@@ -1,4 +1,4 @@
-name: ↩️ Rollback KOKKOK WEB service on S3
+name: 🚀 Deploy KOKKOK WEB service to S3 and CloudFront
 
 on:
   workflow_dispatch:
@@ -13,70 +13,178 @@ on:
         required: true
         type: choice
         options: [개발]
+      VERSION:
+        description: "배포할 버전 (예: v1.0.0 or v1.0.0-n)"
+        required: true
+        type: string
 
-run-name: "↩️ ${{ inputs.SERVICE_NAME }} / ${{ inputs.DEPLOY_ENV }} 환경 롤백 실행"
+run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 CD 실행"
 
 env:
   AWS_IAM_ROLE: ""
+  BUILD_FOLDER: ""
 
 jobs:
-  validate-rollback:
-    uses: ./.github/workflows/validation.yaml # ✅ 공용 yaml 호출
+  # NOTE: 1) validation.yaml 호출 - AWS Config 검증, 유효성 검증, AWS 인증 및 실존 리소스 검증
+  validate-cd:
+    uses: ./.github/workflows/validation.yaml
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
       DEPLOY_ENV: ${{ inputs.DEPLOY_ENV }}
+      VERSION: ${{ inputs.VERSION }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  rollback-application:
+  # NOTE: 2) S3 직접 배포
+  deploy-to-aws:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
-    needs: validate-rollback
+    needs: [validate-cd]
     steps:
       - name: "🪪 AWS IAM KEY 설정"
         run: |
+          # NOTE: 각 job은 독립적인 runner에서 실행되므로 AWS 인증 필요
+          printf "::notice:: 🪪 AWS 인증 정보 설정 중\n"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ AWS IAM KEY 설정이 완료되었습니다.\n"
+          printf "::notice:: ✅ AWS IAM KEY 설정 완료\n"
 
-      - name: "🗂️ build 폴더를 build-legacy 폴더로 백업 (build → build-legacy)"
+      - name: "🔍 배포할 빌드 폴더 존재 여부 확인"
         run: |
-          aws s3 mv --recursive --region ${{ needs.validate-rollback.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build-legacy || {
-            printf "::error:: 🚨 기존 build 폴더가 없습니다.\n"
+          S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
+          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+
+          printf "::notice:: 🔍 S3 버킷에서 %s 폴더 존재 여부 확인 중\n" "$BUILD_FOLDER"
+
+          # NOTE: 빌드 폴더 존재 여부 확인
+          if ! aws s3 --region "$S3_REGION" ls "${S3_BUCKET}/${BUILD_FOLDER}/" | grep -q .; then
+            printf "::error:: 🚨 S3 버킷에 %s 폴더가 존재하지 않습니다.\n" "$BUILD_FOLDER"
+            printf "::error:: 🚨 먼저 CI 워크플로우를 실행하여 빌드를 생성해주세요.\n"
             exit 1
+          fi
+
+          printf "::notice:: ✅ S3 버킷에 %s 폴더가 존재합니다.\n" "$BUILD_FOLDER"
+
+          # NOTE: 다음 스텝에서 사용하기 위해 환경변수로 저장
+          echo "BUILD_FOLDER=$BUILD_FOLDER" >> $GITHUB_ENV
+
+      - name: "📸 현재 배포 버전 스냅샷 생성 (__snapshot-${{ inputs.VERSION }})"
+        run: |
+          S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          SNAPSHOT_FOLDER="__snapshot-${{ inputs.VERSION }}"
+          printf "::notice:: 📸 현재 루트 파일들을 %s 폴더로 스냅샷 생성 중\n" "$SNAPSHOT_FOLDER"
+
+          # NOTE: 기존 스냅샷 폴더가 있다면 삭제
+          if aws s3 --region "$S3_REGION" ls "${S3_BUCKET}/${SNAPSHOT_FOLDER}/" 2>/dev/null | grep -q .; then
+            printf "::notice:: 🗑️ 기존 스냅샷 폴더 삭제 중...\n"
+            aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/"
+          fi
+
+          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사 (빌드 폴더들과 스냅샷 폴더 제외)
+          aws s3 cp --recursive --region "$S3_REGION" "$S3_BUCKET" "${S3_BUCKET}/${SNAPSHOT_FOLDER}" \
+            --exclude "build-*/*" \
+            --exclude "${SNAPSHOT_FOLDER}/*" \
+            --exclude "backup-*/*" \
+            --exclude "__DEPLOYED_VERSION_*" || {
+            printf "::warning:: ⚠️ 스냅샷 생성 중 일부 파일이 없을 수 있습니다. (최초 배포일 수 있음)\n"
           }
 
-          printf "::notice:: ✅ 기존 build를 build-legacy로 백업 완료\n"
+          printf "::notice:: ✅ 스냅샷 생성 완료: %s\n" "$SNAPSHOT_FOLDER"
 
-      - name: "☁️ S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)"
+      - name: "🚀 적용하고자 하는 버전의 모든 파일들을 root 경로로 이동"
         run: |
-          # NOTE: S3 루트에 index.html 업로드 (기존 build-before/index.html을 최상위로 복사)
-          aws s3 cp --region ${{ needs.validate-rollback.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build-before/index.html s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/index.html || {
-            printf "::error:: 🚨 S3 루트에 index.html 업로드 실패!\n"
+          S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          BUILD_FOLDER="${{ env.BUILD_FOLDER }}"
 
-            aws s3 mv --recursive --region ${{ needs.validate-rollback.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build-legacy s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build
-            printf "::notice:: 🔄 build-legacy → build 폴더로 롤백 완료\n"
+          printf "::notice:: 🚀 %s 폴더의 파일들을 S3 루트로 복사 중\n" "$BUILD_FOLDER"
 
-            exit 1
-          }
-
-          printf "::notice:: ✅ index.html이 S3 루트에 업로드되었습니다: ${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/index.html\n"
-
-      - name: "↩️ build-before 폴더를 build 폴더로 롤백 (build-before → build) 및 index.html root 경로 업로드"
-        run: |
-          aws s3 mv --recursive --region ${{ needs.validate-rollback.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build-before s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build || {
-            printf "::error:: 🚨 build-before → build 폴더로 롤백 실패!\n"
-
-            aws s3 cp --region ${{ needs.validate-rollback.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build-legacy/index.html s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/index.html || {
-            printf "::notice:: 🔄 S3 루트에 index.html 롤백 완료\n"
-
-            aws s3 mv --recursive --region ${{ needs.validate-rollback.outputs.S3_DEPLOY_BUCKET_REGION }} s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build-legacy s3://${{ needs.validate-rollback.outputs.S3_BUCKET_NAME }}/build
-            printf "::notice:: 🔄 build-legacy → build 폴더로 롤백 완료\n"
+          # NOTE: 빌드 폴더의 모든 파일을 S3 루트로 복사 (덮어쓰기)
+          aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${BUILD_FOLDER}" "$S3_BUCKET" || {
+            printf "::error:: 🚨 파일 복사 실패. 롤백을 시도합니다.\n"
             
-            exit 1
+            # NOTE: 롤백: 스냅샷에서 복구
+            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/__snapshot-${{ inputs.VERSION }}" "$S3_BUCKET" || {
+              printf "::error:: 🚨 롤백도 실패했습니다. 수동 복구가 필요합니다.\n"
+              exit 1
             }
+            
+            printf "::notice:: ✅ 롤백 완료\n"
+            exit 1
           }
 
-          printf "::notice:: ✅ build-before → build 롤백 완료\n"
+          printf "::notice:: ✅ 파일 복사 완료: %s → S3 루트\n" "$BUILD_FOLDER"
+
+      - name: "✅ 정상 적용 확인 후 스냅샷 삭제"
+        run: |
+          S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          SNAPSHOT_FOLDER="__snapshot-version"
+
+          printf "::notice:: ✅ 배포가 정상적으로 완료되어 스냅샷 삭제 중\n"
+
+          # NOTE: 스냅샷 폴더 삭제
+          aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/" || {
+            printf "::warning:: ⚠️ 스냅샷 삭제 실패 (무시하고 진행)\n"
+          }
+
+          printf "::notice:: ✅ 스냅샷 삭제 완료\n"
+
+      - name: "📄 S3 루트에 배포 버전 정보 파일 생성"
+        run: |
+          S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          VERSION="${{ inputs.VERSION }}"
+          SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
+          DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
+          DEPLOY_BRANCH="${{ github.ref_name }}"
+          DEPLOY_USER="${{ github.actor }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
+
+          # NOTE: 기존 배포 버전 파일들 삭제
+          printf "::notice:: 🗑️ 기존 배포 버전 파일 삭제 중...\n"
+          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | grep "현재 적용된 버전" | awk '{print $4}' | while read -r file; do
+            if [ -n "$file" ]; then
+              aws s3 rm "${S3_BUCKET}/${file}" --region "$S3_REGION" || true
+            fi
+          done
+
+          # NOTE: 새로운 배포 버전 파일 생성 - 파일 이름만 보고도 버전 확인 가능
+          VERSION_FILE="현재 적용된 버전: ${VERSION}.txt"
+
+          # 파일 내용 생성
+          cat > /tmp/version_info.txt << 'EOF_MARKER'
+          ========================================
+            배포 정보
+          ========================================
+          EOF_MARKER
+
+          # 변수를 파일에 추가
+          echo "서비스명: ${SERVICE_NAME}" >> /tmp/version_info.txt
+          echo "배포 버전: ${VERSION}" >> /tmp/version_info.txt
+          echo "배포 환경: ${DEPLOY_ENV}" >> /tmp/version_info.txt
+          echo "배포 시각: ${TIMESTAMP}" >> /tmp/version_info.txt
+          echo "배포 브랜치: ${DEPLOY_BRANCH}" >> /tmp/version_info.txt
+          echo "배포 실행자: ${DEPLOY_USER}" >> /tmp/version_info.txt
+          echo "========================================" >> /tmp/version_info.txt
+
+          # S3에 업로드
+          aws s3 cp /tmp/version_info.txt "${S3_BUCKET}/${VERSION_FILE}" --region "$S3_REGION" || {
+            printf "::error:: 🚨 버전 정보 파일 업로드 실패\n"
+            exit 1
+          }
+
+          printf "::notice:: ✅ 배포 버전 정보 파일 생성 완료: %s\n" "$VERSION_FILE"
+
+      - name: "🎉 배포 완료"
+        run: |
+          printf "::notice:: 🎉 배포가 성공적으로 완료되었습니다!\n"
+          printf "::notice::   - 서비스: ${{ inputs.SERVICE_NAME }}\n"
+          printf "::notice::   - 버전: ${{ inputs.VERSION }}\n"
+          printf "::notice::   - 환경: ${{ inputs.DEPLOY_ENV }}\n"
+          printf "::notice::   - S3 버킷: ${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}\n"
+          printf "::notice::   - 배포 시각: $(date -u +"%Y-%m-%d %H:%M:%S UTC")\n"
