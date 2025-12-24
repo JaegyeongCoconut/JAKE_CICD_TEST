@@ -86,10 +86,8 @@ jobs:
 
           # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사 (빌드 폴더들과 스냅샷 폴더 제외)
           aws s3 cp --recursive --region "$S3_REGION" "$S3_BUCKET" "${S3_BUCKET}/${SNAPSHOT_FOLDER}" \
-            --exclude "build-*/*" \
-            --exclude "${SNAPSHOT_FOLDER}/*" \
-            --exclude "backup-*/*" \
-            --exclude "__DEPLOYED_VERSION_*" || {
+            --exclude "*-v*" \
+            --exclude "__snapshot-*/*" || {
             printf "::warning:: ⚠️ 스냅샷 생성 중 일부 파일이 없을 수 있습니다. (최초 배포일 수 있음)\n"
           }
 
@@ -123,7 +121,7 @@ jobs:
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          SNAPSHOT_FOLDER="__snapshot-version"
+          SNAPSHOT_FOLDER="__snapshot-${{ inputs.VERSION }}"
 
           printf "::notice:: ✅ 배포가 정상적으로 완료되어 스냅샷 삭제 중\n"
 
@@ -141,20 +139,19 @@ jobs:
           VERSION="${{ inputs.VERSION }}"
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
           DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
-          DEPLOY_BRANCH="${{ github.ref_name }}"
           DEPLOY_USER="${{ github.actor }}"
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
 
           # NOTE: 기존 배포 버전 파일들 삭제
           printf "::notice:: 🗑️ 기존 배포 버전 파일 삭제 중...\n"
-          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | grep "현재 적용된 버전" | awk '{print $4}' | while read -r file; do
+          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | grep "현재 배포된 서비스" | awk '{print $4}' | while read -r file; do
             if [ -n "$file" ]; then
               aws s3 rm "${S3_BUCKET}/${file}" --region "$S3_REGION" || true
             fi
           done
 
           # NOTE: 새로운 배포 버전 파일 생성 - 파일 이름만 보고도 버전 확인 가능
-          VERSION_FILE="현재 적용된 버전: ${VERSION}.txt"
+          VERSION_FILE="현재 배포된 서비스: ${{env.BUILD_FOLDER}}.txt"
 
           # 파일 내용 생성
           cat > /tmp/version_info.txt << 'EOF_MARKER'
@@ -168,7 +165,6 @@ jobs:
           echo "배포 버전: ${VERSION}" >> /tmp/version_info.txt
           echo "배포 환경: ${DEPLOY_ENV}" >> /tmp/version_info.txt
           echo "배포 시각: ${TIMESTAMP}" >> /tmp/version_info.txt
-          echo "배포 브랜치: ${DEPLOY_BRANCH}" >> /tmp/version_info.txt
           echo "배포 실행자: ${DEPLOY_USER}" >> /tmp/version_info.txt
           echo "========================================" >> /tmp/version_info.txt
 
