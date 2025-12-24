@@ -18,7 +18,7 @@ on:
         required: true
         type: string
 
-run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
+run-name: "🧱 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
 
 env:
   AWS_IAM_ROLE: ""
