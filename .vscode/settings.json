@@ -1,3 +1,27 @@
 {
+  // DESC: 주석에 대한 하이라이트 설정. 특정 키워드에 색상과 배경색을 지정.
+  "todohighlight.keywords": [
+    { "text": "NOTE:", "color": "#FFFFFF", "backgroundColor": "#006644" }, // DESC: 일반적인 주석.
+    { "text": "LINK:", "color": "#FFFFFF", "backgroundColor": "#3389FF" }, // DESC: 링크 관련 주석.
+    { "text": "IMPORTANT:", "color": "#FFFFFF", "backgroundColor": "#FF3333" }, // DESC: 중요한 주석.
+    { "text": "DESC:", "color": "#111827", "backgroundColor": "#E5E7EB" }, // DESC: 설명 관련 주석.
+    // DESC: 테스트 시나리오 구분용
+    { "text": "GIVEN:", "color": "#FFFFFF", "backgroundColor": "#0891B2" }, // DESC: 테스트 전제/준비
+    { "text": "WHEN:", "color": "#111827", "backgroundColor": "#F59E0B" }, // DESC: 실행/행동
+    { "text": "THEN:", "color": "#FFFFFF", "backgroundColor": "#16A34A" } // DESC: 결과/검증
+  ],
+
+  // DESC: CMD+S로 저장 시 자동 포매팅 설정.
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always", // DESC: 저장 시 ESLint 규칙에 따라 자동 수정. // NOTE: Eslint extension 설치 필요.
+    "source.fixAll.stylelint": "always" // DESC: 저장 시 Stylelint 규칙에 따라 자동 수정. // NOTE: Stylelint extension 설치 필요.
+  },
+
+  // DESC: Stylelint가 검증할 파일 유형을 정의.
+  "stylelint.validate": ["css", "scss", "typescript", "typescriptreact"], // DESC: CSS, SCSS, TypeScript, TypeScript React 파일을 검증 대상으로 설정.
+
+  // DESC: 테스트 설정 파일을 찾을 때 포함할 패턴을 지정. NOTE: Vitest extension 설치 필요
+  // vitest 확장 프로그램이 vite.config.ts까지 load하기 때문에, vitest.config.ts 파일만 로드.
+  "vitest.configSearchPatternInclude": "**/*vitest.config*.{ts,js,mjs,cjs,cts,mts}",
   "i18n-ally.localesPaths": ["packages/assets/language"]
 }
