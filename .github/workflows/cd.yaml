@@ -117,34 +117,20 @@ jobs:
 
           printf "::notice:: ✅ S3 루트 정리 완료\n"
 
-      - name: "🚀 새 버전 파일을 S3 루트로 동기화 (완전 대체)"
+      - name: "🚀 새 버전 파일을 S3 루트로 복사"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
           BUILD_FOLDER="${{ env.BUILD_FOLDER }}"
 
-          printf "::notice:: 🚀 %s 폴더를 S3 루트로 동기화 중\n" "$BUILD_FOLDER"
+          printf "::notice:: 🚀 %s 폴더를 S3 루트로 복사 중\n" "$BUILD_FOLDER"
 
-          # NOTE: sync 명령으로 완전히 동기화 (기존 파일 삭제하고 새 파일 복사)
-          # --delete: 소스에 없는 대상의 파일 삭제
-          # --exclude: 버저닝 폴더와 스냅샷 폴더는 제외
-          aws s3 sync \
-            --region "$S3_REGION" \
-            --delete \
-            --exclude "*-v*/*" \
-            --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" \
-            "${S3_BUCKET}/${BUILD_FOLDER}/" \
-            "$S3_BUCKET/" || {
-            printf "::error:: 🚨 파일 동기화 실패. 롤백을 시도합니다.\n"
+          # NOTE: 이전 단계에서 루트를 이미 정리했으므로, 단순히 복사만 하면 됨
+          aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${BUILD_FOLDER}/" "$S3_BUCKET/" || {
+            printf "::error:: 🚨 파일 복사 실패. 롤백을 시도합니다.\n"
             
             # NOTE: 롤백: 스냅샷에서 복구
-            aws s3 sync \
-              --region "$S3_REGION" \
-              --delete \
-              --exclude "*-v*/*" \
-              --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" \
-              "${S3_BUCKET}/${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}/" \
-              "$S3_BUCKET/" || {
+            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}/" "$S3_BUCKET/" || {
               printf "::error:: 🚨 롤백도 실패했습니다. 수동 복구가 필요합니다.\n"
               exit 1
             }
@@ -153,7 +139,7 @@ jobs:
             exit 1
           }
 
-          printf "::notice:: ✅ 파일 동기화 완료: %s → S3 루트\n" "$BUILD_FOLDER"
+          printf "::notice:: ✅ 파일 복사 완료: %s → S3 루트\n" "$BUILD_FOLDER"
 
       - name: "✅ 배포 완료 후 스냅샷 정리"
         run: |
