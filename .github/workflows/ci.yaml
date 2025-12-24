@@ -196,7 +196,7 @@ jobs:
           retention-days: 1
 
   # NOTE: 6) S3 업로드 준비 및 업로드 마무리 단계
-  deploy-application:
+  upload-application:
     runs-on: ubuntu-latest
     needs: [build-application, validate-branch, validate-ci]
     steps:
