@@ -1,4 +1,4 @@
-name: 🚀 Build and Upload KOKKOK WEB service on S3
+name: 🧱 Build and Upload KOKKOK WEB service on S3
 
 on:
   workflow_dispatch:
