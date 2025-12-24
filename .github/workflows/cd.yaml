@@ -77,7 +77,22 @@ jobs:
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}"
+
+          # NOTE: S3 루트에서 현재 배포된 버전 파일 찾기
+          CURRENT_VERSION_FILE=$(aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | awk '{print $4}' | grep "^${{ env.VERSION_FILE_PREFIX }}-" | head -n 1)
+
+          if [ -n "$CURRENT_VERSION_FILE" ]; then
+            # NOTE: 파일명에서 __current_release- 이후 부분 추출하고 .txt 제거
+            VERSION_SUFFIX="${CURRENT_VERSION_FILE#${{ env.VERSION_FILE_PREFIX }}-}"
+            VERSION_SUFFIX="${VERSION_SUFFIX%.txt}"
+            SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}-${VERSION_SUFFIX}"
+            printf "::notice:: 📸 현재 배포된 버전: %s\n" "$VERSION_SUFFIX"
+          else
+            # NOTE: 버전 파일이 없으면 기본 스냅샷 폴더 사용 (최초 배포)
+            SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}"
+            printf "::notice:: 📸 현재 배포된 버전 파일이 없습니다 (최초 배포)\n"
+          fi
+
           printf "::notice:: 📸 현재 루트 파일들을 %s 폴더로 스냅샷 생성 중\n" "$SNAPSHOT_FOLDER"
 
           # NOTE: 기존 스냅샷 폴더가 있다면 삭제
@@ -94,6 +109,9 @@ jobs:
           }
 
           printf "::notice:: ✅ 스냅샷 생성 완료: %s\n" "$SNAPSHOT_FOLDER"
+
+          # NOTE: 다음 스텝에서 사용하기 위해 환경변수로 저장
+          echo "SNAPSHOT_FOLDER=$SNAPSHOT_FOLDER" >> $GITHUB_ENV
 
       - name: "🗑️ S3 루트 완전 정리 (버저닝 폴더와 스냅샷만 유지)"
         run: |
@@ -134,7 +152,8 @@ jobs:
             printf "::error:: 🚨 파일 복사 실패. 롤백을 시도합니다.\n"
             
             # NOTE: 롤백: 스냅샷에서 복구
-            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}/" "$S3_BUCKET/" || {
+            SNAPSHOT_FOLDER="${{ env.SNAPSHOT_FOLDER }}"
+            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/" "$S3_BUCKET/" || {
               printf "::error:: 🚨 롤백도 실패했습니다. 수동 복구가 필요합니다.\n"
               exit 1
             }
@@ -149,7 +168,7 @@ jobs:
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}"
+          SNAPSHOT_FOLDER="${{ env.SNAPSHOT_FOLDER }}"
 
           printf "::notice:: ✅ 배포가 정상적으로 완료되어 스냅샷 삭제 중\n"
 
