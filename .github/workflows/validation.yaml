@@ -43,13 +43,13 @@ env:
   S3_DEPLOY_BUCKET_REGION: "ap-southeast-1" # NOTE: 배포 S3 버킷이 생성된 리전
 
 jobs:
-  # DESC: (A) AWS Config 설정 검증
+  # NOTE: 1) AWS Config 설정 검증
   aws-config-setup:
     runs-on: ubuntu-latest
     outputs:
       AUTHORIZED_BRANCHES: ${{ env.AUTHORIZED_BRANCHES }}
       S3_DEPLOY_BUCKET_REGION: ${{ env.S3_DEPLOY_BUCKET_REGION }}
-      S3_BUCKET_NAME: ${{ steps.set-aws-config.outputs.S3_BUCKET_NAME }}
+      S3_BUCKET_NAME: ${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}
     steps:
       - name: "🔑 [서비스]-[배포 환경] key 설정"
         id: set-service-key
@@ -72,12 +72,7 @@ jobs:
             printf "::error:: 🚨 AWS_CONFIG 내 S3 버킷 정보가 존재하지 않습니다: %s\n" "${{ steps.set-service-key.outputs.SERVICE_KEY }}"
             exit 1
           fi
-
-      - name: "📋 다른 jobs에서 사용할 output 설정"
-        id: set-aws-config
-        run: |
-          S3_BUCKET_NAME="${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}"
-
+          # NOTE: Output 설정
           echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $GITHUB_OUTPUT
 
           printf "::notice:: ✅ Output 설정 완료\n"
@@ -85,7 +80,7 @@ jobs:
           printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ env.S3_DEPLOY_BUCKET_REGION }}"
           printf "::notice::   - AUTHORIZED_BRANCHES: %s\n" "${{ env.AUTHORIZED_BRANCHES }}"
 
-  # DESC: (B) 유효성 검증
+  # NOTE: 2) 유효성 검증
   validate-config:
     runs-on: ubuntu-latest
     needs: aws-config-setup
@@ -143,7 +138,7 @@ jobs:
           printf "::notice::   - SERVICE_NAME: %s\n" "$SERVICE_NAME"
           printf "::notice::   - DEPLOY_ENV: %s\n" "$DEPLOY_ENV"
 
-  # DESC: (C) AWS 인증 및 실존 리소스 검증
+  # NOTE: 3) AWS 인증 및 실존 리소스 검증
   verify-aws:
     runs-on: ubuntu-latest
     permissions:
