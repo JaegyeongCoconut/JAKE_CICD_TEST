@@ -24,6 +24,7 @@ env:
   # NOTE: Workflow 공통 설정
   SNAPSHOT_PREFIX: "__snapshot"
   VERSION_FILE_PREFIX: "현재 배포된 서비스"
+  BUILD_FOLDER: ""
 
 jobs:
   # NOTE: 1) validation.yaml 호출 - AWS Config 검증, 유효성 검증, AWS 인증 및 실존 리소스 검증
@@ -94,42 +95,56 @@ jobs:
 
           printf "::notice:: ✅ 스냅샷 생성 완료: %s\n" "$SNAPSHOT_FOLDER"
 
-      - name: "S3 루트 정리 (스냅샷, .txt, 버저닝 폴더 제외하고 모두 삭제)"
+      - name: "🗑️ S3 루트 완전 정리 (버저닝 폴더와 스냅샷만 유지)"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
 
-          printf "::notice:: 🗑️ S3 루트 파일 정리 시작\n"
+          printf "::notice:: 🗑️ S3 루트 완전 정리 시작\n"
 
-          # NOTE: S3 루트의 모든 파일 목록 가져오기
-          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | awk '{print $4}' | while read -r file; do
-            if [ -n "$file" ]; then
-              # NOTE: 스냅샷 폴더, .txt 파일, 버저닝 폴더(build-*, *-v* 패턴) 제외
-              if [[ "$file" == __snapshot-* ]] || [[ "$file" == *.txt ]] || [[ "$file" == *-v* ]]; then
-                printf "::notice:: ⏩ 유지: %s\n" "$file"
+          # NOTE: S3 루트의 모든 객체 목록 가져오기 (파일과 폴더)
+          aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | while read -r object; do
+            if [ -n "$object" ]; then
+              # NOTE: 버저닝 폴더(*-v*로 시작)와 스냅샷 폴더만 유지, 나머지 모두 삭제
+              if [[ "$object" == *-v*/* ]] || [[ "$object" == ${{ env.SNAPSHOT_PREFIX }}-*/* ]]; then
+                printf "::notice:: ⏩ 유지: %s\n" "$object"
               else
-                printf "::notice:: 🗑️ 삭제: %s\n" "$file"
-                aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${file}" || true
+                printf "::notice:: 🗑️ 삭제: %s\n" "$object"
+                aws s3 rm "${S3_BUCKET}/${object}" --region "$S3_REGION" || true
               fi
             fi
           done
 
           printf "::notice:: ✅ S3 루트 정리 완료\n"
 
-      - name: "🚀 적용하고자 하는 버전의 모든 파일들을 root 경로로 이동"
+      - name: "🚀 새 버전 파일을 S3 루트로 동기화 (완전 대체)"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
           BUILD_FOLDER="${{ env.BUILD_FOLDER }}"
 
-          printf "::notice:: 🚀 %s 폴더의 파일들을 S3 루트로 복사 중\n" "$BUILD_FOLDER"
+          printf "::notice:: 🚀 %s 폴더를 S3 루트로 동기화 중\n" "$BUILD_FOLDER"
 
-          # NOTE: 빌드 폴더의 모든 파일을 S3 루트로 복사 (덮어쓰기)
-          aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${BUILD_FOLDER}" "$S3_BUCKET" || {
-            printf "::error:: 🚨 파일 복사 실패. 롤백을 시도합니다.\n"
+          # NOTE: sync 명령으로 완전히 동기화 (기존 파일 삭제하고 새 파일 복사)
+          # --delete: 소스에 없는 대상의 파일 삭제
+          # --exclude: 버저닝 폴더와 스냅샷 폴더는 제외
+          aws s3 sync \
+            --region "$S3_REGION" \
+            --delete \
+            --exclude "*-v*/*" \
+            --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" \
+            "${S3_BUCKET}/${BUILD_FOLDER}/" \
+            "$S3_BUCKET/" || {
+            printf "::error:: 🚨 파일 동기화 실패. 롤백을 시도합니다.\n"
             
             # NOTE: 롤백: 스냅샷에서 복구
-            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}" "$S3_BUCKET" || {
+            aws s3 sync \
+              --region "$S3_REGION" \
+              --delete \
+              --exclude "*-v*/*" \
+              --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" \
+              "${S3_BUCKET}/${{ env.SNAPSHOT_PREFIX }}-${{ inputs.VERSION }}/" \
+              "$S3_BUCKET/" || {
               printf "::error:: 🚨 롤백도 실패했습니다. 수동 복구가 필요합니다.\n"
               exit 1
             }
@@ -138,7 +153,7 @@ jobs:
             exit 1
           }
 
-          printf "::notice:: ✅ 파일 복사 완료: %s → S3 루트\n" "$BUILD_FOLDER"
+          printf "::notice:: ✅ 파일 동기화 완료: %s → S3 루트\n" "$BUILD_FOLDER"
 
       - name: "✅ 배포 완료 후 스냅샷 정리"
         run: |
