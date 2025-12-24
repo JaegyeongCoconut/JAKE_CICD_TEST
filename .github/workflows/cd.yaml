@@ -56,8 +56,8 @@ jobs:
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
           # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
-          ENV_PREFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
-          BUILD_FOLDER="__${ENV_PREFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          BUILD_FOLDER="__${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           printf "::notice:: 🔍 S3 버킷에서 %s 폴더 존재 여부 확인 중\n" "$BUILD_FOLDER"
 
@@ -164,7 +164,7 @@ jobs:
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          ENV_PREFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           VERSION="${{ inputs.VERSION }}"
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
           DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
@@ -172,7 +172,7 @@ jobs:
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
 
           # NOTE: 새로운 배포 버전 정보 파일 생성
-          VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}-${ENV_PREFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
+          VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}-${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
 
           # 파일 내용 생성
           cat > /tmp/version_info.txt << 'EOF_MARKER'

@@ -219,7 +219,7 @@ jobs:
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
-          BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+          BUILD_FOLDER="__${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           printf "::notice:: 🔍 S3 버킷에서 기존 %s 폴더 확인 중\n" "$BUILD_FOLDER"
 
@@ -245,7 +245,7 @@ jobs:
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
-          BUILD_FOLDER="${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
+          BUILD_FOLDER="__${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           # NOTE: BUILD_DIR 존재 여부 확인
           if [ ! -d "$BUILD_DIR" ]; then
