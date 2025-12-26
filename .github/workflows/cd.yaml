@@ -264,22 +264,20 @@ jobs:
           # NOTE: 새로운 배포 버전 정보 파일 생성
           VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}-${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
 
-          # 파일 내용 생성
-          cat > /tmp/version_info.txt << 'EOF_MARKER'
+          # NOTE: 파일 내용 생성 (헤더와 변수 정보를 한 번에 작성)
+          cat > /tmp/version_info.txt << EOF
           ========================================
             배포 정보
           ========================================
-          EOF_MARKER
+          서비스명: ${SERVICE_NAME}
+          배포 버전: ${VERSION}
+          배포 환경: ${DEPLOY_ENV}
+          배포 시각: ${TIMESTAMP}
+          배포 실행자: ${DEPLOY_USER}
+          ========================================
+          EOF
 
-          # 변수를 파일에 추가
-          echo "서비스명: ${SERVICE_NAME}" >> /tmp/version_info.txt
-          echo "배포 버전: ${VERSION}" >> /tmp/version_info.txt
-          echo "배포 환경: ${DEPLOY_ENV}" >> /tmp/version_info.txt
-          echo "배포 시각: ${TIMESTAMP}" >> /tmp/version_info.txt
-          echo "배포 실행자: ${DEPLOY_USER}" >> /tmp/version_info.txt
-          echo "========================================" >> /tmp/version_info.txt
-
-          # S3에 업로드
+          # NOTE: S3에 업로드
           aws s3 cp /tmp/version_info.txt "${S3_BUCKET}/${VERSION_FILE}" --region "$S3_REGION" || {
             printf "::error:: 🚨 버전 정보 파일 업로드 실패\n"
             exit 1
