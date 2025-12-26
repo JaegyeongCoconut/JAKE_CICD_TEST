@@ -23,10 +23,10 @@ on:
     outputs:
       S3_DEPLOY_BUCKET_REGION:
         description: "배포 S3 버킷이 생성된 리전"
-        value: ${{ jobs.aws-config-setup.outputs.S3_DEPLOY_BUCKET_REGION }}
+        value: ${{ jobs.validate-all.outputs.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME:
         description: "서비스 S3 버킷 이름"
-        value: ${{ jobs.aws-config-setup.outputs.S3_BUCKET_NAME }}
+        value: ${{ jobs.validate-all.outputs.S3_BUCKET_NAME }}
 
 env:
   AUTHORIZED_ENV: "개발" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
@@ -39,13 +39,16 @@ env:
   S3_DEPLOY_BUCKET_REGION: "ap-southeast-1"
 
 jobs:
-  # NOTE: 1) AWS Config 설정 검증
+  # NOTE: 통합 검증 Job - AWS Config, 유효성 검증, AWS 리소스 확인을 하나의 Job으로 실행
   aws-config-setup:
     runs-on: ubuntu-latest
     outputs:
       S3_DEPLOY_BUCKET_REGION: ${{ env.S3_DEPLOY_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}
     steps:
+      # ========================================
+      # 1️⃣ AWS Config 설정 검증
+      # ========================================
       - name: "🔑 [서비스]-[배포 환경] key 설정"
         id: set-service-key
         run: |
@@ -78,11 +81,9 @@ jobs:
           printf "::notice::   - S3_BUCKET_NAME: %s\n" "${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}"
           printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ env.S3_DEPLOY_BUCKET_REGION }}"
 
-  # NOTE: 2) 유효성 검증
-  validate-config:
-    runs-on: ubuntu-latest
-    needs: aws-config-setup
-    steps:
+      # ========================================
+      # 2️⃣ 유효성 검증
+      # ========================================
       - name: "🔢 버전 이름 유효성 검증"
         run: |
           VERSION="${{ inputs.VERSION }}"
@@ -139,13 +140,9 @@ jobs:
           printf "::notice::   - SERVICE_NAME: %s\n" "$SERVICE_NAME"
           printf "::notice::   - DEPLOY_ENV: %s\n" "$DEPLOY_ENV"
 
-  # NOTE: 3) AWS 인증 및 실존 리소스 검증
-  verify-aws:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read # NOTE: 레포지토리의 코드 및 파일을 읽을 수 있는 권한 (checkout 등에서 필요)
-    needs: [aws-config-setup, validate-config]
-    steps:
+      # ========================================
+      # 3️⃣ AWS 인증 및 실존 리소스 검증
+      # ========================================
       - name: "🪪 AWS IAM KEY 설정"
         run: |
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
@@ -172,8 +169,8 @@ jobs:
 
       - name: "🔎 S3 버킷 존재 여부 확인"
         run: |
-          S3_BUCKET_NAME="${{ needs.aws-config-setup.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.aws-config-setup.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_BUCKET_NAME="${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ env.S3_DEPLOY_BUCKET_REGION }}"
 
           printf "::notice:: 🔍 S3 버킷 존재 여부 확인: %s (region: %s)\n" "$S3_BUCKET_NAME" "$S3_REGION"
 
@@ -183,6 +180,10 @@ jobs:
           }
 
           printf "::notice:: ✅ S3 버킷 '%s'에 접근할 수 있습니다.\n" "$S3_BUCKET_NAME"
+
+      # ========================================
+      # ✅ 검증 완료
+      # ========================================
 
       - name: "✅ Validation 통과 - 본 흐름으로 복귀"
         run: |

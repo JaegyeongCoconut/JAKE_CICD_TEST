@@ -42,11 +42,15 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  # NOTE: 2) 브랜치 유효성 검증
-  validate-branch:
+  # NOTE: 2) 통합 빌드 및 업로드 Job - 브랜치 검증, 빌드, S3 업로드를 하나의 Job으로 실행
+  build-and-upload:
     runs-on: ubuntu-latest
     needs: validate-ci
     steps:
+      # ========================================
+      # 1️⃣ 브랜치 유효성 검증
+      # ========================================
+
       - name: "🔍 실행 브랜치 유효성 검사"
         run: |
           AUTHORIZED_BRANCHES="${{ env.AUTHORIZED_BRANCHES }}"
@@ -63,11 +67,9 @@ jobs:
 
           printf "::notice:: ✅ 브랜치 '%s'는 배포에 유효합니다.\n" "$CURRENT_BRANCH"
 
-  # NOTE: 3) 소스/의존성 준비
-  build-application:
-    runs-on: ubuntu-latest
-    needs: validate-branch
-    steps:
+      # ========================================
+      # 2️⃣ 소스/의존성 준비
+      # ========================================
       - name: "📥 Repository 체크아웃"
         uses: actions/checkout@v4
 
@@ -99,7 +101,6 @@ jobs:
           UPPER_SERVICE_NAME=$(echo ${{ inputs.SERVICE_NAME }} | tr '[:lower:]' '[:upper:]')
           UPPER_DEPLOY_ENV=$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "DEV" || echo "PROD")
           ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
-
           printf "::notice:: 🔍 환경 변수 시크릿 확인: %s\n" "$ENV_SECRET_NAME"
 
           # NOTE: Secrets에서 값 가져오기
@@ -164,7 +165,10 @@ jobs:
           printf "::notice:: 📄 .env 파일 내용:\n"
           cat "$APP_DIR/$ENV_FILE_NAME"
 
-      # NOTE: 5) build 실행
+      # ========================================
+      # 3️⃣ 빌드 실행
+      # ========================================
+
       - name: "🔨 [서비스] [환경] build 실행"
         id: build-react-app
         run: |
@@ -189,24 +193,9 @@ jobs:
           echo "BUILD_DIR_PATH=$BUILD_DIR_PATH" >> $GITHUB_OUTPUT
           printf "::notice:: ✅ 빌드 완료: %s\n" "$BUILD_DIR_PATH"
 
-      - name: "⬆️ build 결과물 아티팩트 업로드"
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ inputs.SERVICE_NAME }}
-          path: ${{ steps.build-react-app.outputs.BUILD_DIR_PATH }}
-          if-no-files-found: error
-          retention-days: 1
-
-  # NOTE: 6) S3 업로드 준비 및 업로드 마무리 단계
-  upload-application:
-    runs-on: ubuntu-latest
-    needs: [build-application, validate-branch, validate-ci]
-    steps:
-      - name: "⬇️ build 결과물 다운로드"
-        uses: actions/download-artifact@v4
-        with:
-          name: build-${{ inputs.DEPLOY_ENV == '개발' && 'dev' || 'prod' }}-${{ inputs.SERVICE_NAME }}
-          path: dist
+      # ========================================
+      # 4️⃣ AWS 인증 및 S3 업로드
+      # ========================================
 
       - name: "🪪 AWS IAM KEY 설정"
         run: |
@@ -259,7 +248,7 @@ jobs:
 
       - name: "☁️ S3 빌드 결과물 업로드"
         run: |
-          BUILD_DIR="dist"
+          BUILD_DIR="${{ steps.build-react-app.outputs.BUILD_DIR_PATH }}"
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
           S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
           ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
