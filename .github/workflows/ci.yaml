@@ -197,6 +197,12 @@ jobs:
       # 4️⃣ AWS 인증 및 S3 업로드
       # ========================================
 
+      - name: "🔍 Validation Outputs 확인 (디버깅)"
+        run: |
+          printf "::notice:: 🔍 Validation 결과 확인\n"
+          printf "::notice::   - S3_BUCKET_NAME: %s\n" "${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
+          printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
+
       - name: "🪪 AWS IAM KEY 설정"
         run: |
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"

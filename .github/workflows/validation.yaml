@@ -40,7 +40,7 @@ env:
 
 jobs:
   # NOTE: 통합 검증 Job - AWS Config, 유효성 검증, AWS 리소스 확인을 하나의 Job으로 실행
-  aws-config-setup:
+  validate-all:
     runs-on: ubuntu-latest
     outputs:
       S3_DEPLOY_BUCKET_REGION: ${{ env.S3_DEPLOY_BUCKET_REGION }}
