@@ -1,24 +1,24 @@
-name: 🚀 Deploy KOKKOK WEB service to S3
+name: 🚀 Release KOKKOK WEB service to S3 and CloudFront
 
 on:
   workflow_dispatch:
     inputs:
       SERVICE_NAME: # NOTE: 폴더 이름과 동일하게 설정 필요
-        description: "배포 서비스 이름"
+        description: "릴리즈 서비스 이름"
         required: true
         type: choice
         options: [carInspection, moveRanking]
-      DEPLOY_ENV:
-        description: "배포 환경"
+      RELEASE_ENV:
+        description: "릴리즈 환경"
         required: true
         type: choice
         options: [개발]
       VERSION:
-        description: "배포할 버전 (예: v1.0.0 or v1.0.0-n)"
+        description: "릴리즈할 버전 (예: v1.0.0 or v1.0.0-n)"
         required: true
         type: string
 
-run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{ inputs.VERSION }} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 CD 실행"
+run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{ inputs.VERSION }} 버전 / ${{ inputs.RELEASE_ENV }} 환경 릴리즈 실행"
 
 env:
   # NOTE: Workflow 공통 설정
@@ -33,13 +33,13 @@ jobs:
     uses: ./.github/workflows/validation.yaml
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ inputs.DEPLOY_ENV }}
+      TARGET_ENV: ${{ inputs.RELEASE_ENV }}
       VERSION: ${{ inputs.VERSION }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  # NOTE: 2) S3 직접 배포
+  # NOTE: 2) S3 직접 릴리즈
   deploy-to-aws:
     runs-on: ubuntu-latest
     needs: [validate-cd]
@@ -68,12 +68,12 @@ jobs:
 
           printf "::notice:: ✅ %s AWS IAM KEY 설정 완료\n" "$KEY_LABEL"
 
-      - name: "🔍 배포할 빌드 폴더 존재 여부 확인"
+      - name: "🔍 릴리즈할 빌드 폴더 존재 여부 확인"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
           # NOTE: 빌드 폴더 이름 형식: {환경}-{서비스명}-{버전}
-          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          ENV_SUFFIX="$([[ "${{ inputs.RELEASE_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           BUILD_FOLDER="__${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           printf "::notice:: 🔍 S3 버킷에서 %s 폴더 존재 여부 확인 중\n" "$BUILD_FOLDER"
@@ -90,10 +90,10 @@ jobs:
           # NOTE: 다음 스텝에서 사용하기 위해 환경변수로 저장
           echo "BUILD_FOLDER=$BUILD_FOLDER" >> $GITHUB_ENV
 
-      - name: "📸 현재 배포 버전 스냅샷 생성"
+      - name: "📸 현재 릴리즈 버전 스냅샷 생성"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
 
           # NOTE: S3 루트에서 현재 배포된 버전 파일 찾기
           CURRENT_VERSION_FILE=$(aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" | awk '{print $4}' | grep "^${{ env.VERSION_FILE_PREFIX }}-" | head -n 1)
@@ -103,11 +103,11 @@ jobs:
             VERSION_SUFFIX="${CURRENT_VERSION_FILE#${{ env.VERSION_FILE_PREFIX }}-}"
             VERSION_SUFFIX="${VERSION_SUFFIX%.txt}"
             SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}-${VERSION_SUFFIX}"
-            printf "::notice:: 📸 현재 배포된 버전: %s\n" "$VERSION_SUFFIX"
+            printf "::notice:: 📸 현재 릴리즈된 버전: %s\n" "$VERSION_SUFFIX"
           else
-            # NOTE: 버전 파일이 없으면 기본 스냅샷 폴더 사용 (최초 배포)
+            # NOTE: 버전 파일이 없으면 기본 스냅샷 폴더 사용 (최초 릴리즈)
             SNAPSHOT_FOLDER="${{ env.SNAPSHOT_PREFIX }}"
-            printf "::notice:: 📸 현재 배포된 버전 파일이 없습니다 (최초 배포)\n"
+            printf "::notice:: 📸 현재 릴리즈된 버전 파일이 없습니다 (최초 릴리즈)\n"
           fi
 
           printf "::notice:: 📸 현재 루트 파일들을 %s 폴더로 스냅샷 생성 중\n" "$SNAPSHOT_FOLDER"
@@ -130,10 +130,10 @@ jobs:
           # NOTE: 다음 스텝에서 사용하기 위해 환경변수로 저장
           echo "SNAPSHOT_FOLDER=$SNAPSHOT_FOLDER" >> $GITHUB_ENV
 
-      - name: "🔬 새 버전 파일 무결성 검증 (Atomic 배포 전략)"
+      - name: "🔬 새 버전 파일 무결성 검증 (Atomic 릴리즈 전략)"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
           BUILD_FOLDER="${{ env.BUILD_FOLDER }}"
 
           printf "::notice:: 🔬 S3 루트 정리 전 새 버전 파일 무결성 검증 시작\n"
@@ -186,7 +186,7 @@ jobs:
       - name: "🗑️ S3 루트 완전 정리 (버저닝 폴더와 스냅샷만 유지)"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
 
           printf "::notice:: 🗑️ S3 루트 완전 정리 시작\n"
 
@@ -198,11 +198,11 @@ jobs:
           # NOTE: S3 루트의 모든 객체 목록 가져오기 (파일과 폴더)
           aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | while read -r object; do
             if [ -n "$object" ]; then
-              # NOTE: 보호 대상 폴더 패턴 (새 배포 플로우와 이전 배포 플로우 모두 유지)
-              # NOTE: - __*/* : 새 배포 플로우의 버저닝 폴더 (예: __dev-moveAdmin-v1.0.0/, __snapshot-...)
-              # NOTE: - build/* : 이전 배포 플로우에서 배포된 빌드 폴더
-              # NOTE: - build-before* : 이전 배포 플로우에서 직전 빌드 폴더 (build-before/, build-before-*/ 포함)
-              # NOTE: - build-legacy* : 이전 배포 플로우에서 레거시 빌드 폴더 (build-legacy/, build-legacy-*/ 포함)
+              # NOTE: 보호 대상 폴더 패턴 (새 릴리즈 플로우와 이전 릴리즈 플로우 모두 유지)
+              # NOTE: - __*/* : 새 릴리즈 플로우의 버저닝 폴더 (예: __dev-moveAdmin-v1.0.0/, __snapshot-...)
+              # NOTE: - build/* : 이전 릴리즈 플로우에서 배포된 빌드 폴더
+              # NOTE: - build-before* : 이전 릴리즈 플로우에서 직전 빌드 폴더 (build-before/, build-before-*/ 포함)
+              # NOTE: - build-legacy* : 이전 릴리즈 플로우에서 레거시 빌드 폴더 (build-legacy/, build-legacy-*/ 포함)
               if [[ "$object" == __*/* ]] || [[ "$object" == build/* ]] || [[ "$object" == build-before* ]] || [[ "$object" == build-legacy* ]]; then
                 printf "::notice:: ⏩ 유지: %s\n" "$object"
                 KEPT_FILES=$((KEPT_FILES + 1))
@@ -237,7 +237,7 @@ jobs:
             printf "::warning:: ⚠️ 총 %d개 파일 삭제 실패\n" "$FAILED_DELETIONS"
             printf "::warning:: ⚠️ 권한 문제나 네트워크 오류가 발생했을 수 있습니다\n"
             
-            # NOTE: 실패율이 50% 이상이면 배포 중단
+            # NOTE: 실패율이 50% 이상이면 릴리즈 중단
             if [ "$TOTAL_DELETIONS" -gt 0 ]; then
               FAILURE_RATE=$((FAILED_DELETIONS * 100 / TOTAL_DELETIONS))
               if [ "$FAILURE_RATE" -ge 50 ]; then
@@ -254,7 +254,7 @@ jobs:
       - name: "🚀 새 버전 파일을 S3 루트로 복사"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
           BUILD_FOLDER="${{ env.BUILD_FOLDER }}"
 
           printf "::notice:: 🚀 %s 폴더를 S3 루트로 복사 중\n" "$BUILD_FOLDER"
@@ -290,13 +290,13 @@ jobs:
 
           printf "::notice:: ✅ 파일 복사 완료: %s → S3 루트\n" "$BUILD_FOLDER"
 
-      - name: "✅ 배포 완료 후 스냅샷 정리"
+      - name: "✅ 릴리즈 완료 후 스냅샷 정리"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
           SNAPSHOT_FOLDER="${{ env.SNAPSHOT_FOLDER }}"
 
-          printf "::notice:: ✅ 배포가 정상적으로 완료되어 스냅샷 삭제 중\n"
+          printf "::notice:: ✅ 릴리즈가 정상적으로 완료되어 스냅샷 삭제 중\n"
 
           # NOTE: 스냅샷 폴더 삭제
           aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/" || {
@@ -305,30 +305,30 @@ jobs:
 
           printf "::notice:: ✅ 스냅샷 삭제 완료\n"
 
-      - name: "📄 S3 루트에 배포 버전 정보 파일 생성"
+      - name: "📄 S3 루트에 릴리즈 버전 정보 파일 생성"
         run: |
           S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_TARGET_BUCKET_REGION }}"
+          ENV_SUFFIX="$([[ "${{ inputs.RELEASE_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           VERSION="${{ inputs.VERSION }}"
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
-          DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
+          RELEASE_ENV="${{ inputs.RELEASE_ENV }}"
           DEPLOY_USER="${{ github.actor }}"
           TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S_UTC")
 
-          # NOTE: 새로운 배포 버전 정보 파일 생성
+          # NOTE: 새로운 릴리즈 버전 정보 파일 생성
           VERSION_FILE="${{ env.VERSION_FILE_PREFIX }}-${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}.txt"
 
           # NOTE: 파일 내용 생성 (헤더와 변수 정보를 한 번에 작성)
           cat > /tmp/version_info.txt << EOF
           ========================================
-            배포 정보
+            릴리즈 정보
           ========================================
           서비스명: ${SERVICE_NAME}
-          배포 버전: ${VERSION}
-          배포 환경: ${DEPLOY_ENV}
-          배포 시각: ${TIMESTAMP}
-          배포 실행자: ${DEPLOY_USER}
+          릴리즈 버전: ${VERSION}
+          릴리즈 환경: ${RELEASE_ENV}
+          릴리즈 시각: ${TIMESTAMP}
+          릴리즈 실행자: ${DEPLOY_USER}
           ========================================
           EOF
 
@@ -338,13 +338,13 @@ jobs:
             exit 1
           }
 
-          printf "::notice:: ✅ 배포 버전 정보 파일 생성 완료: %s\n" "$VERSION_FILE"
+          printf "::notice:: ✅ 릴리즈 버전 정보 파일 생성 완료: %s\n" "$VERSION_FILE"
 
-      - name: "🎉 배포 완료"
+      - name: "🎉 릴리즈 완료"
         run: |
-          printf "::notice:: 🎉 배포가 성공적으로 완료되었습니다!\n"
+          printf "::notice:: 🎉 릴리즈가 성공적으로 완료되었습니다!\n"
           printf "::notice::   - 서비스: %s\n" "${{ inputs.SERVICE_NAME }}"
           printf "::notice::   - 버전: %s\n" "${{ inputs.VERSION }}"
-          printf "::notice::   - 환경: %s\n" "${{ inputs.DEPLOY_ENV }}"
+          printf "::notice::   - 환경: %s\n" "${{ inputs.RELEASE_ENV }}"
           printf "::notice::   - S3 버킷: %s\n" "${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
-          printf "::notice::   - 배포 시각: %s\n" "$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          printf "::notice::   - 릴리즈 시각: %s\n" "$(date -u +"%Y-%m-%d %H:%M:%S UTC")"

@@ -4,25 +4,25 @@ on:
   workflow_dispatch:
     inputs:
       SERVICE_NAME: # NOTE: 폴더 이름과 동일하게 설정 필요
-        description: "배포 서비스 이름"
+        description: "빌드 서비스 이름"
         required: true
         type: choice
         options: [carInspection, moveRanking]
-      DEPLOY_ENV:
-        description: "배포 환경"
+      BUILD_ENV:
+        description: "빌드 환경"
         required: true
         type: choice
         options: [개발]
       VERSION:
-        description: "배포 버전 (예: v1.0.0 or v1.0.0-n)"
+        description: "빌드 버전 (예: v1.0.0 or v1.0.0-n)"
         required: true
         type: string
 
-run-name: "🧱 ${{ inputs.SERVICE_NAME }} / ${{ inputs.VERSION }} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
+run-name: "🧱 ${{ inputs.SERVICE_NAME }} / ${{ inputs.VERSION }} 버전 / ${{ inputs.BUILD_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
 
 env:
   CURRENT_BRANCH: ${{ github.ref_name }}
-  AUTHORIZED_BRANCHES: "main" # NOTE: 배포 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
+  AUTHORIZED_BRANCHES: "main" # NOTE: 빌드 가능한 브랜치 목록. ','로 구분. 띄어쓰기 x
   PNPM_VERSION: "9.4.0"
   NODE_VERSION: "20"
 
@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/validation.yaml
     with:
       SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
-      DEPLOY_ENV: ${{ inputs.DEPLOY_ENV }}
+      TARGET_ENV: ${{ inputs.BUILD_ENV }}
       VERSION: ${{ inputs.VERSION }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -61,11 +61,11 @@ jobs:
 
           if [[ ! ",$AUTHORIZED_BRANCHES," =~ ",$CURRENT_BRANCH," ]]; then
             printf "::error:: 🚨 지원되지 않는 브랜치입니다: %s\n" "$CURRENT_BRANCH"
-            printf "::error:: 🚨 배포 가능한 브랜치는 다음과 같습니다: %s\n" "$AUTHORIZED_BRANCHES"
+            printf "::error:: 🚨 빌드 가능한 브랜치는 다음과 같습니다: %s\n" "$AUTHORIZED_BRANCHES"
             exit 1
           fi
 
-          printf "::notice:: ✅ 브랜치 '%s'는 배포에 유효합니다.\n" "$CURRENT_BRANCH"
+          printf "::notice:: ✅ 브랜치 '%s'는 빌드에 유효합니다.\n" "$CURRENT_BRANCH"
 
       # ========================================
       # 2️⃣ 소스/의존성 준비
@@ -99,7 +99,7 @@ jobs:
         run: |
           # NOTE: SERVICE_NAME과 DEPLOY_ENV를 대문자로 변환해 Secrets 키 생성
           UPPER_SERVICE_NAME=$(echo ${{ inputs.SERVICE_NAME }} | tr '[:lower:]' '[:upper:]')
-          UPPER_DEPLOY_ENV=$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "DEV" || echo "PROD")
+          UPPER_DEPLOY_ENV=$([[ "${{ inputs.BUILD_ENV }}" == "개발" ]] && echo "DEV" || echo "PROD")
           ENV_SECRET_NAME="ENV_${UPPER_SERVICE_NAME}_${UPPER_DEPLOY_ENV}"
           printf "::notice:: 🔍 환경 변수 시크릿 확인: %s\n" "$ENV_SECRET_NAME"
 
@@ -125,7 +125,7 @@ jobs:
           ENV_CONTENT="${{ steps.check-env-secret.outputs.ENV_CONTENT }}"
 
           # NOTE: .env.[환경] 파일이름 설정 (KOKKOK 다운로드 기준)
-          ENV_FILE_NAME=".env.$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "development" || echo "production")"
+          ENV_FILE_NAME=".env.$([[ "${{ inputs.BUILD_ENV }}" == "개발" ]] && echo "development" || echo "production")"
 
           # NOTE: 환경 변수 파일 생성
           echo "$ENV_CONTENT" > "$ENV_FILE_NAME"
@@ -143,7 +143,7 @@ jobs:
             exit 1
           fi
 
-      - name: "📂 .env.[환경] 파일을 배포 서비스 코드로 파일 위치 이동"
+      - name: "📂 .env.[환경] 파일을 빌드 서비스 코드로 파일 위치 이동"
         run: |
           APP_DIR="apps/${{ inputs.SERVICE_NAME }}"
 
@@ -173,7 +173,7 @@ jobs:
         id: build-react-app
         run: |
           APP_DIR="apps/${{ inputs.SERVICE_NAME }}"
-          BUILD_COMMAND="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "build" || echo "build-prod"):${{ inputs.SERVICE_NAME }}"
+          BUILD_COMMAND="$([[ "${{ inputs.BUILD_ENV }}" == "개발" ]] && echo "build" || echo "build-prod"):${{ inputs.SERVICE_NAME }}"
 
           printf "::notice:: 🔨 빌드 시작\n"
           printf "::notice::   - 빌드 경로: %s\n" "$APP_DIR"
@@ -182,7 +182,7 @@ jobs:
           set -a
           pnpm run $BUILD_COMMAND
 
-          BUILD_DIR_PATH="$APP_DIR/build-$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")-${{ inputs.SERVICE_NAME }}"
+          BUILD_DIR_PATH="$APP_DIR/build-$([[ "${{ inputs.BUILD_ENV }}" == "개발" ]] && echo "dev" || echo "prod")-${{ inputs.SERVICE_NAME }}"
 
           # NOTE: BUILD_DIR_PATH 존재 여부 확인
           if [ ! -d "$BUILD_DIR_PATH" ]; then
@@ -199,9 +199,9 @@ jobs:
 
       - name: "🔍 Validation Outputs 확인 (디버깅)"
         run: |
-          printf "::notice:: 🔍 Validation 결과 확인\n"
+          printf "::notice:: 🔍 Validation Job Outputs 확인\n"
           printf "::notice::   - S3_BUCKET_NAME: %s\n" "${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
-          printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          printf "::notice::   - S3_TARGET_BUCKET_REGION: %s\n" "${{ needs.validate-ci.outputs.S3_TARGET_BUCKET_REGION }}"
 
       - name: "🪪 AWS IAM KEY 설정"
         run: |
@@ -230,8 +230,8 @@ jobs:
       - name: "🗑️ S3 기존 빌드 폴더 확인 및 삭제"
         run: |
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          S3_REGION="${{ needs.validate-ci.outputs.S3_TARGET_BUCKET_REGION }}"
+          ENV_SUFFIX="$([[ "${{ inputs.BUILD_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           BUILD_FOLDER="__${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           printf "::notice:: 🔍 S3 버킷에서 기존 %s 폴더 확인 중\n" "$BUILD_FOLDER"
@@ -256,8 +256,8 @@ jobs:
         run: |
           BUILD_DIR="${{ steps.build-react-app.outputs.BUILD_DIR_PATH }}"
           S3_BUCKET="s3://${{ needs.validate-ci.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ needs.validate-ci.outputs.S3_DEPLOY_BUCKET_REGION }}"
-          ENV_SUFFIX="$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          S3_REGION="${{ needs.validate-ci.outputs.S3_TARGET_BUCKET_REGION }}"
+          ENV_SUFFIX="$([[ "${{ inputs.BUILD_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
           BUILD_FOLDER="__${ENV_SUFFIX}-${{ inputs.SERVICE_NAME }}-${{ inputs.VERSION }}"
 
           # NOTE: BUILD_DIR 존재 여부 확인

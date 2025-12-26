@@ -1,18 +1,24 @@
+# LINK: 빌드 ~ 릴리즈 Flow chart https://boardmix.com/app/editor/yrBD1jJ3wyfQEpDyjjGuqw
+# LINK: Notion env https://www.notion.so/coconutsilo/1f74486ed21f47a3a4f087d0ed94c263?v=aad4eec6ae7c43918581c212864c424d
+# LINK: S3 버킷 https://ap-southeast-1.console.aws.amazon.com/s3/home
+# LINK: CloudFront https://us-east-1.console.aws.amazon.com/cloudfront/v4/home
+# LINK: Github Secrets Actions https://github.com/coconutsilo/kk-monorepo-web/settings/secrets/actions
+
 name: ✅ Validation & Setup
 
 on:
   workflow_call:
     inputs:
       SERVICE_NAME:
-        description: "배포 서비스 이름"
+        description: "서비스 이름"
         required: true
         type: string
-      DEPLOY_ENV:
-        description: "배포 환경"
+      TARGET_ENV:
+        description: "대상 환경"
         required: true
         type: string
       VERSION:
-        description: "배포 버전 (v1.0.0 또는 v1.0.0-n)"
+        description: "대상 버전 (v1.0.0 또는 v1.0.0-n)"
         required: true
         type: string
     secrets:
@@ -21,38 +27,38 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
-      S3_DEPLOY_BUCKET_REGION:
-        description: "배포 S3 버킷이 생성된 리전"
-        value: ${{ jobs.validate-all.outputs.S3_DEPLOY_BUCKET_REGION }}
+      S3_TARGET_BUCKET_REGION:
+        description: "S3 버킷이 생성된 리전"
+        value: ${{ jobs.validate-all.outputs.S3_TARGET_BUCKET_REGION }}
       S3_BUCKET_NAME:
         description: "서비스 S3 버킷 이름"
         value: ${{ jobs.validate-all.outputs.S3_BUCKET_NAME }}
 
 env:
-  AUTHORIZED_ENV: "개발" # NOTE: 배포 가능한 환경 목록. ','로 구분. 띄어쓰기 x
-  AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # NOTE: 개발 환경 배포 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
+  AUTHORIZED_ENV: "개발" # NOTE: 워크플로우 실행 가능한 환경 목록. ','로 구분. 띄어쓰기 x
+  AUTHORIZED_USERS_IN_DEV: "JaegyeongCoconut" # NOTE: 개발 환경 워크플로우 실행 권한이 있는 사용자 목록. ','로 구분. 띄어쓰기 x
   # NOTE: AWS 리소스 설정. JSON 형태로 작성. ','로 구분. 띄어쓰기 x
   AWS_CONFIG: '{
     "moveRanking-dev": {"s3BucketName": "jakecicd"},
     "carInspection-dev": {"s3BucketName": "jakecicd"}
     }'
-  S3_DEPLOY_BUCKET_REGION: "ap-southeast-1"
+  S3_TARGET_BUCKET_REGION: "ap-southeast-1" # NOTE: S3 버킷이 생성된 리전
 
 jobs:
   # NOTE: 통합 검증 Job - AWS Config, 유효성 검증, AWS 리소스 확인을 하나의 Job으로 실행
   validate-all:
     runs-on: ubuntu-latest
     outputs:
-      S3_DEPLOY_BUCKET_REGION: ${{ env.S3_DEPLOY_BUCKET_REGION }}
+      S3_TARGET_BUCKET_REGION: ${{ env.S3_TARGET_BUCKET_REGION }}
       S3_BUCKET_NAME: ${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}
     steps:
       # ========================================
       # 1️⃣ AWS Config 설정 검증
       # ========================================
-      - name: "🔑 [서비스]-[배포 환경] key 설정"
+      - name: "🔑 [서비스]-[대상 환경] key 설정"
         id: set-service-key
         run: |
-          SERVICE_KEY="${{ inputs.SERVICE_NAME }}-$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
+          SERVICE_KEY="${{ inputs.SERVICE_NAME }}-$([[ "${{ inputs.TARGET_ENV }}" == "개발" ]] && echo "dev" || echo "prod")"
 
           printf "::notice:: 🔑 서비스 키: %s\n" "$SERVICE_KEY"
           echo "SERVICE_KEY=$SERVICE_KEY" >> $GITHUB_OUTPUT
@@ -79,7 +85,7 @@ jobs:
         run: |
           printf "::notice:: ✅ Output 설정 완료\n"
           printf "::notice::   - S3_BUCKET_NAME: %s\n" "${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}"
-          printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ env.S3_DEPLOY_BUCKET_REGION }}"
+          printf "::notice::   - S3_TARGET_BUCKET_REGION: %s\n" "${{ env.S3_TARGET_BUCKET_REGION }}"
 
       # ========================================
       # 2️⃣ 유효성 검증
@@ -96,49 +102,49 @@ jobs:
           fi
           printf "::notice:: ✅ 버전 '%s'는 유효합니다.\n" "$VERSION"
 
-      - name: "🛡️ 배포 환경 유효성 검사"
+      - name: "🛡️ 대상 환경 유효성 검사"
         run: |
-          DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
+          TARGET_ENV="${{ inputs.TARGET_ENV }}"
 
-          printf "::notice:: 🔍 배포 환경: %s\n" "$DEPLOY_ENV"
+          printf "::notice:: 🔍 대상 환경: %s\n" "$TARGET_ENV"
           printf "::notice:: 🔍 허용된 환경: %s\n" "$AUTHORIZED_ENV"
 
-          if [[ ! ",$AUTHORIZED_ENV," =~ ",${{ inputs.DEPLOY_ENV }}," ]]; then
-            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: %s\n" "$DEPLOY_ENV"
+          if [[ ! ",$AUTHORIZED_ENV," =~ ",${{ inputs.TARGET_ENV }}," ]]; then
+            printf "::error:: 🚨 지원되지 않는 대상 환경입니다: %s\n" "$TARGET_ENV"
             exit 1
           fi
 
-          printf "::notice:: ✅ 배포 환경 '%s'는 유효합니다.\n" "$DEPLOY_ENV"
+          printf "::notice:: ✅ 대상 환경 '%s'는 유효합니다.\n" "$TARGET_ENV"
 
       - name: "🔑 워크플로우 실행 계정 권한 검증"
         run: |
-          AUTHORIZED_USERS=$([[ "${{ inputs.DEPLOY_ENV }}" == "개발" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
+          AUTHORIZED_USERS=$([[ "${{ inputs.TARGET_ENV }}" == "개발" ]] && echo "$AUTHORIZED_USERS_IN_DEV" || echo "$AUTHORIZED_USERS_IN_PROD")
           CURRENT_USER="${{ github.actor }}"
 
           printf "::notice:: 🔑 현재 실행 사용자: %s\n" "$CURRENT_USER"
           printf "::notice:: 🔑 권한이 있는 사용자: %s\n" "$AUTHORIZED_USERS"
 
           if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
-            printf "::error:: 🚨 사용자 '%s'는 %s 환경에 배포할 권한이 없습니다.\n" "$CURRENT_USER" "${{ inputs.DEPLOY_ENV }}"
+            printf "::error:: 🚨 사용자 '%s'는 %s 환경 실행 권한이 없습니다.\n" "$CURRENT_USER" "${{ inputs.TARGET_ENV }}"
             exit 1
           fi
 
-          printf "::notice:: ✅ 사용자 '%s'는 %s 환경에 배포할 권한이 있습니다.\n" "$CURRENT_USER" "${{ inputs.DEPLOY_ENV }}"
+          printf "::notice:: ✅ 사용자 '%s'는 %s 환경 실행 권한이 있습니다.\n" "$CURRENT_USER" "${{ inputs.TARGET_ENV }}"
 
-      - name: "🔍 배포 명령이 유효한가?"
+      - name: "🔍 실행 명령이 유효한가?"
         run: |
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
-          DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
+          TARGET_ENV="${{ inputs.TARGET_ENV }}"
 
           # NOTE: 기본 유효성 검사 - 필요시 추가 로직 구현
-          if [[ -z "$SERVICE_NAME" ]] || [[ -z "$DEPLOY_ENV" ]]; then
-            printf "::error:: 🚨 배포 명령에 필수 값이 누락되었습니다.\n"
+          if [[ -z "$SERVICE_NAME" ]] || [[ -z "$TARGET_ENV" ]]; then
+            printf "::error:: 🚨 실행 명령에 필수 값이 누락되었습니다.\n"
             exit 1
           fi
 
-          printf "::notice:: ✅ 배포 명령이 유효합니다.\n"
+          printf "::notice:: ✅ 실행 명령이 유효합니다.\n"
           printf "::notice::   - SERVICE_NAME: %s\n" "$SERVICE_NAME"
-          printf "::notice::   - DEPLOY_ENV: %s\n" "$DEPLOY_ENV"
+          printf "::notice::   - TARGET_ENV: %s\n" "$TARGET_ENV"
 
       # ========================================
       # 3️⃣ AWS 인증 및 실존 리소스 검증
@@ -170,7 +176,7 @@ jobs:
       - name: "🔎 S3 버킷 존재 여부 확인"
         run: |
           S3_BUCKET_NAME="${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}"
-          S3_REGION="${{ env.S3_DEPLOY_BUCKET_REGION }}"
+          S3_REGION="${{ env.S3_TARGET_BUCKET_REGION }}"
 
           printf "::notice:: 🔍 S3 버킷 존재 여부 확인: %s (region: %s)\n" "$S3_BUCKET_NAME" "$S3_REGION"
 
