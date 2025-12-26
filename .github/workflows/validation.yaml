@@ -70,8 +70,12 @@ jobs:
           # NOTE: Output 설정
           echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $GITHUB_OUTPUT
 
+          printf "::notice:: ✅ S3 버킷 설정 완료: %s\n" "$S3_BUCKET_NAME"
+
+      - name: "✅ Output 설정 완료"
+        run: |
           printf "::notice:: ✅ Output 설정 완료\n"
-          printf "::notice::   - S3_BUCKET_NAME: %s\n" "$S3_BUCKET_NAME"
+          printf "::notice::   - S3_BUCKET_NAME: %s\n" "${{ steps.set-s3-bucket.outputs.S3_BUCKET_NAME }}"
           printf "::notice::   - S3_DEPLOY_BUCKET_REGION: %s\n" "${{ env.S3_DEPLOY_BUCKET_REGION }}"
 
   # NOTE: 2) 유효성 검증
@@ -86,7 +90,21 @@ jobs:
             printf "::error:: 🚨 잘못된 버전 형식입니다: $VERSION. 예: v1.0.0 또는 v1.0.0-1\n"
             exit 1
           fi
-          printf "::notice:: ✅ 버전 '$VERSION'는 유효합니다.\n"
+          printf "::notice:: ✅ 버전 '%s'는 유효합니다.\n" "$VERSION"
+
+      - name: "🛡️ 배포 환경 유효성 검사"
+        run: |
+          DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
+
+          printf "::notice:: 🔍 배포 환경: %s\n" "$DEPLOY_ENV"
+          printf "::notice:: 🔍 허용된 환경: %s\n" "$AUTHORIZED_ENV"
+
+          if [[ ! ",$AUTHORIZED_ENV," =~ ",${{ inputs.DEPLOY_ENV }}," ]]; then
+            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: %s\n" "$DEPLOY_ENV"
+            exit 1
+          fi
+
+          printf "::notice:: ✅ 배포 환경 '%s'는 유효합니다.\n" "$DEPLOY_ENV"
 
       - name: "🔑 워크플로우 실행 계정 권한 검증"
         run: |
@@ -96,26 +114,12 @@ jobs:
           printf "::notice:: 🔑 현재 실행 사용자: %s\n" "$CURRENT_USER"
           printf "::notice:: 🔑 권한이 있는 사용자: %s\n" "$AUTHORIZED_USERS"
 
-          if [[ ! ",$AUTHORIZED_USERS," =~ ",$CURRENT_USER," ]]; then
+          if [[ ! ",$AUTHORIZED_USERS," =~ ",${{ github.actor }}," ]]; then
             printf "::error:: 🚨 사용자 '%s'는 %s 환경에 배포할 권한이 없습니다.\n" "$CURRENT_USER" "${{ inputs.DEPLOY_ENV }}"
             exit 1
           fi
 
           printf "::notice:: ✅ 사용자 '%s'는 %s 환경에 배포할 권한이 있습니다.\n" "$CURRENT_USER" "${{ inputs.DEPLOY_ENV }}"
-
-      - name: "🔍 배포 환경 유효성 검사"
-        run: |
-          DEPLOY_ENV="${{ inputs.DEPLOY_ENV }}"
-
-          printf "::notice:: 🔍 배포 환경: %s\n" "$DEPLOY_ENV"
-          printf "::notice:: 🔍 허용된 환경: %s\n" "$AUTHORIZED_ENV"
-
-          if [[ ! ",$AUTHORIZED_ENV," =~ ",$DEPLOY_ENV," ]]; then
-            printf "::error:: 🚨 지원되지 않는 배포 환경입니다: %s\n" "$DEPLOY_ENV"
-            exit 1
-          fi
-
-          printf "::notice:: ✅ 배포 환경 '%s'는 유효합니다.\n" "$DEPLOY_ENV"
 
       - name: "🔍 배포 명령이 유효한가?"
         run: |

@@ -18,7 +18,7 @@ on:
         required: true
         type: string
 
-run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 CD 실행"
+run-name: "🚀 ${{ inputs.SERVICE_NAME }} / ${{ inputs.VERSION }} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 CD 실행"
 
 env:
   # NOTE: Workflow 공통 설정
@@ -101,10 +101,10 @@ jobs:
             aws s3 rm --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/"
           fi
 
-          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사 (버저닝 폴더와 스냅샷 폴더만 제외)
+          # NOTE: S3 루트의 파일들을 스냅샷 폴더로 복사 (버저닝 폴더와 현재 스냅샷 폴더만 제외)
           aws s3 cp --recursive --region "$S3_REGION" "$S3_BUCKET" "${S3_BUCKET}/${SNAPSHOT_FOLDER}" \
-            --exclude "*-v*/*" \
-            --exclude "${{ env.SNAPSHOT_PREFIX }}-*/*" || {
+            --exclude "__*/*" \
+            --exclude "${SNAPSHOT_FOLDER}/*" || {
             printf "::warning:: ⚠️ 스냅샷 생성 중 일부 파일이 없을 수 있습니다. (최초 배포일 수 있음)\n"
           }
 
@@ -112,6 +112,59 @@ jobs:
 
           # NOTE: 다음 스텝에서 사용하기 위해 환경변수로 저장
           echo "SNAPSHOT_FOLDER=$SNAPSHOT_FOLDER" >> $GITHUB_ENV
+
+      - name: "🔬 새 버전 파일 무결성 검증 (Atomic 배포 전략)"
+        run: |
+          S3_BUCKET="s3://${{ needs.validate-cd.outputs.S3_BUCKET_NAME }}"
+          S3_REGION="${{ needs.validate-cd.outputs.S3_DEPLOY_BUCKET_REGION }}"
+          BUILD_FOLDER="${{ env.BUILD_FOLDER }}"
+
+          printf "::notice:: 🔬 S3 루트 정리 전 새 버전 파일 무결성 검증 시작\n"
+          printf "::notice:: 📁 검증 대상: %s\n" "$BUILD_FOLDER"
+
+          # NOTE: 1) 필수 진입점 파일(index.html) 존재 여부 확인
+          if ! aws s3 ls "${S3_BUCKET}/${BUILD_FOLDER}/index.html" --region "$S3_REGION" | grep -q "index.html"; then
+            printf "::error:: 🚨 치명적 오류: index.html 파일이 존재하지 않습니다\n"
+            printf "::error:: 🚨 경로: %s/index.html\n" "$BUILD_FOLDER"
+            printf "::error:: 🚨 S3 루트 정리를 중단합니다 (안전한 상태 유지)\n"
+            exit 1
+          fi
+          printf "::notice:: ✅ index.html 존재 확인\n"
+
+          # NOTE: 2) assets 폴더 존재 여부 확인 (빌드 산출물 필수 구조)
+          if ! aws s3 ls "${S3_BUCKET}/${BUILD_FOLDER}/assets/" --region "$S3_REGION" | grep -q .; then
+            printf "::warning:: ⚠️ assets 폴더가 비어있거나 존재하지 않습니다\n"
+            printf "::warning:: 📁 경로: %s/assets/\n" "$BUILD_FOLDER"
+            # NOTE: assets가 없어도 배포는 진행 (경고만 표시)
+          else
+            printf "::notice:: ✅ assets 폴더 존재 확인\n"
+          fi
+
+          # NOTE: 3) 빌드 폴더의 총 크기 확인 (최소 크기 검증)
+          FOLDER_SIZE=$(aws s3 ls "${S3_BUCKET}/${BUILD_FOLDER}/" --region "$S3_REGION" --recursive --summarize | grep "Total Size" | awk '{print $3}')
+
+          if [ -z "$FOLDER_SIZE" ] || [ "$FOLDER_SIZE" -eq 0 ]; then
+            printf "::error:: 🚨 치명적 오류: 빌드 폴더가 비어있습니다\n"
+            printf "::error:: 🚨 경로: %s\n" "$BUILD_FOLDER"
+            printf "::error:: 🚨 S3 루트 정리를 중단합니다 (안전한 상태 유지)\n"
+            exit 1
+          fi
+
+          # NOTE: 크기를 MB 단위로 변환하여 표시
+          FOLDER_SIZE_MB=$(echo "scale=2; $FOLDER_SIZE / 1024 / 1024" | bc)
+          printf "::notice:: ✅ 빌드 폴더 크기: %.2f MB (%s bytes)\n" "$FOLDER_SIZE_MB" "$FOLDER_SIZE"
+
+          # NOTE: 4) 최소 크기 임계값 검증 (100KB 이상)
+          MIN_SIZE=$((100 * 1024)) # 100KB
+          if [ "$FOLDER_SIZE" -lt "$MIN_SIZE" ]; then
+            printf "::error:: 🚨 치명적 오류: 빌드 폴더 크기가 비정상적으로 작습니다\n"
+            printf "::error:: 🚨 현재 크기: %.2f MB (최소 요구: 0.10 MB)\n" "$FOLDER_SIZE_MB"
+            printf "::error:: 🚨 S3 루트 정리를 중단합니다 (안전한 상태 유지)\n"
+            exit 1
+          fi
+
+          printf "::notice:: ✅ 새 버전 파일 무결성 검증 완료\n"
+          printf "::notice:: ✅ S3 루트 정리를 안전하게 진행할 수 있습니다\n"
 
       - name: "🗑️ S3 루트 완전 정리 (버저닝 폴더와 스냅샷만 유지)"
         run: |
@@ -123,11 +176,15 @@ jobs:
           # NOTE: S3 루트의 모든 객체 목록 가져오기 (파일과 폴더)
           aws s3 ls "$S3_BUCKET/" --region "$S3_REGION" --recursive | awk '{print $4}' | while read -r object; do
             if [ -n "$object" ]; then
-              # NOTE: __ 로 시작하는 폴더 내부 파일들은 무조건 유지 (스냅샷, 빌드 폴더)
-              if [[ "$object" == __*/* ]] || [[ "$object" == build*/* ]]; then
+              # NOTE: 보호 대상 폴더 패턴 (새 배포 플로우와 이전 배포 플로우 모두 유지)
+              # NOTE: - __*/* : 새 배포 플로우의 버저닝 폴더 (예: __dev-moveAdmin-v1.0.0/, __snapshot-...)
+              # NOTE: - build/* : 이전 배포 플로우에서 배포된 빌드 폴더
+              # NOTE: - build-before-*/* : 이전 배포 플로우에서 직전 빌드 폴더
+              # NOTE: - build-legacy-*/* : 이전 배포 플로우에서 레거시 빌드 폴더
+              if [[ "$object" == __*/* ]] || [[ "$object" == build/* ]] || [[ "$object" == build-before-*/* ]] || [[ "$object" == build-legacy-*/* ]]; then
                 printf "::notice:: ⏩ 유지: %s\n" "$object"
-              # NOTE: 루트의 버전 정보 파일은 삭제 (폴더 안이 아닌 루트에 있는 파일만)
-              elif [[ "$object" != */* ]] && [[ "$object" == *"${{ env.VERSION_FILE_PREFIX }}"* ]]; then
+              # NOTE: 루트의 버전 정보 파일은 삭제(폴더 안이 아닌 루트에 있는 파일만). __current_release- 로 시작하는 루트 파일만 정확히 매칭
+              elif [[ "$object" != */* ]] && [[ "$object" == "${{ env.VERSION_FILE_PREFIX }}-"* ]]; then
                 printf "::notice:: 🗑️ 이전 버전 파일 삭제: %s\n" "$object"
                 aws s3 rm "${S3_BUCKET}/${object}" --region "$S3_REGION" || true
               else
@@ -148,19 +205,33 @@ jobs:
           printf "::notice:: 🚀 %s 폴더를 S3 루트로 복사 중\n" "$BUILD_FOLDER"
 
           # NOTE: 이전 단계에서 루트를 이미 정리했으므로, 단순히 복사만 하면 됨
-          aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${BUILD_FOLDER}/" "$S3_BUCKET/" || {
-            printf "::error:: 🚨 파일 복사 실패. 롤백을 시도합니다.\n"
+          if ! aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${BUILD_FOLDER}/" "$S3_BUCKET/"; then
+            printf "::error:: 🚨 치명적 오류: 새 버전 파일 복사 실패\n"
+            printf "::error:: 🚨 원본 경로: %s/%s/\n" "$S3_BUCKET" "$BUILD_FOLDER"
+            printf "::error:: 🚨 대상 경로: %s/\n" "$S3_BUCKET"
+            printf "::error:: 🚨 롤백을 시도합니다...\n"
+            
+            SNAPSHOT_FOLDER="${{ env.SNAPSHOT_FOLDER }}"
+            printf "::notice:: 🔄 스냅샷에서 복구 시도: %s\n" "$SNAPSHOT_FOLDER"
             
             # NOTE: 롤백: 스냅샷에서 복구
-            SNAPSHOT_FOLDER="${{ env.SNAPSHOT_FOLDER }}"
-            aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/" "$S3_BUCKET/" || {
-              printf "::error:: 🚨 롤백도 실패했습니다. 수동 복구가 필요합니다.\n"
+            if ! aws s3 cp --recursive --region "$S3_REGION" "${S3_BUCKET}/${SNAPSHOT_FOLDER}/" "$S3_BUCKET/"; then
+              printf "::error:: 🚨🚨🚨 심각한 오류: 롤백 실패 🚨🚨🚨\n"
+              printf "::error:: 🚨 현재 S3 상태: 루트가 불완전한 상태입니다\n"
+              printf "::error:: 🚨 스냅샷 경로: %s/%s/\n" "$S3_BUCKET" "$SNAPSHOT_FOLDER"
+              printf "::error:: 🚨 즉시 다음 조치가 필요합니다:\n"
+              printf "::error:: 🚨   1. S3 콘솔에서 %s 상태 확인\n" "$S3_BUCKET"
+              printf "::error:: 🚨   2. 스냅샷 폴더가 존재하는 경우 수동으로 복구\n"
+              printf "::error:: 🚨   3. 또는 이전 버저닝 폴더에서 재배포 시도\n"
+              printf "::error:: 🚨 서비스 중단 가능성이 높습니다 - 긴급 대응 필요\n"
               exit 1
-            }
+            fi
             
-            printf "::notice:: ✅ 롤백 완료\n"
+            printf "::notice:: ✅ 롤백 성공: 이전 버전으로 복구 완료\n"
+            printf "::notice:: 📸 복구된 스냅샷: %s\n" "$SNAPSHOT_FOLDER"
+            printf "::error:: 🚨 하지만 배포는 실패했습니다. 빌드 폴더를 확인하고 재시도하세요.\n"
             exit 1
-          }
+          fi
 
           printf "::notice:: ✅ 파일 복사 완료: %s → S3 루트\n" "$BUILD_FOLDER"
 

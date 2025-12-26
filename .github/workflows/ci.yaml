@@ -18,7 +18,7 @@ on:
         required: true
         type: string
 
-run-name: "🧱 ${{ inputs.SERVICE_NAME }} / ${{inputs.VERSION}} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
+run-name: "🧱 ${{ inputs.SERVICE_NAME }} / ${{ inputs.VERSION }} 버전 / ${{ inputs.DEPLOY_ENV }} 환경 / ${{ github.ref_name }} 브랜치 CI 실행"
 
 env:
   CURRENT_BRANCH: ${{ github.ref_name }}
@@ -74,9 +74,11 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: "📦 pnpm 설치"
         with:
+          # NOTE: pnpm 버전은 package.json에 명시된 버전과 일치해야 함
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
+      # LINK: https://github.com/actions/setup-node?tab=readme-ov-file#caching-global-packages-data
       - name: "🛠️ Node.js 설치 및 의존성 cache 사용"
         uses: actions/setup-node@v4
         with:
@@ -117,7 +119,7 @@ jobs:
           echo "$ENV_CONTENT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: "💾 ENV_[서비스]_[환경] 파일 다운로드 및 .env_[환경] 이름 설정"
+      - name: "💾 ENV_[서비스]_[환경] 파일 다운로드 및 .env.[환경] 이름 설정"
         run: |
           ENV_CONTENT="${{ steps.check-env-secret.outputs.ENV_CONTENT }}"
 
@@ -140,7 +142,7 @@ jobs:
             exit 1
           fi
 
-      - name: "📂 .env_[환경] 파일을 배포 서비스 코드로 파일 위치 이동"
+      - name: "📂 .env.[환경] 파일을 배포 서비스 코드로 파일 위치 이동"
         run: |
           APP_DIR="apps/${{ inputs.SERVICE_NAME }}"
 
