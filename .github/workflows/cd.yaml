@@ -47,16 +47,17 @@ jobs:
       - name: "🪪 AWS IAM KEY 설정"
         run: |
           SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
-          AWS_IAM_KEY=""
           KEY_LABEL=""
 
           case "$SERVICE_NAME" in
             moveRanking)
-              AWS_IAM_KEY="${{ secrets.AWS_ACCESS_KEY_ID }}"
+              echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
               KEY_LABEL="MOVE RANKING"
               ;;
             carInspection)
-              AWS_IAM_KEY="${{ secrets.AWS_ACCESS_KEY_ID }}"
+              echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENVs
               KEY_LABEL="CAR INSPECTION"
               ;;
             *)
@@ -65,7 +66,6 @@ jobs:
               ;;
           esac
 
-          printf "AWS_IAM_KEY=arn:aws:iam::%s:role/GithubActionsOIDCRole\n" "$AWS_IAM_KEY" >> "$GITHUB_ENV"
           printf "::notice:: ✅ %s AWS IAM KEY 설정 완료\n" "$KEY_LABEL"
 
       - name: "🔍 배포할 빌드 폴더 존재 여부 확인"
