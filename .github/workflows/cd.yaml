@@ -25,6 +25,7 @@ env:
   SNAPSHOT_PREFIX: "__snapshot"
   VERSION_FILE_PREFIX: "__current_release"
   BUILD_FOLDER: ""
+  SNAPSHOT_FOLDER: ""
 
 jobs:
   # NOTE: 1) validation.yaml 호출 - AWS Config 검증, 유효성 검증, AWS 인증 및 실존 리소스 검증
@@ -45,11 +46,27 @@ jobs:
     steps:
       - name: "🪪 AWS IAM KEY 설정"
         run: |
-          # NOTE: 각 job은 독립적인 runner에서 실행되므로 AWS 인증 필요
-          printf "::notice:: 🪪 AWS 인증 정보 설정 중\n"
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          printf "::notice:: ✅ AWS IAM KEY 설정 완료\n"
+          SERVICE_NAME="${{ inputs.SERVICE_NAME }}"
+          AWS_IAM_KEY=""
+          KEY_LABEL=""
+
+          case "$SERVICE_NAME" in
+            moveRanking)
+              AWS_IAM_KEY="${{ secrets.AWS_ACCESS_KEY_ID }}"
+              KEY_LABEL="MOVE RANKING"
+              ;;
+            carInspection)
+              AWS_IAM_KEY="${{ secrets.AWS_ACCESS_KEY_ID }}"
+              KEY_LABEL="CAR INSPECTION"
+              ;;
+            *)
+              printf "::error:: ⚠️ %s 지원하지 않는 서비스입니다.\n" "$SERVICE_NAME"
+              exit 1
+              ;;
+          esac
+
+          printf "AWS_IAM_KEY=arn:aws:iam::%s:role/GithubActionsOIDCRole\n" "$AWS_IAM_KEY" >> "$GITHUB_ENV"
+          printf "::notice:: ✅ %s AWS IAM KEY 설정 완료\n" "$KEY_LABEL"
 
       - name: "🔍 배포할 빌드 폴더 존재 여부 확인"
         run: |
